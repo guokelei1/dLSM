@@ -378,8 +378,8 @@ class Stats {
     }
     AppendWithSpace(&extra, message_);
 
-    std::fprintf(stdout, "%-12s : %11.3f micros/op; %ld ops/sec;%s%s\n",
-                 name.ToString().c_str(), seconds_ * 1e6 / done_, (long)(done_/elapsed),
+    std::fprintf(stdout, "%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; %ld ops/sec;%s%s\n",
+                 name.ToString().c_str(),done_,elapsed, seconds_ * 1e6 / done_, (long)(done_/elapsed),
                  (extra.empty() ? "" : " "), extra.c_str());
 
     if (FLAGS_histogram) {
@@ -1513,6 +1513,22 @@ int main(int argc, char** argv) {
     default_db_path += "/dbbench";
     FLAGS_db = default_db_path.c_str();
   }
+
+  std::fprintf(stdout, " FLAGS_benchmarks = %s\n", FLAGS_benchmarks);
+  std::fprintf(stdout, " FLAGS_histogram = %d\n", FLAGS_histogram);
+  std::fprintf(stdout, " FLAGS_num = %d\n", FLAGS_num);
+  std::fprintf(stdout, " FLAGS_reads = %d\n", FLAGS_reads);
+  std::fprintf(stdout, " FLAGS_value_size = %d\n", FLAGS_value_size);
+  std::fprintf(stdout, " FLAGS_key_size = %d\n", FLAGS_key_size);
+  std::fprintf(stdout, " FLAGS_key_prefix = %d\n", FLAGS_key_prefix);
+  std::fprintf(stdout, " FLAGS_cache_size = %d\n", FLAGS_cache_size);
+  std::fprintf(stdout, " FLAGS_bloom_bits = %d\n", FLAGS_bloom_bits);
+  std::fprintf(stdout, " FLAGS_open_files = %d\n", FLAGS_open_files);
+  std::fprintf(stdout, " FLAGS_enable_numa = %d\n", FLAGS_enable_numa);
+  std::fprintf(stdout, " FLAGS_block_restart_interval = %d\n", FLAGS_block_restart_interval);
+  std::fprintf(stdout, " FLAGS_readwritepercent = %d\n", FLAGS_readwritepercent);
+  std::fprintf(stdout, " FLAGS_duration = %d\n", FLAGS_duration);
+  std::fprintf(stdout, " FLAGS_db = %s\n", FLAGS_db);
 
   dLSM::Benchmark benchmark;
   benchmark.Run();

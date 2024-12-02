@@ -1,0 +1,1 @@
+sudo ./build/db_bench --benchmarks=fillrandom --threads=1 --value_size=400 --num=100000000 --bloom_bits=10 --readwritepercent=5 --compute_node_id=0 --fixed_compute_shards_num=0 >> result.txt

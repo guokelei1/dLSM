@@ -987,6 +987,7 @@ void RDMA_Manager::Client_Set_Up_Resources() {
   std::string space_delimiter = " ";
 
   std::getline(myfile,connection_conf );
+  std::cout << "connection_conf "<<connection_conf << std::endl;
   uint8_t i = 0;
   uint8_t id;
   while ((pos = connection_conf.find(space_delimiter)) != std::string::npos) {
@@ -999,6 +1000,7 @@ void RDMA_Manager::Client_Set_Up_Resources() {
   assert((node_id - 1)/2 <  compute_nodes.size());
   i = 0;
   std::getline(myfile,connection_conf );
+    std::cout << "connection_conf "<<connection_conf << std::endl;
   while ((pos = connection_conf.find(space_delimiter)) != std::string::npos) {
     id = 2*i;
     memory_nodes.insert({id, connection_conf.substr(0, pos)});
