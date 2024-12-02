@@ -757,6 +757,7 @@ class Benchmark {
     }
     printf("Threads start to run\n");
     thread->stats.Start();
+    //为什么要脱裤子放屁多此一举，直接线程调用不行吗？这样的好处就是不用传参？
     (arg->bm->*(arg->method))(thread);
     thread->stats.Stop();
 
@@ -1514,22 +1515,32 @@ int main(int argc, char** argv) {
     FLAGS_db = default_db_path.c_str();
   }
 
-  std::fprintf(stdout, " FLAGS_benchmarks = %s\n", FLAGS_benchmarks);
-  std::fprintf(stdout, " FLAGS_histogram = %d\n", FLAGS_histogram);
-  std::fprintf(stdout, " FLAGS_num = %d\n", FLAGS_num);
-  std::fprintf(stdout, " FLAGS_reads = %d\n", FLAGS_reads);
-  std::fprintf(stdout, " FLAGS_value_size = %d\n", FLAGS_value_size);
-  std::fprintf(stdout, " FLAGS_key_size = %d\n", FLAGS_key_size);
-  std::fprintf(stdout, " FLAGS_key_prefix = %d\n", FLAGS_key_prefix);
-  std::fprintf(stdout, " FLAGS_cache_size = %d\n", FLAGS_cache_size);
-  std::fprintf(stdout, " FLAGS_bloom_bits = %d\n", FLAGS_bloom_bits);
-  std::fprintf(stdout, " FLAGS_open_files = %d\n", FLAGS_open_files);
-  std::fprintf(stdout, " FLAGS_enable_numa = %d\n", FLAGS_enable_numa);
-  std::fprintf(stdout, " FLAGS_block_restart_interval = %d\n", FLAGS_block_restart_interval);
-  std::fprintf(stdout, " FLAGS_readwritepercent = %d\n", FLAGS_readwritepercent);
-  std::fprintf(stdout, " FLAGS_duration = %d\n", FLAGS_duration);
-  std::fprintf(stdout, " FLAGS_db = %s\n", FLAGS_db);
-
+  //输出所有flags
+    std::fprintf(stdout, "FLAGS_benchmarks: %s\n", FLAGS_benchmarks);
+    std::fprintf(stdout, "FLAGS_num: %d\n", FLAGS_num);
+    std::fprintf(stdout, "FLAGS_reads: %d\n", FLAGS_reads);
+    std::fprintf(stdout, "FLAGS_threads: %d\n", FLAGS_threads);
+    std::fprintf(stdout, "FLAGS_value_size: %d\n", FLAGS_value_size);
+    std::fprintf(stdout, "FLAGS_key_size: %d\n", FLAGS_key_size);
+    std::fprintf(stdout, "FLAGS_compression_ratio: %f\n", FLAGS_compression_ratio);
+    std::fprintf(stdout, "FLAGS_histogram: %s\n", FLAGS_histogram ? "true" : "false");
+    std::fprintf(stdout, "FLAGS_comparisons: %s\n", FLAGS_comparisons ? "true" : "false");
+    std::fprintf(stdout, "FLAGS_write_buffer_size: %d\n", FLAGS_write_buffer_size);
+    std::fprintf(stdout, "FLAGS_max_file_size: %d\n", FLAGS_max_file_size);
+    std::fprintf(stdout, "FLAGS_block_size: %d\n", FLAGS_block_size);
+    std::fprintf(stdout, "FLAGS_cache_size: %d\n", FLAGS_cache_size);
+    std::fprintf(stdout, "FLAGS_open_files: %d\n", FLAGS_open_files);
+    std::fprintf(stdout, "FLAGS_block_restart_interval: %d\n", FLAGS_block_restart_interval);
+    std::fprintf(stdout, "FLAGS_bloom_bits: %d\n", FLAGS_bloom_bits);
+    std::fprintf(stdout, "FLAGS_key_prefix: %d\n", FLAGS_key_prefix);
+    std::fprintf(stdout, "FLAGS_use_existing_db: %s\n", FLAGS_use_existing_db ? "true" : "false");
+    std::fprintf(stdout, "FLAGS_fixed_compute_shards_num: %d\n", FLAGS_fixed_compute_shards_num);
+    std::fprintf(stdout, "FLAGS_enable_numa: %s\n", FLAGS_enable_numa ? "true" : "false");
+    std::fprintf(stdout, "FLAGS_reuse_logs: %s\n", FLAGS_reuse_logs ? "true" : "false");
+    std::fprintf(stdout, "FLAGS_db: %s\n", FLAGS_db ? FLAGS_db : "nullptr");
+    std::fprintf(stdout, "FLAGS_readwritepercent: %d\n", FLAGS_readwritepercent);
+    std::fprintf(stdout, "FLAGS_ops_between_duration_checks: %d\n", FLAGS_ops_between_duration_checks);
+    std::fprintf(stdout, "FLAGS_duration: %d\n", FLAGS_duration);
   dLSM::Benchmark benchmark;
   benchmark.Run();
   return 0;

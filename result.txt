@@ -553,4 +553,225 @@ Remote memory registeration, size: 1073741824
 polled reply buffer
 fillrandom   : done: 100000000; elapsed:     123.334 sec;       1.233 micros/op; 810805 ops/sec;  324.8 MB/s
 DBImpl deallocated
-Total number of entries within the cahce is 0
+Total number of entries within the cahce is 0connection_conf 192.168.6.107
+connection_conf 192.168.6.103
+Mark: valgrind socket info1
+searching for IB devices in host
+found 1 device(s)
+device not specified, using first one found: mlx5_0
+New MR was registered with addr=0x7f2b98d3b010, lkey=0x37554, rkey=0x37554, flags=0x7, size=10240000, total registered size is 0
+New MR was registered with addr=0x7f2b98376010, lkey=0x28262, rkey=0x28262, flags=0x7, size=10240000, total registered size is 10240000
+SST buffer, send&receive buffer were registered with a
+maximum outstanding wr number is32768
+maximum query pair number is262144
+maximum completion queue number is16777216
+maximum memory region number is16777216
+maximum memory region size is18446744073709551615
+Success to connect to 192.168.6.103
+TCP connection was established
+connect to node id 0QP was created, QP number=0x356
+
+Local LID = 0x1a
+total bytes: 23read byte: 23Remote QP number = 0x66e
+Remote LID = 0x1
+Remote GID =fe:80:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+ QP 0x7f2b900022b8 state was change to RTS
+total bytes: 1read byte: 1Finish the connection with node 0
+New MR was registered with addr=0x7f2b4ffff010, lkey=0x201a32, rkey=0x201a32, flags=0x7, size=1073741824, total registered size is 20480000
+ FLAGS_benchmarks = fillrandom
+ FLAGS_histogram = 0
+ FLAGS_num = 10000000
+ FLAGS_reads = -1
+ FLAGS_value_size = 400
+ FLAGS_key_size = 20
+ FLAGS_key_prefix = 0
+ FLAGS_cache_size = -1
+ FLAGS_bloom_bits = 10
+ FLAGS_open_files = 5000
+ FLAGS_enable_numa = 0
+ FLAGS_block_restart_interval = 1
+ FLAGS_readwritepercent = 5
+ FLAGS_duration = 0
+ FLAGS_db = /tmp/dLSMtest-0/dbbench
+Start to sync options
+client handling thread
+Keys:       16 bytes each
+Values:     400 bytes each (200 bytes after compression)
+Entries:    10000000
+RawSize:    3967.3 MB (estimated)
+FileSize:   2059.9 MB (estimated)
+WARNING: Snappy compression is not enabled
+------------------------------------------------
+DBImpl start
+New MR was registered with addr=0x7f2b956ab010, lkey=0x1ccac, rkey=0x1ccac, flags=0x7, size=33554432, total registered size is 1094221824
+Memory used up, Initially, allocate new one, memory pool is Version_edit, total memory this pool is 1
+communication thread created
+DBImpl finished
+DBImpl deallocated
+Total number of entries within the cahce is 0DBImpl start
+communication thread created
+DBImpl finished
+validation write finished
+start front-end threads
+Wait for thread start
+total bytes: 1read byte: 1sync wait time is 130941Threads start to run
+New MR was registered with addr=0x7f2afffff010, lkey=0x201b33, rkey=0x201b33, flags=0x7, size=1073741824, total registered size is 1127776256
+Memory used up, Initially, allocate new one, memory pool is FlushBuffer, total memory this pool is 1
+New MR was registered with addr=0x7f2aa7fff010, lkey=0x201c34, rkey=0x201c34, flags=0x7, size=1073741824, total registered size is 2201518080
+Memory used up, Initially, allocate new one, memory pool is IndexChunk, total memory this pool is 1
+New MR was registered with addr=0x7f2a57fff010, lkey=0x201d35, rkey=0x201d35, flags=0x7, size=1073741824, total registered size is 3275259904
+Memory used up, Initially, allocate new one, memory pool is FilterChunk, total memory this pool is 1
+Remote memory registeration, size: 1073741824
+polled reply buffer
+QP was created, QP number=0x357
+
+QP num to be sent = 0x357
+Local LID = 0x1a
+QP was created, QP number=0x358
+Remote QP number=0x66f
+Remote LID = 0x1
+Remote GID =fe:80:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+ 
+QP num to be sent = 0x358
+Local LID = 0x1a
+QP 0x7f2b440099c8 state was change to RTS
+QP was created, QP number=0x359
+
+QP num to be sent = 0x359
+Local LID = 0x1a
+QP was created, QP number=0x35a
+
+QP num to be sent = 0x35a
+Local LID = 0x1a
+Remote QP number=0x671
+Remote LID = 0x1
+Remote GID =fe:80:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+ QP 0x7f2af0041518 state was change to RTS
+Remote QP number=0x672
+Remote LID = 0x1
+Remote GID =fe:80:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+ QP 0x7f2ae8041518 state was change to RTS
+Remote QP number=0x673
+Remote LID = 0x1
+Remote GID =fe:80:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+ QP 0x7f2aa0041518 state was change to RTS
+Remote memory registeration, size: 1073741824
+polled reply buffer
+fillrandom   : done: 10000000; elapsed:      11.096 sec;       1.110 micros/op; 901238 ops/sec;  361.0 MB/s
+DBImpl deallocated
+Total number of entries within the cahce is 0connection_conf 192.168.6.107
+connection_conf 192.168.6.103
+Mark: valgrind socket info1
+searching for IB devices in host
+found 1 device(s)
+device not specified, using first one found: mlx5_0
+New MR was registered with addr=0x7fc40a46d010, lkey=0x38261, rkey=0x38261, flags=0x7, size=10240000, total registered size is 0
+New MR was registered with addr=0x7fc409aa8010, lkey=0x6848, rkey=0x6848, flags=0x7, size=10240000, total registered size is 10240000
+SST buffer, send&receive buffer were registered with a
+maximum outstanding wr number is32768
+maximum query pair number is262144
+maximum completion queue number is16777216
+maximum memory region number is16777216
+maximum memory region size is18446744073709551615
+failed connect 
+Success to connect to 192.168.6.103
+TCP connection was established
+connect to node id 0QP was created, QP number=0x35b
+
+Local LID = 0x1a
+total bytes: 23Remote QP number = 0x0
+Remote LID = 0x0
+Remote GID =00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+ QP 0x7fc4040022b8 state was change to RTS
+total bytes: 1Finish the connection with node 0
+New MR was registered with addr=0x7fc3c3fff010, lkey=0x3336, rkey=0x3336, flags=0x7, size=1073741824, total registered size is 20480000
+FLAGS_benchmarks: fillrandom
+FLAGS_num: 10000000
+FLAGS_reads: -1
+FLAGS_threads: 1
+FLAGS_value_size: 400
+FLAGS_key_size: 20
+FLAGS_compression_ratio: 0.500000
+FLAGS_histogram: false
+FLAGS_comparisons: false
+FLAGS_write_buffer_size: 67108864
+FLAGS_max_file_size: 67108864
+FLAGS_block_size: 8192
+FLAGS_cache_size: -1
+FLAGS_open_files: 5000
+FLAGS_block_restart_interval: 1
+FLAGS_bloom_bits: 10
+FLAGS_key_prefix: 0
+FLAGS_use_existing_db: false
+FLAGS_fixed_compute_shards_num: 0
+FLAGS_enable_numa: false
+FLAGS_reuse_logs: false
+FLAGS_db: /tmp/dLSMtest-0/dbbench
+FLAGS_readwritepercent: 5
+FLAGS_ops_between_duration_checks: 2000
+FLAGS_duration: 0
+connection_conf 192.168.6.107
+connection_conf 192.168.6.103
+Mark: valgrind socket info1
+searching for IB devices in host
+found 1 device(s)
+device not specified, using first one found: mlx5_0
+New MR was registered with addr=0x7eff55afd010, lkey=0x38f6e, rkey=0x38f6e, flags=0x7, size=10240000, total registered size is 0
+New MR was registered with addr=0x7eff55138010, lkey=0x7958, rkey=0x7958, flags=0x7, size=10240000, total registered size is 10240000
+SST buffer, send&receive buffer were registered with a
+maximum outstanding wr number is32768
+maximum query pair number is262144
+maximum completion queue number is16777216
+maximum memory region number is16777216
+maximum memory region size is18446744073709551615
+failed connect 
+Success to connect to 192.168.6.103
+TCP connection was established
+connect to node id 0QP was created, QP number=0x35c
+
+Local LID = 0x1a
+total bytes: 23Remote QP number = 0x0
+Remote LID = 0x0
+Remote GID =00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+ QP 0x7eff500022b8 state was change to RTS
+total bytes: 1Finish the connection with node 0
+New MR was registered with addr=0x7eff0ffff010, lkey=0x3337, rkey=0x3337, flags=0x7, size=1073741824, total registered size is 20480000
+FLAGS_benchmarks: fillrandom
+FLAGS_num: 10000000
+FLAGS_reads: -1
+FLAGS_threads: 1
+FLAGS_value_size: 400
+FLAGS_key_size: 20
+FLAGS_compression_ratio: 0.500000
+FLAGS_histogram: false
+FLAGS_comparisons: false
+FLAGS_write_buffer_size: 67108864
+FLAGS_max_file_size: 67108864
+FLAGS_block_size: 8192
+FLAGS_cache_size: -1
+FLAGS_open_files: 5000
+FLAGS_block_restart_interval: 1
+FLAGS_bloom_bits: 10
+FLAGS_key_prefix: 0
+FLAGS_use_existing_db: false
+FLAGS_fixed_compute_shards_num: 0
+FLAGS_enable_numa: false
+FLAGS_reuse_logs: false
+FLAGS_db: /tmp/dLSMtest-0/dbbench
+FLAGS_readwritepercent: 5
+FLAGS_ops_between_duration_checks: 2000
+FLAGS_duration: 0
+connection_conf 192.168.6.107
+connection_conf 192.168.6.103
+Mark: valgrind socket info1
+searching for IB devices in host
+found 1 device(s)
+device not specified, using first one found: mlx5_0
+New MR was registered with addr=0x7fd5672e8010, lkey=0x8767, rkey=0x8767, flags=0x7, size=10240000, total registered size is 0
+New MR was registered with addr=0x7fd566923010, lkey=0x39b7a, rkey=0x39b7a, flags=0x7, size=10240000, total registered size is 10240000
+SST buffer, send&receive buffer were registered with a
+maximum outstanding wr number is32768
+maximum query pair number is262144
+maximum completion queue number is16777216
+maximum memory region number is16777216
+maximum memory region size is18446744073709551615
