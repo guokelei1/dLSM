@@ -28,7 +28,7 @@ int main(int argc,char* argv[])
      mn_keeper = new dLSM::Memory_Node_Keeper(true, tcp_port, pr_size);
      dLSM::RDMA_Manager::node_id = 2* Memory_server_id;
   }else{
-    mn_keeper = new dLSM::Memory_Node_Keeper(true, 19843, 88);
+    mn_keeper = new dLSM::Memory_Node_Keeper(true, 19843, 32);
     dLSM::RDMA_Manager::node_id = 0;
   }
 
