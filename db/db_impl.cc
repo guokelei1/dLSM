@@ -4097,8 +4097,9 @@ DB::~DB() = default;
 
 Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
   *dbptr = nullptr;
-
+  
   if (options.ShardInfo == nullptr){
+    printf("\nnot shared\n");
     //If it is not sharded
     DBImpl* impl = new DBImpl(options, dbname);
     impl->undefine_mutex.Lock();

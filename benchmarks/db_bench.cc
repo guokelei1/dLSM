@@ -378,7 +378,7 @@ class Stats {
     }
     AppendWithSpace(&extra, message_);
 
-    std::fprintf(stdout, "%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; %ld ops/sec;%s%s\n",
+    std::fprintf(stdout, "\n%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; %ld ops/sec;%s%s\n",
                  name.ToString().c_str(),done_,elapsed, seconds_ * 1e6 / done_, (long)(done_/elapsed),
                  (extra.empty() ? "" : " "), extra.c_str());
 
@@ -935,7 +935,7 @@ class Benchmark {
     number_of_key_total = FLAGS_num*FLAGS_threads; // whole range.
     number_of_key_per_compute =
         number_of_key_total /rdma_mg->compute_nodes.size();
-
+    //只有computenode分片情况才会走下面两个if else，一对一单机不管这个
     if (FLAGS_fixed_compute_shards_num > 0){
       options.ShardInfo = new std::vector<std::pair<Slice,Slice>>();
       number_of_key_per_shard = number_of_key_per_compute

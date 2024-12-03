@@ -12,3 +12,4 @@ debug/
 out/
 /cmake-build-debug/include/
 result.txt
+result/
