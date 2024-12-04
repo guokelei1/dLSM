@@ -6,24 +6,26 @@
 // the last "sync". It then checks for data loss errors by purposely dropping
 // file data (or entire files) not protected by a "sync".
 
-#include <map>
-#include <set>
-
-#include "gtest/gtest.h"
 #include "db/db_impl.h"
 #include "db/filename.h"
 #include "db/log_format.h"
 #include "db/version_set.h"
+#include <map>
+#include <set>
+
 #include "dLSM/cache.h"
 #include "dLSM/db.h"
 #include "dLSM/env.h"
 #include "dLSM/table.h"
 #include "dLSM/write_batch.h"
+
 #include "port/port.h"
 #include "port/thread_annotations.h"
 #include "util/logging.h"
 #include "util/mutexlock.h"
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 namespace dLSM {
 
@@ -500,7 +502,7 @@ class FaultInjectionTest : public testing::Test {
     ASSERT_dLSM_OK(
         Verify(0, num_pre_sync, FaultInjectionTest::VAL_EXPECT_NO_ERROR));
     ASSERT_dLSM_OK(Verify(num_pre_sync, num_post_sync,
-                             FaultInjectionTest::VAL_EXPECT_ERROR));
+                          FaultInjectionTest::VAL_EXPECT_ERROR));
   }
 
   void NoWriteTestPreFault() {}

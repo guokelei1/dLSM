@@ -4,27 +4,27 @@
 
 #ifndef dLSM_TABLE_BUILDER_BACS_H
 #define dLSM_TABLE_BUILDER_BACS_H
-#include "dLSM/table_builder.h"
-#include "dLSM/export.h"
-#include "dLSM/options.h"
-#include "dLSM/status.h"
 #include "dLSM/comparator.h"
 #include "dLSM/env.h"
+#include "dLSM/export.h"
 #include "dLSM/filter_policy.h"
 #include "dLSM/options.h"
+#include "dLSM/status.h"
+#include "dLSM/table_builder.h"
+
 #include "table/block_builder.h"
 #include "table/filter_block.h"
-#include "table/full_filter_block.h"
 #include "table/format.h"
+#include "table/full_filter_block.h"
 #include "util/coding.h"
 #include "util/crc32c.h"
 namespace dLSM {
-//class BlockBuilder;
+// class BlockBuilder;
 class BlockHandle;
-//class WritableFile;
+// class WritableFile;
 
-//enum IO_type {Compact, Flush};
-class dLSM_EXPORT TableBuilder_BACS : public TableBuilder{
+// enum IO_type {Compact, Flush};
+class dLSM_EXPORT TableBuilder_BACS : public TableBuilder {
  public:
   // Create a builder that will store the contents of the table it is
   // building in *file.  Does not close the file.  It is up to the
@@ -95,15 +95,13 @@ class dLSM_EXPORT TableBuilder_BACS : public TableBuilder{
   void get_dataindexblocks_map(std::map<uint32_t, ibv_mr*>& map) override;
   void get_filter_map(std::map<uint32_t, ibv_mr*>& map) override;
   size_t get_numentries() override;
+
  protected:
-
-
   struct Rep;
 
   Rep* rep_;
 };
 
-}
-
+}  // namespace dLSM
 
 #endif  // dLSM_TABLE_BUILDER_BACS_H

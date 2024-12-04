@@ -4,12 +4,12 @@
 
 #ifndef dLSM_TABLE_MEMORYSIDE_H
 #define dLSM_TABLE_MEMORYSIDE_H
+#include "db/version_edit.h"
 #include <cstdint>
 #include <memory>
 
 #include "dLSM/export.h"
 #include "dLSM/iterator.h"
-#include "db/version_edit.h"
 namespace dLSM {
 class Block;
 class BlockHandle;
@@ -32,8 +32,9 @@ class dLSM_EXPORT Table_Memory_Side {
   // for the duration of the returned table's lifetime.
   //
   // *file must remain live while this Table is in use.
-  static Status Open(const Options& options, Table_Memory_Side** table,
-                     const std::shared_ptr<RemoteMemTableMetaData>& Remote_table_meta);
+  static Status Open(
+      const Options& options, Table_Memory_Side** table,
+      const std::shared_ptr<RemoteMemTableMetaData>& Remote_table_meta);
 
   Table_Memory_Side(const Table_Memory_Side&) = delete;
   Table_Memory_Side& operator=(const Table_Memory_Side&) = delete;
@@ -53,7 +54,8 @@ class dLSM_EXPORT Table_Memory_Side {
   // be close to the file length.
   uint64_t ApproximateOffsetOf(const Slice& key) const;
 
-  static Slice KVReader(void* arg, const ReadOptions& options, const Slice& index_value);
+  static Slice KVReader(void* arg, const ReadOptions& options,
+                        const Slice& index_value);
 
  private:
   friend class TableCache;
@@ -67,7 +69,7 @@ class dLSM_EXPORT Table_Memory_Side {
   // that key is not present.
   Status InternalGet(const ReadOptions&, const Slice& key, void* arg,
                      void (*handle_result)(void* arg, const Slice& k,
-                         const Slice& v));
+                                           const Slice& v));
   //
   //  void ReadMeta(const Footer& footer);
   void ReadFilter();
@@ -75,6 +77,6 @@ class dLSM_EXPORT Table_Memory_Side {
   Rep* const rep;
   //  static std::atomic<int> table
 };
-}
+}  // namespace dLSM
 
 #endif  // dLSM_TABLE_MEMORYSIDE_H

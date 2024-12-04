@@ -3,9 +3,8 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "dLSM/filter_policy.h"
-
 #include "dLSM/slice.h"
-//#include "util/hash.h"
+// #include "util/hash.h"
 
 namespace dLSM {
 
@@ -34,11 +33,13 @@ class BloomFilterPolicy : public FilterPolicy {
     bits = bytes * 8;
 
     const size_t init_size = dst->size();
-//    dst->resize(init_size + bytes, 0);
+    //    dst->resize(init_size + bytes, 0);
     dst->Reset(dst->data(), init_size + bytes);
-      // Remember # of probes in filter
+    // Remember # of probes in filter
     char* array = const_cast<char*>(dst->data() + init_size);
-    assert(init_size + bytes < 1024*1024*1024); // this size should smaller than 1 write buffer size.
+    assert(init_size + bytes <
+           1024 * 1024 *
+               1024);  // this size should smaller than 1 write buffer size.
     for (int i = 0; i < n; i++) {
       // Use double-hashing to generate a sequence of hash values.
       // See analysis in [Kirsch,Mitzenmacher 2006].

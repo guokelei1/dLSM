@@ -5,45 +5,47 @@
 #ifndef dLSM_HOME_NODE_KEEPER_H
 #define dLSM_HOME_NODE_KEEPER_H
 
-
 #include <queue>
-//#include <fcntl.h>
-#include "util/rdma.h"
-#include "util/env_posix.h"
-#include "util/ThreadPool.h"
+// #include <fcntl.h>
 #include "db/log_writer.h"
 #include "db/version_set.h"
 
+#include "util/ThreadPool.h"
+#include "util/env_posix.h"
+#include "util/rdma.h"
+
 namespace dLSM {
 
-struct Arg_for_persistent{
+struct Arg_for_persistent {
   VersionEdit_Merger* edit_merger;
   std::string client_ip;
 };
 class Memory_Node_Keeper {
  public:
-//  friend class RDMA_Manager;
+  //  friend class RDMA_Manager;
   Memory_Node_Keeper(bool use_sub_compaction, uint32_t tcp_port, int pr_s);
   ~Memory_Node_Keeper();
-//  void Schedule(
-//      void (*background_work_function)(void* background_work_arg),
-//      void* background_work_arg, ThreadPoolType type);
+  //  void Schedule(
+  //      void (*background_work_function)(void* background_work_arg),
+  //      void* background_work_arg, ThreadPoolType type);
   void JoinAllThreads(bool wait_for_jobs_to_complete);
 
   // this function is for the server.
   void Server_to_Client_Communication();
-  void SetBackgroundThreads(int num,  ThreadPoolType type);
-//  void MaybeScheduleCompaction(std::string& client_ip);
-//  static void BGWork_Compaction(void* thread_args);
+  void SetBackgroundThreads(int num, ThreadPoolType type);
+  //  void MaybeScheduleCompaction(std::string& client_ip);
+  //  static void BGWork_Compaction(void* thread_args);
   static void RPC_Compaction_Dispatch(void* thread_args);
   static void RPC_Garbage_Collection_Dispatch(void* thread_args);
   static void Persistence_Dispatch(void* thread_args);
-//  void BackgroundCompaction(void* p);
+  //  void BackgroundCompaction(void* p);
   void CleanupCompaction(CompactionState* compact);
   void PersistSSTables(void* arg);
   void PersistSSTable(std::shared_ptr<RemoteMemTableMetaData> sstable_ptr);
-  void UnpinSSTables_RPC(VersionEdit_Merger* edit_merger, std::string& client_ip);
-  void UnpinSSTables_RPC(std::list<uint64_t>* merged_file_number, std::string& client_ip);
+  void UnpinSSTables_RPC(VersionEdit_Merger* edit_merger,
+                         std::string& client_ip);
+  void UnpinSSTables_RPC(std::list<uint64_t>* merged_file_number,
+                         std::string& client_ip);
   Status DoCompactionWork(CompactionState* compact, std::string& client_ip);
   void ProcessKeyValueCompaction(SubcompactionState* sub_compact);
   Status DoCompactionWorkWithSubcompaction(CompactionState* compact,
@@ -63,7 +65,7 @@ class Memory_Node_Keeper {
     return Status::OK();
   }
   Status NewSequentialFile(const std::string& filename,
-                           SequentialFile** result)  {
+                           SequentialFile** result) {
     int fd = ::open(filename.c_str(), O_RDONLY | kOpenBaseFlags);
     if (fd < 0) {
       *result = nullptr;
@@ -75,7 +77,7 @@ class Memory_Node_Keeper {
   }
 
   Status NewRandomAccessFile(const std::string& filename,
-                             RandomAccessFile** result)  {
+                             RandomAccessFile** result) {
     *result = nullptr;
     int fd = ::open(filename.c_str(), O_RDONLY | kOpenBaseFlags);
     if (fd < 0) {
@@ -107,8 +109,7 @@ class Memory_Node_Keeper {
     return status;
   }
 
-  Status NewWritableFile(const std::string& filename,
-                         WritableFile** result) {
+  Status NewWritableFile(const std::string& filename, WritableFile** result) {
     int fd = ::open(filename.c_str(),
                     O_TRUNC | O_WRONLY | O_CREAT | kOpenBaseFlags, 0644);
     if (fd < 0) {
@@ -120,8 +121,7 @@ class Memory_Node_Keeper {
     return Status::OK();
   }
 
-  Status NewAppendableFile(const std::string& filename,
-                           WritableFile** result)  {
+  Status NewAppendableFile(const std::string& filename, WritableFile** result) {
     int fd = ::open(filename.c_str(),
                     O_APPEND | O_WRONLY | O_CREAT | kOpenBaseFlags, 0644);
     if (fd < 0) {
@@ -133,20 +133,22 @@ class Memory_Node_Keeper {
     return Status::OK();
   }
 
-  bool FileExists(const std::string& filename)  {
+  bool FileExists(const std::string& filename) {
     return ::access(filename.c_str(), F_OK) == 0;
   }
   static std::shared_ptr<RDMA_Manager> rdma_mg;
-//  RDMA_Manager* rdma_mg;
+  //  RDMA_Manager* rdma_mg;
  private:
   int pr_size;
-  std::unordered_map<unsigned int, std::pair<std::mutex, std::condition_variable>> imm_notifier_pool;
+  std::unordered_map<unsigned int,
+                     std::pair<std::mutex, std::condition_variable>>
+      imm_notifier_pool;
   unsigned int imm_temp = 1;
   std::mutex mtx_temp;
   std::condition_variable cv_temp;
   std::shared_ptr<Options> opts;
   const InternalKeyComparator internal_comparator_;
-//  const InternalFilterPolicy internal_filter_policy_;
+  //  const InternalFilterPolicy internal_filter_policy_;
 
   PosixLockTable locks_;  // Thread-safe.
   Limiter mmap_limiter_;  // Thread-safe.
@@ -169,7 +171,6 @@ class Memory_Node_Keeper {
 //  std::mutex test_compaction_mutex;
 #ifndef NDEBUG
   std::atomic<size_t> debug_counter = 0;
-
 
 #endif
   Status InstallCompactionResults(CompactionState* compact,
@@ -200,5 +201,5 @@ class Memory_Node_Keeper {
                            std::unique_lock<std::mutex>* version_mtx,
                            uint8_t target_node_id);
 };
-}
+}  // namespace dLSM
 #endif  // dLSM_HOME_NODE_KEEPER_H

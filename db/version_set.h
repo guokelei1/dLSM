@@ -32,7 +32,7 @@ class Writer;
 }
 
 class Compaction;
- class FlushJob;
+class FlushJob;
 class Iterator;
 class MemTable;
 class TableBuilder_ComputeSide;
@@ -49,7 +49,7 @@ enum SaverState {
   kCorrupt,
 };
 struct Saver {
-  SaverState state = kNotFound;// set as not found as default value.
+  SaverState state = kNotFound;  // set as not found as default value.
   const Comparator* ucmp;
   Slice user_key;
   std::string* value;
@@ -64,7 +64,8 @@ static void SaveValue(void* arg, const Slice& ikey, const Slice& v) {
     // TOTHINK: may be the parse internal key is too slow?
     s->state = kCorrupt;
   } else {
-    if (s->ucmp->Compare(parsed_key.user_key, s->user_key) == 0) {// if found mark as kFound
+    if (s->ucmp->Compare(parsed_key.user_key, s->user_key) ==
+        0) {  // if found mark as kFound
       s->state = (parsed_key.type == kTypeValue) ? kFound : kDeleted;
       if (s->state == kFound) {
         s->value->assign(v.data(), v.size());
@@ -76,7 +77,8 @@ static void SaveValue(void* arg, const Slice& ikey, const Slice& v) {
 // Return files.size() if there is no such file.
 // REQUIRES: "files" contains a sorted list of non-overlapping files.
 int FindFile(const InternalKeyComparator& icmp,
-             const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& files, const Slice& key);
+             const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& files,
+             const Slice& key);
 
 // Returns true iff some file in "files" overlaps the user key range
 // [*smallest,*largest].
@@ -84,32 +86,31 @@ int FindFile(const InternalKeyComparator& icmp,
 // largest==nullptr represents a key largest than all keys in the DB.
 // REQUIRES: If disjoint_sorted_files, files[] contains disjoint ranges
 //           in sorted order.
-bool SomeFileOverlapsRange(const InternalKeyComparator& icmp,
-                           bool disjoint_sorted_files,
-                           const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& files,
-                           const Slice* smallest_user_key,
-                           const Slice* largest_user_key);
-class Level_Info{
+bool SomeFileOverlapsRange(
+    const InternalKeyComparator& icmp, bool disjoint_sorted_files,
+    const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& files,
+    const Slice* smallest_user_key, const Slice* largest_user_key);
+class Level_Info {
  public:
   std::vector<std::shared_ptr<RemoteMemTableMetaData>> files;
   std::vector<std::shared_ptr<RemoteMemTableMetaData>> in_progress;
   double compaction_score_;
-
 };
-//class Subversion{
-// public:
-//  explicit Subversion(size_t version_id, std::shared_ptr<RDMA_Manager> rdma_mg);
+// class Subversion{
+//  public:
+//   explicit Subversion(size_t version_id, std::shared_ptr<RDMA_Manager>
+//   rdma_mg);
 //
 //
-//  ~Subversion();
+//   ~Subversion();
 //
-// private:
-//  size_t version_id_;
-//  std::shared_ptr<RDMA_Manager> rdma_mg_;
-//};
+//  private:
+//   size_t version_id_;
+//   std::shared_ptr<RDMA_Manager> rdma_mg_;
+// };
 class Version {
  public:
-//  Version(const std::shared_ptr<Subversion>& sub_version);
+  //  Version(const std::shared_ptr<Subversion>& sub_version);
   // Lookup the value for key.  If found, store it in *val and
   // return OK.  Else return a non-OK status.  Fills *stats.
   // REQUIRES: lock is not held
@@ -117,7 +118,7 @@ class Version {
     std::shared_ptr<RemoteMemTableMetaData> seek_file;
     int seek_file_level;
   };
-//  std::shared_ptr<Subversion> subversion;
+  //  std::shared_ptr<Subversion> subversion;
 
   // Append to *iters a sequence of iterators that will
   // yield the contents of this Version when merged together.
@@ -170,15 +171,18 @@ class Version {
   // Return a human readable string that describes this version's contents.
   std::string DebugString() const;
   // An internal iterator.  For a given version/level pair, yields
-// information about the files in the level.  For a given entry, key()
-// is the largest key that occurs in the file, and value() is an
-// 16-byte value containing the file number and file size, both
-// encoded using EncodeFixed64.
+  // information about the files in the level.  For a given entry, key()
+  // is the largest key that occurs in the file, and value() is an
+  // 16-byte value containing the file number and file size, both
+  // encoded using EncodeFixed64.
   class LevelFileNumIterator : public Iterator {
    public:
-    LevelFileNumIterator(const InternalKeyComparator& icmp,
-                         const std::vector<std::shared_ptr<RemoteMemTableMetaData>>* flist)
-        : icmp_(icmp), flist_(flist), index_(flist->size()) {  // Marks as invalid
+    LevelFileNumIterator(
+        const InternalKeyComparator& icmp,
+        const std::vector<std::shared_ptr<RemoteMemTableMetaData>>* flist)
+        : icmp_(icmp),
+          flist_(flist),
+          index_(flist->size()) {  // Marks as invalid
     }
     bool Valid() const override { return index_ < flist_->size(); }
     void Seek(const Slice& target) override {
@@ -225,17 +229,18 @@ class Version {
   };
   double CompactionScore(int i);
   int CompactionLevel(int i);
-  void print_version_content(){
+  void print_version_content() {
     for (int i = 0; i < config::kNumLevels; ++i) {
       printf("Version level %d contain %zu files\n", i, levels_[i].size());
     }
   }
-  std::shared_ptr<RemoteMemTableMetaData> FindFileByNumber(int level, uint64_t file_number, uint8_t node_id);
+  std::shared_ptr<RemoteMemTableMetaData> FindFileByNumber(int level,
+                                                           uint64_t file_number,
+                                                           uint8_t node_id);
+
  private:
   friend class Compaction;
   friend class VersionSet;
-
-
 
   explicit Version(VersionSet* vset)
       : vset_(vset),
@@ -243,7 +248,7 @@ class Version {
         prev_(this),
         refs_(0),
         file_to_compact_(nullptr),
-        file_to_compact_level_(-1){}
+        file_to_compact_level_(-1) {}
 
   Version(const Version&) = delete;
   Version& operator=(const Version&) = delete;
@@ -259,18 +264,21 @@ class Version {
   // false, makes no more calls.
   //
   // REQUIRES: user portion of internal_key == user_key.
-  void ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
-                          bool (*func)(void*, int, std::shared_ptr<RemoteMemTableMetaData>));
+  void ForEachOverlapping(
+      Slice user_key, Slice internal_key, void* arg,
+      bool (*func)(void*, int, std::shared_ptr<RemoteMemTableMetaData>));
 
-  VersionSet* vset_;  // VersionSet to which this Version belongs
-  Version* next_;     // Next version in linked list
-  Version* prev_;     // Previous version in linked list
-  std::atomic<int> refs_;          // Number of live refs to this version
+  VersionSet* vset_;       // VersionSet to which this Version belongs
+  Version* next_;          // Next version in linked list
+  Version* prev_;          // Previous version in linked list
+  std::atomic<int> refs_;  // Number of live refs to this version
 
   // List of files per level
-  std::vector<std::shared_ptr<RemoteMemTableMetaData>> levels_[config::kNumLevels];
-  std::vector<std::shared_ptr<RemoteMemTableMetaData>> in_progress[config::kNumLevels];
-//  double score[config::kNumLevels];
+  std::vector<std::shared_ptr<RemoteMemTableMetaData>>
+      levels_[config::kNumLevels];
+  std::vector<std::shared_ptr<RemoteMemTableMetaData>>
+      in_progress[config::kNumLevels];
+  //  double score[config::kNumLevels];
   // Next file to compact based on seek stats.
   std::shared_ptr<RemoteMemTableMetaData> file_to_compact_;
   int file_to_compact_level_;
@@ -285,7 +293,6 @@ class Version {
   std::vector<int> unref_mark_collection;
   std::mutex this_version_mtx;
 #endif
-
 };
 
 class VersionSet {
@@ -293,9 +300,9 @@ class VersionSet {
   VersionSet(const std::string& dbname, const Options* options,
              TableCache* table_cache, const InternalKeyComparator* cmp,
              std::mutex* mtx);
-//  VersionSet(const std::string& dbname, const Options* options,
-//             TableCache* table_cache, const InternalKeyComparator* cmp,
-//             std::mutex* mtx);
+  //  VersionSet(const std::string& dbname, const Options* options,
+  //             TableCache* table_cache, const InternalKeyComparator* cmp,
+  //             std::mutex* mtx);
   VersionSet(const VersionSet&) = delete;
   VersionSet& operator=(const VersionSet&) = delete;
 
@@ -318,9 +325,8 @@ class VersionSet {
   // current version.  Will release *mu while actually writing to the file.
   // REQUIRES: *mu is held on entry.
   // REQUIRES: no other thread concurrently calls LogAndApply()
-  //TODO: Finalize is not required for the comppute node side.
+  // TODO: Finalize is not required for the comppute node side.
   Status LogAndApply(VersionEdit* edit);
-
 
   // Recover the last saved descriptor from persistent storage.
   Status Recover(bool* save_manifest);
@@ -333,7 +339,9 @@ class VersionSet {
 
   // Allocate and return a new file number
   uint64_t NewFileNumber() { return next_file_number_.fetch_add(1); }
-  uint64_t NewFileNumberBatch(size_t size) { return next_file_number_.fetch_add(size); }
+  uint64_t NewFileNumberBatch(size_t size) {
+    return next_file_number_.fetch_add(size);
+  }
   // Arrange to reuse "file_number" unless a newer file number has
   // already been allocated.
   // REQUIRES: "file_number" was returned by a call to NewFileNumber().
@@ -353,7 +361,7 @@ class VersionSet {
   // Return the last sequence number.
   uint64_t LastSequence() const { return last_sequence_.load(); }
   uint64_t LastSequence_nonatomic() const { return last_sequence_; }
-  uint64_t AssignSequnceNumbers(size_t n){
+  uint64_t AssignSequnceNumbers(size_t n) {
     assert(n == 1);
     return last_sequence_.fetch_add(n);
   }
@@ -377,14 +385,14 @@ class VersionSet {
   // Return the log file number for the log file that is currently
   // being compacted, or zero if there is no such log file.
   uint64_t PrevLogNumber() const { return prev_log_number_; }
-//  static bool check_compaction_state(std::shared_ptr<RemoteMemTableMetaData> sst);
+  //  static bool check_compaction_state(std::shared_ptr<RemoteMemTableMetaData>
+  //  sst);
   bool PickFileToCompact(int level, Compaction* c);
   // Pick level and mem_vec for a new compaction.
   // Returns nullptr if there is no compaction to be done.
   // Otherwise returns a pointer to a heap-allocated object that
   // describes the compaction.  Caller should delete the result.
   Compaction* PickCompaction();
-
 
   // Return a compaction object for compacting the range [begin,end] in
   // the specified level.  Returns nullptr if there is nothing in that
@@ -401,23 +409,24 @@ class VersionSet {
   // The caller should delete the iterator when no longer needed.
   Iterator* MakeInputIterator(Compaction* c);
   Iterator* MakeInputIteratorMemoryServer(Compaction* c);
-//  Iterator* NewIterator(std::shared_ptr<RemoteMemTableMetaData> f);
+  //  Iterator* NewIterator(std::shared_ptr<RemoteMemTableMetaData> f);
   // Returns true iff some level needs a compaction.
   bool NeedsCompaction() const {
-    //TODO(ruihong): make current_ an atomic variable if we do not want to have a lock for this
-    // funciton.
+    // TODO(ruihong): make current_ an atomic variable if we do not want to have
+    // a lock for this
+    //  funciton.
     Version* v = current_;
-    //TODO(ruihong): we may also need a lock for changing reading the compaction score.
-    return (v->compaction_score_[0] >= 1) ;
-    //TODO: keep the file_to compact in our implementation in the future.
-//    || (v->file_to_compact_.get() != nullptr)
+    // TODO(ruihong): we may also need a lock for changing reading the
+    // compaction score.
+    return (v->compaction_score_[0] >= 1);
+    // TODO: keep the file_to compact in our implementation in the future.
+    //    || (v->file_to_compact_.get() != nullptr)
   }
   bool AllCompactionNotFinished() {
-
     Version* v = current_;
-    //since the version are apply
-//    Finalize(v);
-//    || (v->file_to_compact_.get() != nullptr)
+    // since the version are apply
+    //    Finalize(v);
+    //    || (v->file_to_compact_.get() != nullptr)
     return (v->compaction_score_[0] >= 1);
   }
 
@@ -435,8 +444,8 @@ class VersionSet {
     char buffer[100];
   };
   const char* LevelSummary(LevelSummaryStorage* scratch) const;
-//  void Pin_Version_For_Compute();
-//  bool Unpin_Version_For_Compute(size_t version_id);
+  //  void Pin_Version_For_Compute();
+  //  bool Unpin_Version_For_Compute(size_t version_id);
   size_t version_id = 0;
   TableCache* const table_cache_;
   // Opened lazily
@@ -446,6 +455,7 @@ class VersionSet {
   SpinMutex version_set_list;
   Slice upper_bound;
   Slice lower_bound;
+
  private:
   class Builder;
 
@@ -458,12 +468,14 @@ class VersionSet {
 
   void Finalize(Version* v);
 
-  void GetRange(const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& inputs, InternalKey* smallest,
-                InternalKey* largest);
+  void GetRange(
+      const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& inputs,
+      InternalKey* smallest, InternalKey* largest);
 
-  void GetRange2(const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& inputs1,
-                 const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& inputs2,
-                 InternalKey* smallest, InternalKey* largest);
+  void GetRange2(
+      const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& inputs1,
+      const std::vector<std::shared_ptr<RemoteMemTableMetaData>>& inputs2,
+      InternalKey* smallest, InternalKey* largest);
 
   void SetupOtherInputs(Compaction* c);
 
@@ -475,32 +487,30 @@ class VersionSet {
   Env* const env_;
   const std::string dbname_;
   const Options* const options_;
-//  TableCache* const table_cache_;
+  //  TableCache* const table_cache_;
   const InternalKeyComparator icmp_;
   std::atomic<uint64_t> next_file_number_;
   uint64_t manifest_file_number_;
   std::atomic<uint64_t> last_sequence_;
   uint64_t log_number_;
   uint64_t prev_log_number_;  // 0 or backing store for memtable being compacted
-  std::map<uint64_t, std::shared_ptr<RemoteMemTableMetaData>> persistent_pinner_;
+  std::map<uint64_t, std::shared_ptr<RemoteMemTableMetaData>>
+      persistent_pinner_;
   std::mutex pinner_mtx;
 
   Version dummy_versions_;  // Head of circular doubly-linked list of versions.
-  //TODO: make current_ an atomic variable.
-//  std::atomic<Version*> current_;        // == dummy_versions_.prev_
+  // TODO: make current_ an atomic variable.
+  //  std::atomic<Version*> current_;        // == dummy_versions_.prev_
   Version* current_;
 
-
-  //TODO: make it spinmutex?
-//  std::mutex* sv_mtx;
+  // TODO: make it spinmutex?
+  //  std::mutex* sv_mtx;
 
   // Per-level key at which the next compaction at that level should start.
   // Either an empty string, or a valid InternalKey.
   std::string compact_index_[config::kNumLevels];
-//  std::map<size_t, Version*> memory_version_pinner;
-
+  //  std::map<size_t, Version*> memory_version_pinner;
 };
-
 
 // A Compaction encapsulates information about a compaction.
 class Compaction {
@@ -520,7 +530,9 @@ class Compaction {
   int num_input_files(int which) const { return inputs_[which].size(); }
 
   // Return the ith mem_vec file at "level()+which" ("which" must be 0 or 1).
-  std::shared_ptr<RemoteMemTableMetaData> input(int which, int i) const { return inputs_[which][i]; }
+  std::shared_ptr<RemoteMemTableMetaData> input(int which, int i) const {
+    return inputs_[which][i];
+  }
 
   // Maximum size of files to build during this compaction.
   uint64_t MaxOutputFileSize() const { return max_output_file_size_; }
@@ -547,7 +559,8 @@ class Compaction {
   void ReleaseInputs();
   void GenSubcompactionBoundaries();
 
-  std::vector<std::shared_ptr<RemoteMemTableMetaData>> inputs_[2];  // The two sets of mem_vec
+  std::vector<std::shared_ptr<RemoteMemTableMetaData>>
+      inputs_[2];  // The two sets of mem_vec
   std::vector<Slice>* GetBoundaries();
   std::vector<uint64_t>* GetSizes();
   uint64_t GetFileSizesForLevel(int level);
@@ -590,23 +603,21 @@ struct CompactionOutput {
   uint64_t number;
   uint64_t file_size;
   InternalKey smallest, largest;
-  std::map<uint32_t , ibv_mr*> remote_data_mrs;
-  std::map<uint32_t , ibv_mr*> remote_dataindex_mrs;
-  std::map<uint32_t , ibv_mr*> remote_filter_mrs;
+  std::map<uint32_t, ibv_mr*> remote_data_mrs;
+  std::map<uint32_t, ibv_mr*> remote_dataindex_mrs;
+  std::map<uint32_t, ibv_mr*> remote_filter_mrs;
 };
 struct SubcompactionState {
   Compaction* const compaction;
 
-  // The boundaries(UserKey) of the key-range this compaction is interested in. No two
-  // subcompactions may have overlapping key-ranges.
-  //TODO: double check the statement below
+  // The boundaries(UserKey) of the key-range this compaction is interested in.
+  // No two subcompactions may have overlapping key-ranges.
+  // TODO: double check the statement below
   // 'start' is exclusive, 'end' is inclusive, and nullptr means unbounded
   Slice *start, *end;
 
   // The return status of this subcompaction
   Status status;
-
-
 
   // State kept for output being generated
   std::vector<CompactionOutput> outputs;
@@ -641,7 +652,7 @@ struct SubcompactionState {
   bool seen_key = false;
 
   SubcompactionState(Compaction* c, Slice* _start, Slice* _end, uint64_t size)
-  : compaction(c), start(_start), end(_end), approx_size(size) {
+      : compaction(c), start(_start), end(_end), approx_size(size) {
     assert(compaction != nullptr);
   }
 };
@@ -651,11 +662,11 @@ struct CompactionState {
   CompactionOutput* current_output() { return &outputs[outputs.size() - 1]; }
 
   explicit CompactionState(Compaction* c)
-  : compaction(c),
-  smallest_snapshot(0),
-  //        outfile(nullptr),
-  builder(nullptr),
-  total_bytes(0) {}
+      : compaction(c),
+        smallest_snapshot(0),
+        //        outfile(nullptr),
+        builder(nullptr),
+        total_bytes(0) {}
 
   std::vector<SubcompactionState> sub_compact_states;
   Compaction* const compaction;

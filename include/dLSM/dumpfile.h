@@ -21,7 +21,7 @@ namespace dLSM {
 // Returns a non-OK result if fname does not name a dLSM storage
 // file, or if the file cannot be read.
 dLSM_EXPORT Status DumpFile(Env* env, const std::string& fname,
-                               WritableFile* dst);
+                            WritableFile* dst);
 
 }  // namespace dLSM
 

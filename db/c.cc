@@ -4,10 +4,9 @@
 
 #include "dLSM/c.h"
 
-#include <string.h>
-
 #include <cstdint>
 #include <cstdlib>
+#include <string.h>
 
 #include "dLSM/cache.h"
 #include "dLSM/comparator.h"
@@ -166,7 +165,7 @@ static char* CopyString(const std::string& str) {
 }
 
 dLSM_t* dLSM_open(const dLSM_options_t* options, const char* name,
-                        char** errptr) {
+                  char** errptr) {
   DB* db;
   if (SaveError(errptr, DB::Open(options->rep, std::string(name), &db))) {
     return nullptr;
@@ -181,26 +180,24 @@ void dLSM_close(dLSM_t* db) {
   delete db;
 }
 
-void dLSM_put(dLSM_t* db, const dLSM_writeoptions_t* options,
-                 const char* key, size_t keylen, const char* val, size_t vallen,
-                 char** errptr) {
+void dLSM_put(dLSM_t* db, const dLSM_writeoptions_t* options, const char* key,
+              size_t keylen, const char* val, size_t vallen, char** errptr) {
   SaveError(errptr,
             db->rep->Put(options->rep, Slice(key, keylen), Slice(val, vallen)));
 }
 
 void dLSM_delete(dLSM_t* db, const dLSM_writeoptions_t* options,
-                    const char* key, size_t keylen, char** errptr) {
+                 const char* key, size_t keylen, char** errptr) {
   SaveError(errptr, db->rep->Delete(options->rep, Slice(key, keylen)));
 }
 
 void dLSM_write(dLSM_t* db, const dLSM_writeoptions_t* options,
-                   dLSM_writebatch_t* batch, char** errptr) {
+                dLSM_writebatch_t* batch, char** errptr) {
   SaveError(errptr, db->rep->Write(options->rep, &batch->rep));
 }
 
-char* dLSM_get(dLSM_t* db, const dLSM_readoptions_t* options,
-                  const char* key, size_t keylen, size_t* vallen,
-                  char** errptr) {
+char* dLSM_get(dLSM_t* db, const dLSM_readoptions_t* options, const char* key,
+               size_t keylen, size_t* vallen, char** errptr) {
   char* result = nullptr;
   std::string tmp;
   Status s = db->rep->Get(options->rep, Slice(key, keylen), &tmp);
@@ -216,8 +213,8 @@ char* dLSM_get(dLSM_t* db, const dLSM_readoptions_t* options,
   return result;
 }
 
-dLSM_iterator_t* dLSM_create_iterator(
-    dLSM_t* db, const dLSM_readoptions_t* options) {
+dLSM_iterator_t* dLSM_create_iterator(dLSM_t* db,
+                                      const dLSM_readoptions_t* options) {
   dLSM_iterator_t* result = new dLSM_iterator_t;
   result->rep = db->rep->NewIterator(options->rep);
   return result;
@@ -229,8 +226,7 @@ const dLSM_snapshot_t* dLSM_create_snapshot(dLSM_t* db) {
   return result;
 }
 
-void dLSM_release_snapshot(dLSM_t* db,
-                              const dLSM_snapshot_t* snapshot) {
+void dLSM_release_snapshot(dLSM_t* db, const dLSM_snapshot_t* snapshot) {
   db->rep->ReleaseSnapshot(snapshot->rep);
   delete snapshot;
 }
@@ -246,11 +242,11 @@ char* dLSM_property_value(dLSM_t* db, const char* propname) {
 }
 
 void dLSM_approximate_sizes(dLSM_t* db, int num_ranges,
-                               const char* const* range_start_key,
-                               const size_t* range_start_key_len,
-                               const char* const* range_limit_key,
-                               const size_t* range_limit_key_len,
-                               uint64_t* sizes) {
+                            const char* const* range_start_key,
+                            const size_t* range_start_key_len,
+                            const char* const* range_limit_key,
+                            const size_t* range_limit_key_len,
+                            uint64_t* sizes) {
   Range* ranges = new Range[num_ranges];
   for (int i = 0; i < num_ranges; i++) {
     ranges[i].start = Slice(range_start_key[i], range_start_key_len[i]);
@@ -260,9 +256,8 @@ void dLSM_approximate_sizes(dLSM_t* db, int num_ranges,
   delete[] ranges;
 }
 
-void dLSM_compact_range(dLSM_t* db, const char* start_key,
-                           size_t start_key_len, const char* limit_key,
-                           size_t limit_key_len) {
+void dLSM_compact_range(dLSM_t* db, const char* start_key, size_t start_key_len,
+                        const char* limit_key, size_t limit_key_len) {
   Slice a, b;
   db->rep->CompactRange(
       // Pass null Slice if corresponding "const char*" is null
@@ -271,12 +266,12 @@ void dLSM_compact_range(dLSM_t* db, const char* start_key,
 }
 
 void dLSM_destroy_db(const dLSM_options_t* options, const char* name,
-                        char** errptr) {
+                     char** errptr) {
   SaveError(errptr, DestroyDB(name, options->rep));
 }
 
 void dLSM_repair_db(const dLSM_options_t* options, const char* name,
-                       char** errptr) {
+                    char** errptr) {
   SaveError(errptr, RepairDB(name, options->rep));
 }
 
@@ -293,9 +288,7 @@ void dLSM_iter_seek_to_first(dLSM_iterator_t* iter) {
   iter->rep->SeekToFirst();
 }
 
-void dLSM_iter_seek_to_last(dLSM_iterator_t* iter) {
-  iter->rep->SeekToLast();
-}
+void dLSM_iter_seek_to_last(dLSM_iterator_t* iter) { iter->rep->SeekToLast(); }
 
 void dLSM_iter_seek(dLSM_iterator_t* iter, const char* k, size_t klen) {
   iter->rep->Seek(Slice(k, klen));
@@ -321,29 +314,27 @@ void dLSM_iter_get_error(const dLSM_iterator_t* iter, char** errptr) {
   SaveError(errptr, iter->rep->status());
 }
 
-dLSM_writebatch_t* dLSM_writebatch_create() {
-  return new dLSM_writebatch_t;
-}
+dLSM_writebatch_t* dLSM_writebatch_create() { return new dLSM_writebatch_t; }
 
 void dLSM_writebatch_destroy(dLSM_writebatch_t* b) { delete b; }
 
 void dLSM_writebatch_clear(dLSM_writebatch_t* b) { b->rep.Clear(); }
 
-void dLSM_writebatch_put(dLSM_writebatch_t* b, const char* key,
-                            size_t klen, const char* val, size_t vlen) {
+void dLSM_writebatch_put(dLSM_writebatch_t* b, const char* key, size_t klen,
+                         const char* val, size_t vlen) {
   b->rep.Put(Slice(key, klen), Slice(val, vlen));
 }
 
 void dLSM_writebatch_delete(dLSM_writebatch_t* b, const char* key,
-                               size_t klen) {
+                            size_t klen) {
   b->rep.Delete(Slice(key, klen));
 }
 
 void dLSM_writebatch_iterate(const dLSM_writebatch_t* b, void* state,
-                                void (*put)(void*, const char* k, size_t klen,
-                                            const char* v, size_t vlen),
-                                void (*deleted)(void*, const char* k,
-                                                size_t klen)) {
+                             void (*put)(void*, const char* k, size_t klen,
+                                         const char* v, size_t vlen),
+                             void (*deleted)(void*, const char* k,
+                                             size_t klen)) {
   class H : public WriteBatch::Handler {
    public:
     void* state_;
@@ -364,7 +355,7 @@ void dLSM_writebatch_iterate(const dLSM_writebatch_t* b, void* state,
 }
 
 void dLSM_writebatch_append(dLSM_writebatch_t* destination,
-                               const dLSM_writebatch_t* source) {
+                            const dLSM_writebatch_t* source) {
   destination->rep.Append(source->rep);
 }
 
@@ -372,13 +363,12 @@ dLSM_options_t* dLSM_options_create() { return new dLSM_options_t; }
 
 void dLSM_options_destroy(dLSM_options_t* options) { delete options; }
 
-void dLSM_options_set_comparator(dLSM_options_t* opt,
-                                    dLSM_comparator_t* cmp) {
+void dLSM_options_set_comparator(dLSM_options_t* opt, dLSM_comparator_t* cmp) {
   opt->rep.comparator = cmp;
 }
 
 void dLSM_options_set_filter_policy(dLSM_options_t* opt,
-                                       dLSM_filterpolicy_t* policy) {
+                                    dLSM_filterpolicy_t* policy) {
   opt->rep.filter_policy = policy;
 }
 
@@ -462,9 +452,7 @@ dLSM_filterpolicy_t* dLSM_filterpolicy_create(
   return result;
 }
 
-void dLSM_filterpolicy_destroy(dLSM_filterpolicy_t* filter) {
-  delete filter;
-}
+void dLSM_filterpolicy_destroy(dLSM_filterpolicy_t* filter) { delete filter; }
 
 dLSM_filterpolicy_t* dLSM_filterpolicy_create_bloom(int bits_per_key) {
   // Make a dLSM_filterpolicy_t, but override all of its methods so
@@ -476,7 +464,7 @@ dLSM_filterpolicy_t* dLSM_filterpolicy_create_bloom(int bits_per_key) {
     ~Wrapper() { delete rep_; }
     const char* Name() const { return rep_->Name(); }
     void CreateFilter(const Slice* keys, int n, std::string* dst) const {
-//      return rep_->CreateFilter(keys, n, dst);
+      //      return rep_->CreateFilter(keys, n, dst);
     }
     bool KeyMayMatch(const Slice& key, const Slice& filter) const {
       return rep_->KeyMayMatch(key, filter);
@@ -491,14 +479,11 @@ dLSM_filterpolicy_t* dLSM_filterpolicy_create_bloom(int bits_per_key) {
   return wrapper;
 }
 
-dLSM_readoptions_t* dLSM_readoptions_create() {
-  return new dLSM_readoptions_t;
-}
+dLSM_readoptions_t* dLSM_readoptions_create() { return new dLSM_readoptions_t; }
 
 void dLSM_readoptions_destroy(dLSM_readoptions_t* opt) { delete opt; }
 
-void dLSM_readoptions_set_verify_checksums(dLSM_readoptions_t* opt,
-                                              uint8_t v) {
+void dLSM_readoptions_set_verify_checksums(dLSM_readoptions_t* opt, uint8_t v) {
   opt->rep.verify_checksums = v;
 }
 
@@ -507,7 +492,7 @@ void dLSM_readoptions_set_fill_cache(dLSM_readoptions_t* opt, uint8_t v) {
 }
 
 void dLSM_readoptions_set_snapshot(dLSM_readoptions_t* opt,
-                                      const dLSM_snapshot_t* snap) {
+                                   const dLSM_snapshot_t* snap) {
   opt->rep.snapshot = (snap ? snap->rep : nullptr);
 }
 

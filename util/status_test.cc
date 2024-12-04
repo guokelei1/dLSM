@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "gtest/gtest.h"
 #include "dLSM/slice.h"
+
+#include "gtest/gtest.h"
 
 namespace dLSM {
 

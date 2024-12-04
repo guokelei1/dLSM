@@ -15,8 +15,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "util/autovector.h"
 #include "port/port.h"
+#include "util/autovector.h"
 
 namespace dLSM {
 // Cleanup function that will be called for a stored thread local
@@ -96,4 +96,4 @@ class ThreadLocalPtr {
   const uint32_t id_;
 };
 
-}
+}  // namespace dLSM

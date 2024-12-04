@@ -13,7 +13,8 @@
 #pragma once
 #include <cerrno>
 #include <cstddef>
-//#include "rocksdb/write_buffer_manager.h"
+#include <atomic>
+// #include "rocksdb/write_buffer_manager.h"
 
 namespace dLSM {
 
@@ -48,10 +49,10 @@ class AllocTracker {
   bool is_freed() const { return false; }
 
  private:
-//  WriteBufferManager* write_buffer_manager_;
+  //  WriteBufferManager* write_buffer_manager_;
   std::atomic<size_t> bytes_allocated_;
   bool done_allocating_;
   bool freed_;
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

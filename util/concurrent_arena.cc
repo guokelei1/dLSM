@@ -8,7 +8,9 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "util/concurrent_arena.h"
+
 #include <thread>
+
 #include "port/port.h"
 #include "util/random.h"
 
@@ -31,25 +33,25 @@ const size_t kMaxShardBlockSize = size_t{128 * 1024};
 ConcurrentArena::ConcurrentArena(size_t block_size, AllocTracker* tracker,
                                  size_t huge_page_size)
     : shard_block_size_(std::min(kMaxShardBlockSize, block_size / 8)),
-//      shards_(),
+      //      shards_(),
       arena_(block_size, tracker, huge_page_size) {
-//  thread_local_shard = 0;
+  //  thread_local_shard = 0;
   Fixup();
 }
 ConcurrentArena::~ConcurrentArena() {
-  for(auto iter : Threadlocal_Shardmap){
+  for (auto iter : Threadlocal_Shardmap) {
     delete iter.second;
   }
 }
 
-//ConcurrentArena::Shard* ConcurrentArena::Repick() {
-//  auto shard_and_index = shards_.AccessElementAndIndex();
-//#ifdef ROCKSDB_SUPPORT_THREAD_LOCAL
-//  // even if we are cpu 0, use a non-zero tls_cpuid so we can tell we
-//  // have repicked
-//  tls_cpuid = shard_and_index.second | shards_.Size();
-//#endif
-//  return shard_and_index.first;
-//}
+// ConcurrentArena::Shard* ConcurrentArena::Repick() {
+//   auto shard_and_index = shards_.AccessElementAndIndex();
+// #ifdef ROCKSDB_SUPPORT_THREAD_LOCAL
+//   // even if we are cpu 0, use a non-zero tls_cpuid so we can tell we
+//   // have repicked
+//   tls_cpuid = shard_and_index.second | shards_.Size();
+// #endif
+//   return shard_and_index.first;
+// }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

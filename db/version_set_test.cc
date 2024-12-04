@@ -4,9 +4,10 @@
 
 #include "db/version_set.h"
 
-#include "gtest/gtest.h"
 #include "util/logging.h"
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 namespace dLSM {
 
@@ -194,8 +195,9 @@ class AddBoundaryInputsTest : public testing::Test {
     all_files_.clear();
   }
 
-  RemoteMemTableMetaData* CreateFileMetaData(uint64_t number, InternalKey smallest,
-                                   InternalKey largest) {
+  RemoteMemTableMetaData* CreateFileMetaData(uint64_t number,
+                                             InternalKey smallest,
+                                             InternalKey largest) {
     RemoteMemTableMetaData* f = new RemoteMemTableMetaData();
     f->number = number;
     f->smallest = smallest;

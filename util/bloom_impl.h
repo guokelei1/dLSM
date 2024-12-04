@@ -8,14 +8,15 @@
 // supports concurrent write.)
 
 #pragma once
+#include <cmath>
 #include <stddef.h>
 #include <stdint.h>
-#include <cmath>
 
 #include "dLSM/slice.h"
+
 #include "port/port_posix.h"
-#include "util/hash.h"
 #include "util/fastrange.h"
+#include "util/hash.h"
 #ifdef HAVE_AVX2
 #include <immintrin.h>
 #endif
@@ -34,10 +35,10 @@ class BloomMath {
     return std::pow(1.0 - std::exp(-num_probes / bits_per_key), num_probes);
   }
 
-  // False positive rate of a "blocked"/"shareded"/"table_cache-local" Bloom filter,
-  // for given ratio of filter memory bits to added keys, number of probes per
-  // operation (all within the given block or table_cache line size), and block or
-  // table_cache line size.
+  // False positive rate of a "blocked"/"shareded"/"table_cache-local" Bloom
+  // filter, for given ratio of filter memory bits to added keys, number of
+  // probes per operation (all within the given block or table_cache line size),
+  // and block or table_cache line size.
   static double CacheLocalFpRate(double bits_per_key, int num_probes,
                                  int cache_line_bits) {
     double keys_per_cache_line = cache_line_bits / bits_per_key;
@@ -93,14 +94,15 @@ class BloomMath {
 //
 // Most other SIMD Bloom implementations sacrifice flexibility and/or
 // accuracy by requiring num_probes to be a power of two and restricting
-// where each probe can occur in a table_cache line. This implementation sacrifices
-// SIMD-optimization for add (might still be possible, especially with AVX512)
-// in favor of allowing any num_probes, not crossing table_cache line boundary,
-// and accuracy close to theoretical best accuracy for a table_cache-local Bloom.
-// E.g. theoretical best for 10 bits/key, num_probes=6, and 512-bit bucket
-// (Intel table_cache line size) is 0.9535% FP rate. This implementation yields
-// about 0.957%. (Compare to LegacyLocalityBloomImpl<false> at 1.138%, or
-// about 0.951% for 1024-bit buckets, table_cache line size for some ARM CPUs.)
+// where each probe can occur in a table_cache line. This implementation
+// sacrifices SIMD-optimization for add (might still be possible, especially
+// with AVX512) in favor of allowing any num_probes, not crossing table_cache
+// line boundary, and accuracy close to theoretical best accuracy for a
+// table_cache-local Bloom. E.g. theoretical best for 10 bits/key, num_probes=6,
+// and 512-bit bucket (Intel table_cache line size) is 0.9535% FP rate. This
+// implementation yields about 0.957%. (Compare to
+// LegacyLocalityBloomImpl<false> at 1.138%, or about 0.951% for 1024-bit
+// buckets, table_cache line size for some ARM CPUs.)
 //
 // This implementation can use a 32-bit hash (let h2 be h1 * 0x9e3779b9) or
 // a 64-bit hash (split into two uint32s). With many millions of keys, the
@@ -112,29 +114,27 @@ class BloomMath {
 // Despite accepting a 64-bit hash, this implementation uses 32-bit fastrange
 // to pick a table_cache line, which can be faster than 64-bit in some cases.
 // This only hurts accuracy as you get into 10s of GB for a single filter,
-// and accuracy abruptly breaks down at 256GB (2^32 table_cache lines). Switch to
-// 64-bit fastrange if you need filters so big. ;)
+// and accuracy abruptly breaks down at 256GB (2^32 table_cache lines). Switch
+// to 64-bit fastrange if you need filters so big. ;)
 //
 // Using only a 32-bit input hash within each table_cache line has negligible
-// impact for any reasonable table_cache line / bucket size, for arbitrary filter
-// size, and potentially saves intermediate data size in some cases vs.
+// impact for any reasonable table_cache line / bucket size, for arbitrary
+// filter size, and potentially saves intermediate data size in some cases vs.
 // tracking full 64 bits. (Even in an implementation using 64-bit arithmetic
 // to generate indices, I might do the same, as a single multiplication
 // suffices to generate a sufficiently mixed 64 bits from 32 bits.)
 //
-// This implementation is currently tied to Intel table_cache line size, 64 bytes ==
-// 512 bits. If there's sufficient demand for other table_cache line sizes, this is
-// a pretty good implementation to extend, but slight performance enhancements
-// are possible with an alternate implementation (probably not very compatible
-// with SIMD):
-// (1) Use rotation in addition to multiplication for remixing
-// (like murmur hash). (Using multiplication alone *slightly* hurts accuracy
-// because lower bits never depend on original upper bits.)
-// (2) Extract more than one bit index from each re-mix. (Only if rotation
-// or similar is part of remix, because otherwise you're making the
-// multiplication-only problem worse.)
-// (3) Re-mix full 64 bit hash, to get maximum number of bit indices per
-// re-mix.
+// This implementation is currently tied to Intel table_cache line size, 64
+// bytes == 512 bits. If there's sufficient demand for other table_cache line
+// sizes, this is a pretty good implementation to extend, but slight performance
+// enhancements are possible with an alternate implementation (probably not very
+// compatible with SIMD): (1) Use rotation in addition to multiplication for
+// remixing (like murmur hash). (Using multiplication alone *slightly* hurts
+// accuracy because lower bits never depend on original upper bits.) (2) Extract
+// more than one bit index from each re-mix. (Only if rotation or similar is
+// part of remix, because otherwise you're making the multiplication-only
+// problem worse.) (3) Re-mix full 64 bit hash, to get maximum number of bit
+// indices per re-mix.
 //
 class FastLocalBloomImpl {
  public:
@@ -193,13 +193,13 @@ class FastLocalBloomImpl {
   }
 
   static inline void AddHash(uint32_t h1, uint32_t h2, uint32_t len_bytes,
-                             int num_probes, char *data) {
+                             int num_probes, char* data) {
     uint32_t bytes_to_cache_line = FastRange32(len_bytes >> 6, h1) << 6;
     AddHashPrepared(h2, num_probes, data + bytes_to_cache_line);
   }
 
   static inline void AddHashPrepared(uint32_t h2, int num_probes,
-                                     char *data_at_cache_line) {
+                                     char* data_at_cache_line) {
     uint32_t h = h2;
     for (int i = 0; i < num_probes; ++i, h *= uint32_t{0x9e3779b9}) {
       // 9-bit address within 512 bit table_cache line
@@ -209,8 +209,8 @@ class FastLocalBloomImpl {
   }
 
   static inline void PrepareHash(uint32_t h1, uint32_t len_bytes,
-                                 const char *data,
-                                 uint32_t /*out*/ *byte_offset) {
+                                 const char* data,
+                                 uint32_t /*out*/* byte_offset) {
     uint32_t bytes_to_cache_line = FastRange32(len_bytes >> 6, h1) << 6;
     PREFETCH(data + bytes_to_cache_line, 0 /* rw */, 1 /* locality */);
     PREFETCH(data + bytes_to_cache_line + 63, 0 /* rw */, 1 /* locality */);
@@ -218,13 +218,13 @@ class FastLocalBloomImpl {
   }
 
   static inline bool HashMayMatch(uint32_t h1, uint32_t h2, uint32_t len_bytes,
-                                  int num_probes, const char *data) {
+                                  int num_probes, const char* data) {
     uint32_t bytes_to_cache_line = FastRange32(len_bytes >> 6, h1) << 6;
     return HashMayMatchPrepared(h2, num_probes, data + bytes_to_cache_line);
   }
 
   static inline bool HashMayMatchPrepared(uint32_t h2, int num_probes,
-                                          const char *data_at_cache_line) {
+                                          const char* data_at_cache_line) {
     uint32_t h = h2;
 #ifdef HAVE_AVX2
     int rem_probes = num_probes;
@@ -271,9 +271,10 @@ class FastLocalBloomImpl {
       //                            word_addresses,
       //                            /*bytes / i32*/ 4);
       // END Option 1
-      // Potentially unaligned as we're not *always* table_cache-aligned -> loadu
-      const __m256i *mm_data =
-          reinterpret_cast<const __m256i *>(data_at_cache_line);
+      // Potentially unaligned as we're not *always* table_cache-aligned ->
+      // loadu
+      const __m256i* mm_data =
+          reinterpret_cast<const __m256i*>(data_at_cache_line);
       __m256i lower = _mm256_loadu_si256(mm_data);
       __m256i upper = _mm256_loadu_si256(mm_data + 1);
       // Option 2: AVX512VL permute hack
@@ -357,7 +358,7 @@ class LegacyNoLocalityBloomImpl {
   }
 
   static inline void AddHash(uint32_t h, uint32_t total_bits, int num_probes,
-                             char *data) {
+                             char* data) {
     const uint32_t delta = (h >> 17) | (h << 15);  // Rotate right 17 bits
     for (int i = 0; i < num_probes; i++) {
       const uint32_t bitpos = h % total_bits;
@@ -367,7 +368,7 @@ class LegacyNoLocalityBloomImpl {
   }
 
   static inline bool HashMayMatch(uint32_t h, uint32_t total_bits,
-                                  int num_probes, const char *data) {
+                                  int num_probes, const char* data) {
     const uint32_t delta = (h >> 17) | (h << 15);  // Rotate right 17 bits
     for (int i = 0; i < num_probes; i++) {
       const uint32_t bitpos = h % total_bits;
@@ -388,9 +389,9 @@ class LegacyNoLocalityBloomImpl {
 //
 // When ExtraRotates is false, this implementation is notably deficient in
 // accuracy. Specifically, it uses double hashing with a 1/512 chance of the
-// increment being zero (when table_cache line size is 512 bits). Thus, there's a
-// 1/512 chance of probing only one index, which we'd expect to incur about
-// a 1/2 * 1/512 or absolute 0.1% FP rate penalty. More detail at
+// increment being zero (when table_cache line size is 512 bits). Thus, there's
+// a 1/512 chance of probing only one index, which we'd expect to incur about a
+// 1/2 * 1/512 or absolute 0.1% FP rate penalty. More detail at
 // https://github.com/facebook/rocksdb/issues/4120
 //
 // DO NOT REUSE
@@ -408,8 +409,9 @@ class LegacyLocalityBloomImpl {
   // reasonable warnings / user feedback, not for making functional decisions.
   static double EstimatedFpRate(size_t keys, size_t bytes, int num_probes) {
     double bits_per_key = 8.0 * bytes / keys;
-    double filter_rate = BloomMath::CacheLocalFpRate(bits_per_key, num_probes,
-                                                     /*table_cache line bits*/ 512);
+    double filter_rate =
+        BloomMath::CacheLocalFpRate(bits_per_key, num_probes,
+                                    /*table_cache line bits*/ 512);
     if (!ExtraRotates) {
       // Good estimate of impact of flaw in index computation.
       // Adds roughly 0.002 around 50 bits/key and 0.001 around 100 bits/key.
@@ -425,10 +427,10 @@ class LegacyLocalityBloomImpl {
   }
 
   static inline void AddHash(uint32_t h, uint32_t num_lines, int num_probes,
-                             char *data, int log2_cache_line_bytes) {
+                             char* data, int log2_cache_line_bytes) {
     const int log2_cache_line_bits = log2_cache_line_bytes + 3;
 
-    char *data_at_offset =
+    char* data_at_offset =
         data + (GetLine(h, num_lines) << log2_cache_line_bytes);
     const uint32_t delta = (h >> 17) | (h << 15);
     for (int i = 0; i < num_probes; ++i) {
@@ -443,8 +445,8 @@ class LegacyLocalityBloomImpl {
   }
 
   static inline void PrepareHashMayMatch(uint32_t h, uint32_t num_lines,
-                                         const char *data,
-                                         uint32_t /*out*/ *byte_offset,
+                                         const char* data,
+                                         uint32_t /*out*/* byte_offset,
                                          int log2_cache_line_bytes) {
     uint32_t b = GetLine(h, num_lines) << log2_cache_line_bytes;
     PREFETCH(data + b, 0 /* rw */, 1 /* locality */);
@@ -454,14 +456,14 @@ class LegacyLocalityBloomImpl {
   }
 
   static inline bool HashMayMatch(uint32_t h, uint32_t num_lines,
-                                  int num_probes, const char *data,
+                                  int num_probes, const char* data,
                                   int log2_cache_line_bytes) {
     uint32_t b = GetLine(h, num_lines) << log2_cache_line_bytes;
     return HashMayMatchPrepared(h, num_probes, data + b, log2_cache_line_bytes);
   }
 
   static inline bool HashMayMatchPrepared(uint32_t h, int num_probes,
-                                          const char *data_at_offset,
+                                          const char* data_at_offset,
                                           int log2_cache_line_bytes) {
     const int log2_cache_line_bits = log2_cache_line_bytes + 3;
 
@@ -481,4 +483,4 @@ class LegacyLocalityBloomImpl {
   }
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

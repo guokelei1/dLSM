@@ -15,6 +15,7 @@
 #include <string>
 
 #include "dLSM/slice.h"
+
 #include "port/port.h"
 
 namespace dLSM {
@@ -37,11 +38,11 @@ void PutLengthPrefixedSlice(std::string* dst, const Slice& value);
 bool GetVarint32(Slice* input, uint32_t* value);
 bool GetVarint64(Slice* input, uint64_t* value);
 bool GetLengthPrefixedSlice(Slice* input, Slice* result);
-//Slice GetLengthPrefixedSlice(const char* data);
-// Pointer-based variants of GetVarint...  These either store a value
-// in *v and return a pointer just past the parsed value, or return
-// nullptr on error.  These routines only look at bytes in the range
-// [p..limit-1]
+// Slice GetLengthPrefixedSlice(const char* data);
+//  Pointer-based variants of GetVarint...  These either store a value
+//  in *v and return a pointer just past the parsed value, or return
+//  nullptr on error.  These routines only look at bytes in the range
+//  [p..limit-1]
 const char* GetVarint32Ptr(const char* p, const char* limit, uint32_t* v);
 const char* GetVarint64Ptr(const char* p, const char* limit, uint64_t* v);
 
@@ -93,10 +94,10 @@ inline uint32_t DecodeFixed32(const char* ptr) {
     memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
     return result;
   } else {
-    return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[0])))
-    | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 8)
-    | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 16)
-    | (static_cast<uint32_t>(static_cast<unsigned char>(ptr[3])) << 24));
+    return ((static_cast<uint32_t>(static_cast<unsigned char>(ptr[0]))) |
+            (static_cast<uint32_t>(static_cast<unsigned char>(ptr[1])) << 8) |
+            (static_cast<uint32_t>(static_cast<unsigned char>(ptr[2])) << 16) |
+            (static_cast<uint32_t>(static_cast<unsigned char>(ptr[3])) << 24));
   }
 }
 

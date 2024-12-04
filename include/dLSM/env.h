@@ -20,6 +20,7 @@
 
 #include "dLSM/export.h"
 #include "dLSM/status.h"
+
 #include "util/ThreadPool.h"
 #include "util/rdma.h"
 
@@ -199,7 +200,8 @@ class dLSM_EXPORT Env {
   // I.e., the caller may not assume that background work items are
   // serialized.
   virtual void Schedule(void (*function)(void* arg), void* arg) = 0;
-  virtual void Schedule(void (*function)(void* arg), void* arg, ThreadPoolType type) = 0;
+  virtual void Schedule(void (*function)(void* arg), void* arg,
+                        ThreadPoolType type) = 0;
   virtual unsigned int Queue_Length_Quiry(ThreadPoolType type);
   virtual void JoinAllThreads(bool wait_for_jobs_to_complete) = 0;
   // Start a new thread, invoking "function(arg)" within the new thread.
@@ -221,8 +223,8 @@ class dLSM_EXPORT Env {
 
   // Sleep/delay the thread for the prescribed number of micro-seconds.
   virtual void SleepForMicroseconds(int micros) = 0;
-  virtual void SetBackgroundThreads(int num,  ThreadPoolType type) = 0;
-//  RDMA_Manager* rdma_mg;
+  virtual void SetBackgroundThreads(int num, ThreadPoolType type) = 0;
+  //  RDMA_Manager* rdma_mg;
   std::shared_ptr<RDMA_Manager> rdma_mg;
   bool initialized = false;
 };
@@ -332,11 +334,11 @@ void Log(Logger* info_log, const char* format, ...)
 
 // A utility routine: write "data" to the named file.
 dLSM_EXPORT Status WriteStringToFile(Env* env, const Slice& data,
-                                        const std::string& fname);
+                                     const std::string& fname);
 
 // A utility routine: read contents of named file into *data
 dLSM_EXPORT Status ReadFileToString(Env* env, const std::string& fname,
-                                       std::string* data);
+                                    std::string* data);
 
 // An implementation of Env that forwards all calls to another Env.
 // May be useful to clients who wish to override just part of the

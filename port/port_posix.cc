@@ -15,6 +15,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 #include <cpuid.h>
 #endif
+#include <cstdlib>
 #include <errno.h>
 #include <sched.h>
 #include <signal.h>
@@ -24,8 +25,7 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <cstdlib>
-//#include "logging/logging.h"
+// #include "logging/logging.h"
 
 namespace dLSM {
 
@@ -54,23 +54,21 @@ static int PthreadCall(const char* label, int result) {
 }
 
 Mutex::Mutex(bool adaptive) {
-  (void) adaptive;
+  (void)adaptive;
 #ifdef ROCKSDB_PTHREAD_ADAPTIVE_MUTEX
   if (!adaptive) {
     PthreadCall("init mutex", pthread_mutex_init(&mu_, nullptr));
   } else {
     pthread_mutexattr_t mutex_attr;
     PthreadCall("init mutex attr", pthread_mutexattr_init(&mutex_attr));
-    PthreadCall("set mutex attr",
-                pthread_mutexattr_settype(&mutex_attr,
-                                          PTHREAD_MUTEX_ADAPTIVE_NP));
+    PthreadCall("set mutex attr", pthread_mutexattr_settype(
+                                      &mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP));
     PthreadCall("init mutex", pthread_mutex_init(&mu_, &mutex_attr));
-    PthreadCall("destroy mutex attr",
-                pthread_mutexattr_destroy(&mutex_attr));
+    PthreadCall("destroy mutex attr", pthread_mutexattr_destroy(&mutex_attr));
   }
 #else
   PthreadCall("init mutex", pthread_mutex_init(&mu_, nullptr));
-#endif // ROCKSDB_PTHREAD_ADAPTIVE_MUTEX
+#endif  // ROCKSDB_PTHREAD_ADAPTIVE_MUTEX
 }
 
 Mutex::~Mutex() { PthreadCall("destroy mutex", pthread_mutex_destroy(&mu_)); }
@@ -99,9 +97,8 @@ void Mutex::AssertNotHeld() {
   assert(!locked_);
 #endif
 }
-CondVar::CondVar(Mutex* mu)
-    : mu_(mu) {
-    PthreadCall("init cv", pthread_cond_init(&cv_, nullptr));
+CondVar::CondVar(Mutex* mu) : mu_(mu) {
+  PthreadCall("init cv", pthread_cond_init(&cv_, nullptr));
 }
 
 CondVar::~CondVar() { PthreadCall("destroy cv", pthread_cond_destroy(&cv_)); }
@@ -137,9 +134,7 @@ bool CondVar::TimedWait(uint64_t abs_time_us) {
   return false;
 }
 
-void CondVar::Signal() {
-  PthreadCall("signal", pthread_cond_signal(&cv_));
-}
+void CondVar::Signal() { PthreadCall("signal", pthread_cond_signal(&cv_)); }
 
 void CondVar::SignalAll() {
   PthreadCall("broadcast", pthread_cond_broadcast(&cv_));
@@ -149,28 +144,40 @@ RWMutex::RWMutex() {
   PthreadCall("init mutex", pthread_rwlock_init(&mu_, nullptr));
 }
 
-RWMutex::~RWMutex() { PthreadCall("destroy mutex", pthread_rwlock_destroy(&mu_)); }
+RWMutex::~RWMutex() {
+  PthreadCall("destroy mutex", pthread_rwlock_destroy(&mu_));
+}
 
-void RWMutex::ReadLock() { PthreadCall("read lock", pthread_rwlock_rdlock(&mu_)); }
+void RWMutex::ReadLock() {
+  PthreadCall("read lock", pthread_rwlock_rdlock(&mu_));
+}
 
-void RWMutex::WriteLock() { PthreadCall("write lock", pthread_rwlock_wrlock(&mu_)); }
+void RWMutex::WriteLock() {
+  PthreadCall("write lock", pthread_rwlock_wrlock(&mu_));
+}
 
-void RWMutex::ReadUnlock() { PthreadCall("read unlock", pthread_rwlock_unlock(&mu_)); }
+void RWMutex::ReadUnlock() {
+  PthreadCall("read unlock", pthread_rwlock_unlock(&mu_));
+}
 
-void RWMutex::WriteUnlock() { PthreadCall("write unlock", pthread_rwlock_unlock(&mu_)); }
+void RWMutex::WriteUnlock() {
+  PthreadCall("write unlock", pthread_rwlock_unlock(&mu_));
+}
 
 int PhysicalCoreID() {
 #if defined(ROCKSDB_SCHED_GETCPU_PRESENT) && defined(__x86_64__) && \
     (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 22))
-  // sched_getcpu uses VDSO getcpu() syscall since 2.22. I believe Linux offers VDSO
-  // support only on x86_64. This is the fastest/preferred method if available.
+  // sched_getcpu uses VDSO getcpu() syscall since 2.22. I believe Linux offers
+  // VDSO support only on x86_64. This is the fastest/preferred method if
+  // available.
   int cpuno = sched_getcpu();
   if (cpuno < 0) {
     return -1;
   }
   return cpuno;
 #elif defined(__x86_64__) || defined(__i386__)
-  // clang/gcc both provide cpuid.h, which defines __get_cpuid(), for x86_64 and i386.
+  // clang/gcc both provide cpuid.h, which defines __get_cpuid(), for x86_64 and
+  // i386.
   unsigned eax, ebx = 0, ecx, edx;
   if (!__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
     return -1;
@@ -208,11 +215,11 @@ int GetMaxOpenFiles() {
   return -1;
 }
 
-void *cacheline_aligned_alloc(size_t size) {
+void* cacheline_aligned_alloc(size_t size) {
 #if __GNUC__ < 5 && defined(__SANITIZE_ADDRESS__)
   return malloc(size);
-#elif ( _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600 || defined(__APPLE__))
-  void *m;
+#elif (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600 || defined(__APPLE__))
+  void* m;
   errno = posix_memalign(&m, CACHE_LINE_SIZE, size);
   return errno ? nullptr : m;
 #else
@@ -220,9 +227,7 @@ void *cacheline_aligned_alloc(size_t size) {
 #endif
 }
 
-void cacheline_aligned_free(void *memblock) {
-  free(memblock);
-}
+void cacheline_aligned_free(void* memblock) { free(memblock); }
 
 static size_t GetPageSize() {
 #if defined(OS_LINUX) || defined(_SC_PAGESIZE)
@@ -267,6 +272,6 @@ void SetCpuPriority(ThreadId id, CpuPriority priority) {
 }
 
 }  // namespace port
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM
 
 #endif

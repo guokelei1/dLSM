@@ -11,7 +11,7 @@
 #include "db/version_edit.h"
 #include <cstdint>
 #include <string>
-//#include <table/table_memoryside.h>
+// #include <table/table_memoryside.h>
 
 #include "dLSM/cache.h"
 #include "dLSM/table.h"
@@ -47,21 +47,22 @@ class TableCache {
   // non-null, also sets "*tableptr" to point to the Table object
   // underlying the returned iterator, or to nullptr if no Table object
   // underlies the returned iterator.  The returned "*tableptr" object is owned
-  // by the table_cache and should not be deleted, and is valid for as long as the
-  // returned iterator is live.
+  // by the table_cache and should not be deleted, and is valid for as long as
+  // the returned iterator is live.
   Iterator* NewIterator(const ReadOptions& options,
                         std::shared_ptr<RemoteMemTableMetaData> remote_table,
                         Table** tableptr = nullptr);
 #ifdef BYTEADDRESSABLE
   Iterator* NewSEQIterator(const ReadOptions& options,
-                        std::shared_ptr<RemoteMemTableMetaData> remote_table,
-                        Table** tableptr = nullptr);
+                           std::shared_ptr<RemoteMemTableMetaData> remote_table,
+                           Table** tableptr = nullptr);
 #endif
-  Iterator* NewIterator_MemorySide(const ReadOptions& options,
-                        const std::shared_ptr<RemoteMemTableMetaData>& remote_table,
+  Iterator* NewIterator_MemorySide(
+      const ReadOptions& options,
+      const std::shared_ptr<RemoteMemTableMetaData>& remote_table,
       Table_Memory_Side** tableptr = nullptr);
 #ifdef PROCESSANALYSIS
-  static void CleanAll(){
+  static void CleanAll() {
     GetTimeElapseSum = 0;
     GetNum = 0;
     filtered = 0;
@@ -90,8 +91,9 @@ class TableCache {
   void Evict(uint64_t file_number, uint8_t creator_node_id);
 
  private:
-  Status FindTable(const std::shared_ptr<RemoteMemTableMetaData>& Remote_memtable_meta,
-                   Cache::Handle** handle);
+  Status FindTable(
+      const std::shared_ptr<RemoteMemTableMetaData>& Remote_memtable_meta,
+      Cache::Handle** handle);
   Status FindTable_MemorySide(
       const std::shared_ptr<RemoteMemTableMetaData>& Remote_memtable_meta,
       Table_Memory_Side*& table);

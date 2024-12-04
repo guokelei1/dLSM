@@ -12,11 +12,13 @@
 #include <sys/mman.h>
 #endif
 #include <algorithm>
-//#include "logging/logging.h"
+// #include "logging/logging.h"
 #include <malloc.h>
-#include "port/port.h"
+
 #include "dLSM/env.h"
-//#include "test_util/sync_point.h"
+
+#include "port/port.h"
+// #include "test_util/sync_point.h"
 
 namespace dLSM {
 
@@ -46,7 +48,8 @@ Arena::Arena(size_t block_size, AllocTracker* tracker, size_t huge_page_size)
     : kBlockSize(OptimizeBlockSize(block_size)), tracker_(tracker) {
   assert(kBlockSize >= kMinBlockSize && kBlockSize <= kMaxBlockSize &&
          kBlockSize % kAlignUnit == 0);
-//  TEST_SYNC_POINT_CALLBACK("Arena::Arena:0", const_cast<size_t*>(&kBlockSize));
+  //  TEST_SYNC_POINT_CALLBACK("Arena::Arena:0",
+  //  const_cast<size_t*>(&kBlockSize));
   alloc_bytes_remaining_ = sizeof(inline_block_);
   blocks_memory_ += alloc_bytes_remaining_;
   aligned_alloc_ptr_ = inline_block_;
@@ -59,16 +62,16 @@ Arena::Arena(size_t block_size, AllocTracker* tracker, size_t huge_page_size)
 #else
   (void)huge_page_size;
 #endif
-//  if (tracker_ != nullptr) {
-//    tracker_->Allocate(kInlineSize);
-//  }
+  //  if (tracker_ != nullptr) {
+  //    tracker_->Allocate(kInlineSize);
+  //  }
 }
 
 Arena::~Arena() {
-//  if (tracker_ != nullptr) {
-//    assert(tracker_->is_freed());
-//    tracker_->FreeMem();
-//  }
+  //  if (tracker_ != nullptr) {
+  //    assert(tracker_->is_freed());
+  //    tracker_->FreeMem();
+  //  }
   for (const auto& block : blocks_) {
     delete[] block;
   }
@@ -143,9 +146,9 @@ char* Arena::AllocateFromHugePage(size_t bytes) {
   }
   huge_blocks_.back() = MmapInfo(addr, bytes);
   blocks_memory_ += bytes;
-//  if (tracker_ != nullptr) {
-//    tracker_->Allocate(bytes);
-//  }
+  //  if (tracker_ != nullptr) {
+  //    tracker_->Allocate(bytes);
+  //  }
   return reinterpret_cast<char*>(addr);
 #else
   (void)bytes;
@@ -169,7 +172,7 @@ char* Arena::AllocateAligned(size_t bytes, size_t huge_page_size,
     char* addr = AllocateFromHugePage(reserved_size);
     if (addr == nullptr) {
       printf("AllocateAligned fail to allocate huge TLB pages: %s",
-                     strerror(errno));
+             strerror(errno));
       // fail back to malloc
     } else {
       return addr;
@@ -222,11 +225,11 @@ char* Arena::AllocateNewBlock(size_t block_bytes) {
   allocated_size = block_bytes;
 #endif  // ROCKSDB_MALLOC_USABLE_SIZE
   blocks_memory_ += allocated_size;
-//  if (tracker_ != nullptr) {
-//    tracker_->Allocate(allocated_size);
-//  }
+  //  if (tracker_ != nullptr) {
+  //    tracker_->Allocate(allocated_size);
+  //  }
   blocks_.back() = block;
   return block;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

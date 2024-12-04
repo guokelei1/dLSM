@@ -12,7 +12,7 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
                   TableCache* table_cache, Iterator* iter,
                   std::shared_ptr<RemoteMemTableMetaData> meta, IO_type type) {
   Status s;
-//  meta->file_size = 0;
+  //  meta->file_size = 0;
   iter->SeekToFirst();
 
   std::string fname = TableFileName(dbname, meta->number);
@@ -36,14 +36,13 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
     builder->get_dataindexblocks_map(meta->remote_dataindex_mrs);
     builder->get_filter_map(meta->remote_filter_mrs);
 
-
     meta->file_size = 0;
-    for(auto iter : meta->remote_data_mrs){
+    for (auto iter : meta->remote_data_mrs) {
       meta->file_size += iter.second->length;
     }
     assert(builder->FileSize() == meta->file_size);
     delete builder;
-//TOFIX: temporarily disable the verification of index block.
+    // TOFIX: temporarily disable the verification of index block.
 
     if (s.ok()) {
       // Verify that the table is usable
@@ -51,7 +50,7 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
       s = it->status();
 #ifndef NDEBUG
       it->SeekToFirst();
-      while(it->Valid()){
+      while (it->Valid()) {
         it->Next();
       }
 #endif

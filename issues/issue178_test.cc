@@ -7,10 +7,12 @@
 #include <iostream>
 #include <sstream>
 
-#include "gtest/gtest.h"
 #include "dLSM/db.h"
 #include "dLSM/write_batch.h"
+
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 namespace {
 

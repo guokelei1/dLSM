@@ -62,11 +62,11 @@ NOTE: you can only use `FAIL()` in functions that return `void`. See the
 These are for verifying that a piece of code throws (or does not throw) an
 exception of the given type:
 
-Fatal assertion                            | Nonfatal assertion                         | Verifies
------------------------------------------- | ------------------------------------------ | --------
-`ASSERT_THROW(statement, exception_type);` | `EXPECT_THROW(statement, exception_type);` | `statement` throws an exception of the given type
-`ASSERT_ANY_THROW(statement);`             | `EXPECT_ANY_THROW(statement);`             | `statement` throws an exception of any type
-`ASSERT_NO_THROW(statement);`              | `EXPECT_NO_THROW(statement);`              | `statement` doesn't throw any exception
+| Fatal assertion                            | Nonfatal assertion                         | Verifies                                          |
+| ------------------------------------------ | ------------------------------------------ | ------------------------------------------------- |
+| `ASSERT_THROW(statement, exception_type);` | `EXPECT_THROW(statement, exception_type);` | `statement` throws an exception of the given type |
+| `ASSERT_ANY_THROW(statement);`             | `EXPECT_ANY_THROW(statement);`             | `statement` throws an exception of any type       |
+| `ASSERT_NO_THROW(statement);`              | `EXPECT_NO_THROW(statement);`              | `statement` doesn't throw any exception           |
 
 Examples:
 
@@ -248,11 +248,11 @@ predicate do not support streaming to `ostream`, you can instead use the
 following *predicate-formatter assertions* to *fully* customize how the message
 is formatted:
 
-Fatal assertion                                  | Nonfatal assertion                               | Verifies
------------------------------------------------- | ------------------------------------------------ | --------
-`ASSERT_PRED_FORMAT1(pred_format1, val1);`       | `EXPECT_PRED_FORMAT1(pred_format1, val1);`       | `pred_format1(val1)` is successful
-`ASSERT_PRED_FORMAT2(pred_format2, val1, val2);` | `EXPECT_PRED_FORMAT2(pred_format2, val1, val2);` | `pred_format2(val1, val2)` is successful
-`...`                                            | `...`                                            | ...
+| Fatal assertion                                  | Nonfatal assertion                               | Verifies                                 |
+| ------------------------------------------------ | ------------------------------------------------ | ---------------------------------------- |
+| `ASSERT_PRED_FORMAT1(pred_format1, val1);`       | `EXPECT_PRED_FORMAT1(pred_format1, val1);`       | `pred_format1(val1)` is successful       |
+| `ASSERT_PRED_FORMAT2(pred_format2, val1, val2);` | `EXPECT_PRED_FORMAT2(pred_format2, val1, val2);` | `pred_format2(val1, val2)` is successful |
+| `...`                                            | `...`                                            | ...                                      |
 
 The difference between this and the previous group of macros is that instead of
 a predicate, `(ASSERT|EXPECT)_PRED_FORMAT*` take a *predicate-formatter*
@@ -432,10 +432,10 @@ EXPECT_THAT(html_string, MatchesXPath("//a[text()='click here']"));
 
 These assertions test for `HRESULT` success or failure.
 
-Fatal assertion                        | Nonfatal assertion                     | Verifies
--------------------------------------- | -------------------------------------- | --------
-`ASSERT_HRESULT_SUCCEEDED(expression)` | `EXPECT_HRESULT_SUCCEEDED(expression)` | `expression` is a success `HRESULT`
-`ASSERT_HRESULT_FAILED(expression)`    | `EXPECT_HRESULT_FAILED(expression)`    | `expression` is a failure `HRESULT`
+| Fatal assertion                        | Nonfatal assertion                     | Verifies                            |
+| -------------------------------------- | -------------------------------------- | ----------------------------------- |
+| `ASSERT_HRESULT_SUCCEEDED(expression)` | `EXPECT_HRESULT_SUCCEEDED(expression)` | `expression` is a success `HRESULT` |
+| `ASSERT_HRESULT_FAILED(expression)`    | `EXPECT_HRESULT_FAILED(expression)`    | `expression` is a failure `HRESULT` |
 
 The generated output contains the human-readable error message associated with
 the `HRESULT` code returned by `expression`.
@@ -631,12 +631,12 @@ Catching Failures
 
 googletest has the following macros to support death tests:
 
-Fatal assertion                                  | Nonfatal assertion                               | Verifies
------------------------------------------------- | ------------------------------------------------ | --------
-`ASSERT_DEATH(statement, matcher);`              | `EXPECT_DEATH(statement, matcher);`              | `statement` crashes with the given error
-`ASSERT_DEATH_IF_SUPPORTED(statement, matcher);` | `EXPECT_DEATH_IF_SUPPORTED(statement, matcher);` | if death tests are supported, verifies that `statement` crashes with the given error; otherwise verifies nothing
-`ASSERT_DEBUG_DEATH(statement, matcher);`        | `EXPECT_DEBUG_DEATH(statement, matcher);`        | `statement` crashes with the given error **in debug mode**. When not in debug (i.e. `NDEBUG` is defined), this just executes `statement`
-`ASSERT_EXIT(statement, predicate, matcher);`    | `EXPECT_EXIT(statement, predicate, matcher);`    | `statement` exits with the given error, and its exit code matches `predicate`
+| Fatal assertion                                  | Nonfatal assertion                               | Verifies                                                                                                                                 |
+| ------------------------------------------------ | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `ASSERT_DEATH(statement, matcher);`              | `EXPECT_DEATH(statement, matcher);`              | `statement` crashes with the given error                                                                                                 |
+| `ASSERT_DEATH_IF_SUPPORTED(statement, matcher);` | `EXPECT_DEATH_IF_SUPPORTED(statement, matcher);` | if death tests are supported, verifies that `statement` crashes with the given error; otherwise verifies nothing                         |
+| `ASSERT_DEBUG_DEATH(statement, matcher);`        | `EXPECT_DEBUG_DEATH(statement, matcher);`        | `statement` crashes with the given error **in debug mode**. When not in debug (i.e. `NDEBUG` is defined), this just executes `statement` |
+| `ASSERT_EXIT(statement, predicate, matcher);`    | `EXPECT_EXIT(statement, predicate, matcher);`    | `statement` exits with the given error, and its exit code matches `predicate`                                                            |
 
 where `statement` is a statement that is expected to cause the process to die,
 `predicate` is a function or function object that evaluates an integer exit
@@ -764,28 +764,28 @@ others. Below is what we do support (`A` denotes a literal character, period
 (`.`), or a single `\\ ` escape sequence; `x` and `y` denote regular
 expressions.):
 
-Expression | Meaning
----------- | --------------------------------------------------------------
-`c`        | matches any literal character `c`
-`\\d`      | matches any decimal digit
-`\\D`      | matches any character that's not a decimal digit
-`\\f`      | matches `\f`
-`\\n`      | matches `\n`
-`\\r`      | matches `\r`
-`\\s`      | matches any ASCII whitespace, including `\n`
-`\\S`      | matches any character that's not a whitespace
-`\\t`      | matches `\t`
-`\\v`      | matches `\v`
-`\\w`      | matches any letter, `_`, or decimal digit
-`\\W`      | matches any character that `\\w` doesn't match
-`\\c`      | matches any literal character `c`, which must be a punctuation
-`.`        | matches any single character except `\n`
-`A?`       | matches 0 or 1 occurrences of `A`
-`A*`       | matches 0 or many occurrences of `A`
-`A+`       | matches 1 or many occurrences of `A`
-`^`        | matches the beginning of a string (not that of each line)
-`$`        | matches the end of a string (not that of each line)
-`xy`       | matches `x` followed by `y`
+| Expression | Meaning                                                        |
+| ---------- | -------------------------------------------------------------- |
+| `c`        | matches any literal character `c`                              |
+| `\\d`      | matches any decimal digit                                      |
+| `\\D`      | matches any character that's not a decimal digit               |
+| `\\f`      | matches `\f`                                                   |
+| `\\n`      | matches `\n`                                                   |
+| `\\r`      | matches `\r`                                                   |
+| `\\s`      | matches any ASCII whitespace, including `\n`                   |
+| `\\S`      | matches any character that's not a whitespace                  |
+| `\\t`      | matches `\t`                                                   |
+| `\\v`      | matches `\v`                                                   |
+| `\\w`      | matches any letter, `_`, or decimal digit                      |
+| `\\W`      | matches any character that `\\w` doesn't match                 |
+| `\\c`      | matches any literal character `c`, which must be a punctuation |
+| `.`        | matches any single character except `\n`                       |
+| `A?`       | matches 0 or 1 occurrences of `A`                              |
+| `A*`       | matches 0 or many occurrences of `A`                           |
+| `A+`       | matches 1 or many occurrences of `A`                           |
+| `^`        | matches the beginning of a string (not that of each line)      |
+| `$`        | matches the end of a string (not that of each line)            |
+| `xy`       | matches `x` followed by `y`                                    |
 
 To help you determine which capability is available on your system, googletest
 defines macros to govern which regular expression it is using. The macros are:
@@ -1054,9 +1054,9 @@ you want.
 Often people want fatal failures to propagate like exceptions. For that
 googletest offers the following macros:
 
-Fatal assertion                       | Nonfatal assertion                    | Verifies
-------------------------------------- | ------------------------------------- | --------
-`ASSERT_NO_FATAL_FAILURE(statement);` | `EXPECT_NO_FATAL_FAILURE(statement);` | `statement` doesn't generate any new fatal failures in the current thread.
+| Fatal assertion                       | Nonfatal assertion                    | Verifies                                                                   |
+| ------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------- |
+| `ASSERT_NO_FATAL_FAILURE(statement);` | `EXPECT_NO_FATAL_FAILURE(statement);` | `statement` doesn't generate any new fatal failures in the current thread. |
 
 Only failures in the thread that executes the assertion are checked to determine
 the result of this type of assertions. If `statement` creates new threads,
@@ -1360,13 +1360,13 @@ generators*. Here is a summary of them, which are all in the `testing`
 namespace:
 
 
-| Parameter Generator                                                                       | Behavior                                                                                                          |
-| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `Range(begin, end [, step])`                                                              | Yields values `{begin, begin+step, begin+step+step, ...}`. The values do not include `end`. `step` defaults to 1. |
-| `Values(v1, v2, ..., vN)`                                                                 | Yields values `{v1, v2, ..., vN}`.                                                                                |
-| `ValuesIn(container)` and  `ValuesIn(begin,end)`                                          | Yields values from a C-style array, an  STL-style container, or an iterator range `[begin, end)`                  |
-| `Bool()`                                                                                  | Yields sequence `{false, true}`.                                                                                  |
-| `Combine(g1, g2, ..., gN)`                                                                | Yields all combinations (Cartesian product) as std\:\:tuples of the values generated by the `N` generators.       |
+| Parameter Generator                              | Behavior                                                                                                          |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `Range(begin, end [, step])`                     | Yields values `{begin, begin+step, begin+step+step, ...}`. The values do not include `end`. `step` defaults to 1. |
+| `Values(v1, v2, ..., vN)`                        | Yields values `{v1, v2, ..., vN}`.                                                                                |
+| `ValuesIn(container)` and  `ValuesIn(begin,end)` | Yields values from a C-style array, an  STL-style container, or an iterator range `[begin, end)`                  |
+| `Bool()`                                         | Yields sequence `{false, true}`.                                                                                  |
+| `Combine(g1, g2, ..., gN)`                       | Yields all combinations (Cartesian product) as std\:\:tuples of the values generated by the `N` generators.       |
 
 
 For more details, see the comments at the definitions of these functions.

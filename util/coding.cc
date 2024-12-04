@@ -10,8 +10,9 @@
 #include "util/coding.h"
 
 #include <algorithm>
+
 #include "dLSM//slice.h"
-//#include "dLSM/slice_transform.h"
+// #include "dLSM/slice_transform.h"
 
 namespace dLSM {
 
@@ -86,4 +87,4 @@ const char* GetVarint64Ptr(const char* p, const char* limit, uint64_t* value) {
   return nullptr;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

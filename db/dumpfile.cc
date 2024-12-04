@@ -4,19 +4,20 @@
 
 #include "dLSM/dumpfile.h"
 
-#include <cstdio>
-
 #include "db/dbformat.h"
 #include "db/filename.h"
 #include "db/log_reader.h"
 #include "db/version_edit.h"
 #include "db/write_batch_internal.h"
+#include <cstdio>
+
 #include "dLSM/env.h"
 #include "dLSM/iterator.h"
 #include "dLSM/options.h"
 #include "dLSM/status.h"
 #include "dLSM/table.h"
 #include "dLSM/write_batch.h"
+
 #include "util/logging.h"
 
 namespace dLSM {
@@ -157,7 +158,7 @@ Status DumpTable(Env* env, const std::string& fname, WritableFile* dst) {
     // comparator used in this database. However this should not cause
     // problems since we only use Table operations that do not require
     // any comparisons.  In particular, we do not call Seek or Prev.
-//    s = Table::Open(Options(), &table);
+    //    s = Table::Open(Options(), &table);
   }
   if (!s.ok()) {
     delete table;

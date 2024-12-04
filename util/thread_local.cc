@@ -8,9 +8,11 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "util/thread_local.h"
-#include "util/mutexlock.h"
-#include "port/likely.h"
+
 #include <stdlib.h>
+
+#include "port/likely.h"
+#include "util/mutexlock.h"
 
 namespace dLSM {
 
@@ -190,7 +192,7 @@ void NTAPI WinOnThreadExit(PVOID module, DWORD reason, PVOID reserved) {
   }
 }
 
-}  // wintlscleanup
+}  // namespace wintlscleanup
 
 // extern "C" suppresses C++ name mangling so we know the symbol name for the
 // linker /INCLUDE:symbol pragma above.
@@ -264,7 +266,8 @@ ThreadLocalPtr::StaticMeta* ThreadLocalPtr::Instance() {
   // is that thread_local supports dynamic construction and destruction of
   // non-primitive typed variables.  As a result, we can guarantee the
   // destruction order even when the main thread dies before any child threads.
-  // However, thread_local is not supported in all compilers that accept -std=c++11 (e.g., eg Mac with XCode < 8. XCode 8+ supports thread_local).
+  // However, thread_local is not supported in all compilers that accept
+  // -std=c++11 (e.g., eg Mac with XCode < 8. XCode 8+ supports thread_local).
   static ThreadLocalPtr::StaticMeta* inst = new ThreadLocalPtr::StaticMeta();
   return inst;
 }
@@ -532,4 +535,4 @@ void ThreadLocalPtr::Fold(FoldFunc func, void* res) {
   Instance()->Fold(id_, func, res);
 }
 
-}
+}  // namespace dLSM

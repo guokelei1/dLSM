@@ -5,12 +5,15 @@
 #ifndef STORAGE_dLSM_UTIL_TESTUTIL_H_
 #define STORAGE_dLSM_UTIL_TESTUTIL_H_
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "helpers/memenv/memenv.h"
+
 #include "dLSM/env.h"
 #include "dLSM/slice.h"
+
 #include "util/random.h"
+
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace dLSM {
 namespace test {
@@ -19,10 +22,8 @@ MATCHER(IsOK, "") { return arg.ok(); }
 
 // Macros for testing the results of functions that return dLSM::Status or
 // absl::StatusOr<T> (for any type T).
-#define EXPECT_dLSM_OK(expression) \
-  EXPECT_THAT(expression, dLSM::test::IsOK())
-#define ASSERT_dLSM_OK(expression) \
-  ASSERT_THAT(expression, dLSM::test::IsOK())
+#define EXPECT_dLSM_OK(expression) EXPECT_THAT(expression, dLSM::test::IsOK())
+#define ASSERT_dLSM_OK(expression) ASSERT_THAT(expression, dLSM::test::IsOK())
 
 // Returns the random seed used at the start of the current test run.
 inline int RandomSeed() {

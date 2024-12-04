@@ -29,6 +29,7 @@ class SuperVersion;
 class dLSM_EXPORT Snapshot {
  public:
   SuperVersion* sv;
+
  protected:
   virtual ~Snapshot();
 };
@@ -97,8 +98,8 @@ class dLSM_EXPORT DB {
   // The returned iterator should be deleted before this db is deleted.
   virtual Iterator* NewIterator(const ReadOptions& options) = 0;
 #ifdef BYTEADDRESSABLE
-  //Sequential access iterator for byteaddressable iterator, only
-  // support forward direction now.
+  // Sequential access iterator for byteaddressable iterator, only
+  //  support forward direction now.
   virtual Iterator* NewSEQIterator(const ReadOptions& options) {};
 #endif
   // Return a handle to the current DB state.  Iterators created with
@@ -151,8 +152,8 @@ class dLSM_EXPORT DB {
   // Therefore the following call will compact the entire database:
   //    db->CompactRange(nullptr, nullptr);
   virtual void CompactRange(const Slice* begin, const Slice* end) = 0;
-// private:
-//  std::map<Slice, DBImpl*, cmpBySlice> const shards_pool;
+  // private:
+  //  std::map<Slice, DBImpl*, cmpBySlice> const shards_pool;
 };
 
 // Destroy the contents of the specified database.
@@ -160,15 +161,13 @@ class dLSM_EXPORT DB {
 //
 // Note: For backwards compatibility, if DestroyDB is unable to list the
 // database files, Status::OK() will still be returned masking this failure.
-dLSM_EXPORT Status DestroyDB(const std::string& name,
-                                const Options& options);
+dLSM_EXPORT Status DestroyDB(const std::string& name, const Options& options);
 
 // If a DB cannot be opened, you may attempt to call this method to
 // resurrect as much of the contents of the database as possible.
 // Some data may be lost, so be careful when calling this function
 // on a database that contains important information.
-dLSM_EXPORT Status RepairDB(const std::string& dbname,
-                               const Options& options);
+dLSM_EXPORT Status RepairDB(const std::string& dbname, const Options& options);
 
 }  // namespace dLSM
 

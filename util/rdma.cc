@@ -14,7 +14,7 @@ std::atomic<uint64_t> RDMA_Manager::RDMAFindmrElapseSum = 0;
 std::atomic<uint64_t> RDMA_Manager::RDMAMemoryAllocElapseSum = 0;
 std::atomic<uint64_t> RDMA_Manager::ReadCount1 = 0;
 #endif
-//#define R_SIZE 32
+// #define R_SIZE 32
 void UnrefHandle_rdma(void* ptr) { delete static_cast<std::string*>(ptr); }
 void UnrefHandle_qp(void* ptr) {
   if (ptr == nullptr) return;
@@ -37,9 +37,9 @@ void Destroy_mr(void* ptr) {
   ibv_dereg_mr((ibv_mr*)ptr);
   delete (char*)((ibv_mr*)ptr)->addr;
 }
-template<typename T>
-void General_Destroy(void* ptr){
-  delete (T) ptr;
+template <typename T>
+void General_Destroy(void* ptr) {
+  delete (T)ptr;
 }
 /******************************************************************************
 * Function: RDMA_Manager
@@ -56,16 +56,19 @@ RDMA_Manager::RDMA_Manager(config_t config, size_t remote_block_size)
     : total_registered_size(0),
       Table_Size(remote_block_size),
       read_buffer(new ThreadLocalPtr(&Destroy_mr)),
-//      qp_local_write_flush(new ThreadLocalPtr(&UnrefHandle_qp)),
-//      cq_local_write_flush(new ThreadLocalPtr(&UnrefHandle_cq)),
-//      local_write_flush_qp_info(new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)),
-//      qp_local_write_compact(new ThreadLocalPtr(&UnrefHandle_qp)),
-//      cq_local_write_compact(new ThreadLocalPtr(&UnrefHandle_cq)),
-//      local_write_compact_qp_info(new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)),
-//      qp_local_read(new ThreadLocalPtr(&UnrefHandle_qp)),
-//      cq_local_read(new ThreadLocalPtr(&UnrefHandle_cq)),
-//      local_read_qp_info(new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)),
-//      node_id(nodeid),
+      //      qp_local_write_flush(new ThreadLocalPtr(&UnrefHandle_qp)),
+      //      cq_local_write_flush(new ThreadLocalPtr(&UnrefHandle_cq)),
+      //      local_write_flush_qp_info(new
+      //      ThreadLocalPtr(&General_Destroy<registered_qp_config*>)),
+      //      qp_local_write_compact(new ThreadLocalPtr(&UnrefHandle_qp)),
+      //      cq_local_write_compact(new ThreadLocalPtr(&UnrefHandle_cq)),
+      //      local_write_compact_qp_info(new
+      //      ThreadLocalPtr(&General_Destroy<registered_qp_config*>)),
+      //      qp_local_read(new ThreadLocalPtr(&UnrefHandle_qp)),
+      //      cq_local_read(new ThreadLocalPtr(&UnrefHandle_cq)),
+      //      local_read_qp_info(new
+      //      ThreadLocalPtr(&General_Destroy<registered_qp_config*>)),
+      //      node_id(nodeid),
       rdma_config(config)
 //      db_name_(db_name),
 //      file_to_sst_meta_(file_to_sst_meta),
@@ -74,25 +77,25 @@ RDMA_Manager::RDMA_Manager(config_t config, size_t remote_block_size)
 {
   //  assert(read_block_size <table_size);
   res = new resources();
-//  std::string ipString();
-//  struct in_addr inaddr{};
-//  char buf[INET_ADDRSTRLEN];
-//  inet_pton(AF_INET, config.server_name, &inaddr);
-//  node_id = static_cast<uint8_t>(inaddr.s_addr);
-//  qp_local_write_flush->Reset(new QP_Map());
-//  cq_local_write_flush->Reset(new CQ_Map());
-//  qp_local_write_compact->Reset(new QP_Map());
-//  cq_local_write_compact->Reset(new CQ_Map());
-//  qp_local_read->Reset(new QP_Map());
-//  cq_local_read->Reset(new CQ_Map());
-//  local_read_qp_info->Reset(new QP_Info_Map());
-//  local_write_flush_qp_info->Reset(new QP_Info_Map());
-//  local_write_compact_qp_info->Reset(new QP_Info_Map());
-  //Initialize a message memory pool
+  //  std::string ipString();
+  //  struct in_addr inaddr{};
+  //  char buf[INET_ADDRSTRLEN];
+  //  inet_pton(AF_INET, config.server_name, &inaddr);
+  //  node_id = static_cast<uint8_t>(inaddr.s_addr);
+  //  qp_local_write_flush->Reset(new QP_Map());
+  //  cq_local_write_flush->Reset(new CQ_Map());
+  //  qp_local_write_compact->Reset(new QP_Map());
+  //  cq_local_write_compact->Reset(new CQ_Map());
+  //  qp_local_read->Reset(new QP_Map());
+  //  cq_local_read->Reset(new CQ_Map());
+  //  local_read_qp_info->Reset(new QP_Info_Map());
+  //  local_write_flush_qp_info->Reset(new QP_Info_Map());
+  //  local_write_compact_qp_info->Reset(new QP_Info_Map());
+  // Initialize a message memory pool
   Mempool_initialize(Message,
-                     std::max(sizeof(RDMA_Request), sizeof(RDMA_Reply)), 32*std::max(sizeof(RDMA_Request), sizeof(RDMA_Reply)));
-  Mempool_initialize(Version_edit, 1024 * 1024, 32*1024*1024);
-
+                     std::max(sizeof(RDMA_Request), sizeof(RDMA_Reply)),
+                     32 * std::max(sizeof(RDMA_Request), sizeof(RDMA_Reply)));
+  Mempool_initialize(Version_edit, 1024 * 1024, 32 * 1024 * 1024);
 }
 /******************************************************************************
 * Function: ~RDMA_Manager
@@ -121,13 +124,14 @@ RDMA_Manager::~RDMA_Manager() {
     }
     //    local_mem_pool.clear();
   }
-  for(auto iter : dealloc_mr){
+  for (auto iter : dealloc_mr) {
     ibv_dereg_mr(iter.second);
-    //The mr will be deleted in the end.
+    // The mr will be deleted in the end.
   }
   if (!remote_mem_pool.empty()) {
     for (auto p : remote_mem_pool) {
-      delete p;  // remote buffer is not registered on this machine so just delete the structure
+      delete p;  // remote buffer is not registered on this machine so just
+                 // delete the structure
     }
     remote_mem_pool.clear();
   }
@@ -135,12 +139,12 @@ RDMA_Manager::~RDMA_Manager() {
     for (auto it = res->cq_map.begin(); it != res->cq_map.end(); it++) {
       if (ibv_destroy_cq(it->second.first)) {
         fprintf(stderr, "failed to destroy CQ\n");
-      }else{
+      } else {
         delete it->second.first;
       }
-      if (it->second.second!= nullptr && ibv_destroy_cq(it->second.second)){
+      if (it->second.second != nullptr && ibv_destroy_cq(it->second.second)) {
         fprintf(stderr, "failed to destroy CQ\n");
-      }else{
+      } else {
         delete it->second.second;
       }
     }
@@ -148,13 +152,13 @@ RDMA_Manager::~RDMA_Manager() {
     for (auto it = res->qp_map.begin(); it != res->qp_map.end(); it++) {
       if (ibv_destroy_qp(it->second)) {
         fprintf(stderr, "failed to destroy QP\n");
-      }else{
+      } else {
         delete it->second;
       }
-
     }
-  if (!res->qp_main_connection_info.empty()){
-    for(auto it = res->qp_main_connection_info.begin(); it != res->qp_main_connection_info.end(); it++){
+  if (!res->qp_main_connection_info.empty()) {
+    for (auto it = res->qp_main_connection_info.begin();
+         it != res->qp_main_connection_info.end(); it++) {
       delete it->second;
     }
   }
@@ -174,90 +178,88 @@ RDMA_Manager::~RDMA_Manager() {
       }
     }
   for (auto pool : name_to_mem_pool) {
-    for(auto iter : pool.second){
+    for (auto iter : pool.second) {
       delete iter.second;
     }
   }
-  for(auto iter : Remote_Mem_Bitmap){
-    for(auto iter1 : *iter.second){
+  for (auto iter : Remote_Mem_Bitmap) {
+    for (auto iter1 : *iter.second) {
       delete iter1.second;
     }
     delete iter.second;
   }
   delete res;
-  for(auto iter :qp_local_write_flush ){
+  for (auto iter : qp_local_write_flush) {
     delete iter.second;
   }
-  for(auto iter :local_write_flush_qp_info ){
+  for (auto iter : local_write_flush_qp_info) {
     delete iter.second;
   }
-  for(auto iter :qp_local_write_compact ){
+  for (auto iter : qp_local_write_compact) {
     delete iter.second;
   }
-  for(auto iter :cq_local_write_compact ){
+  for (auto iter : cq_local_write_compact) {
     delete iter.second;
   }
-  for(auto iter :local_write_compact_qp_info ){
+  for (auto iter : local_write_compact_qp_info) {
     delete iter.second;
   }
-  for(auto iter :qp_local_read ){
+  for (auto iter : qp_local_read) {
     delete iter.second;
   }
-  for(auto iter :cq_local_read ){
+  for (auto iter : cq_local_read) {
     delete iter.second;
   }
-  for(auto iter :local_read_qp_info ){
+  for (auto iter : local_read_qp_info) {
     delete iter.second;
   }
-  for(auto iter : deallocation_buffers){
+  for (auto iter : deallocation_buffers) {
     delete iter.second;
   }
-  for(auto iter : dealloc_mtx){
+  for (auto iter : dealloc_mtx) {
     delete iter.second;
   }
-  for(auto iter : dealloc_cv){
+  for (auto iter : dealloc_cv) {
     delete iter.second;
   }
-
 }
 bool RDMA_Manager::poll_reply_buffer(RDMA_Reply* rdma_reply) {
   volatile bool* check_byte = &(rdma_reply->received);
-//  size_t counter = 0;
-  while(!*check_byte){
+  //  size_t counter = 0;
+  while (!*check_byte) {
     _mm_clflush(check_byte);
-    asm volatile ("sfence\n" : : );
-    asm volatile ("lfence\n" : : );
-    asm volatile ("mfence\n" : : );
+    asm volatile("sfence\n" : :);
+    asm volatile("lfence\n" : :);
+    asm volatile("mfence\n" : :);
     std::fprintf(stderr, "Polling reply buffer\r");
     std::fflush(stderr);
-//    counter++;
-//    if (counter == 1000000){
-//      printf("Polling not get a result\n");
-//      return false;
-//    }
-
+    //    counter++;
+    //    if (counter == 1000000){
+    //      printf("Polling not get a result\n");
+    //      return false;
+    //    }
   }
   return true;
 }
 /******************************************************************************
-* Function: sock_connect
-*
-* Input
-* servername URL of server to connect to (NULL for server mode)
-* port port of service
-*
-* Output
-* none
-*
-* Returns
-* socket (fd) on success, negative error code on failure
-*
-* Description
-* Connect a socket. If servername is specified a client connection will be
-* initiated to the indicated server and port. Otherwise listen on the
-* indicated port for an incoming connection.
-*
-******************************************************************************/
+ * Function: sock_connect
+ *
+ * Input
+ * servername URL of server to connect to (NULL for server mode)
+ * port port of service
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * socket (fd) on success, negative error code on failure
+ *
+ * Description
+ * Connect a socket. If servername is specified a client connection will be
+ * initiated to the indicated server and port. Otherwise listen on the
+ * indicated port for an incoming connection.
+ *
+ ******************************************************************************/
 int RDMA_Manager::client_sock_connect(const char* servername, int port) {
   struct addrinfo* resolved_addr = NULL;
   struct addrinfo* iterator;
@@ -269,9 +271,9 @@ int RDMA_Manager::client_sock_connect(const char* servername, int port) {
       .ai_flags = AI_PASSIVE, .ai_family = AF_INET, .ai_socktype = SOCK_STREAM};
   if (sprintf(service, "%d", port) < 0) goto sock_connect_exit;
   /* Resolve DNS address, use sockfd as temp storage */
-//  printf("Mark: valgrind socket info1\n");
+  //  printf("Mark: valgrind socket info1\n");
   sockfd = getaddrinfo(servername, service, &hints, &resolved_addr);
-//  printf("Mark: valgrind socket info2\n");
+  //  printf("Mark: valgrind socket info2\n");
   if (sockfd < 0) {
     fprintf(stderr, "%s for %s:%d\n", gai_strerror(sockfd), servername, port);
     goto sock_connect_exit;
@@ -291,7 +293,6 @@ int RDMA_Manager::client_sock_connect(const char* servername, int port) {
         printf("Success to connect to %s\n", servername);
       } else {
         assert(false);
-
       }
     }
 
@@ -311,301 +312,323 @@ sock_connect_exit:
   return sockfd;
 }
 
-//void RDMA_Manager::server_communication_thread(std::string client_ip,
-//                                               int socket_fd) {
-//  printf("A new shared memory thread start\n");
-//  printf("checkpoint1");
-//  char temp_receive[2];
-//  char temp_send[] = "Q";
-//  struct registered_qp_config local_con_data;
-//  struct registered_qp_config remote_con_data;
-//  struct registered_qp_config tmp_con_data;
-//  //  std::string qp_id = "main";
-//  int rc = 0;
+// void RDMA_Manager::server_communication_thread(std::string client_ip,
+//                                                int socket_fd) {
+//   printf("A new shared memory thread start\n");
+//   printf("checkpoint1");
+//   char temp_receive[2];
+//   char temp_send[] = "Q";
+//   struct registered_qp_config local_con_data;
+//   struct registered_qp_config remote_con_data;
+//   struct registered_qp_config tmp_con_data;
+//   //  std::string qp_id = "main";
+//   int rc = 0;
 //
-//  /* exchange using TCP sockets info required to connect QPs */
-//  printf("checkpoint1");
-//  ibv_qp* qp = create_qp(client_ip);
-//  local_con_data.qp_num = htonl(res->qp_map[client_ip]->qp_num);
-//  local_con_data.lid = htons(res->port_attr.lid);
-//  memcpy(local_con_data.gid, &res->my_gid, 16);
-//  printf("checkpoint2");
+//   /* exchange using TCP sockets info required to connect QPs */
+//   printf("checkpoint1");
+//   ibv_qp* qp = create_qp(client_ip);
+//   local_con_data.qp_num = htonl(res->qp_map[client_ip]->qp_num);
+//   local_con_data.lid = htons(res->port_attr.lid);
+//   memcpy(local_con_data.gid, &res->my_gid, 16);
+//   printf("checkpoint2");
 //
-//  fprintf(stdout, "\nLocal LID = 0x%x\n", res->port_attr.lid);
-//  if (sock_sync_data(socket_fd, sizeof(struct registered_qp_config),
-//                     (char*)&local_con_data, (char*)&tmp_con_data) < 0) {
-//    fprintf(stderr, "failed to exchange connection data between sides\n");
-//    rc = 1;
-//  }
-//  remote_con_data.qp_num = ntohl(tmp_con_data.qp_num);
-//  remote_con_data.lid = ntohs(tmp_con_data.lid);
-//  memcpy(remote_con_data.gid, tmp_con_data.gid, 16);
-//  fprintf(stdout, "Remote QP number = 0x%x\n", remote_con_data.qp_num);
-//  fprintf(stdout, "Remote LID = 0x%x\n", remote_con_data.lid);
-//  if (connect_qp(remote_con_data, qp)) {
-//    fprintf(stderr, "failed to connect QPs\n");
-//  }
+//   fprintf(stdout, "\nLocal LID = 0x%x\n", res->port_attr.lid);
+//   if (sock_sync_data(socket_fd, sizeof(struct registered_qp_config),
+//                      (char*)&local_con_data, (char*)&tmp_con_data) < 0) {
+//     fprintf(stderr, "failed to exchange connection data between sides\n");
+//     rc = 1;
+//   }
+//   remote_con_data.qp_num = ntohl(tmp_con_data.qp_num);
+//   remote_con_data.lid = ntohs(tmp_con_data.lid);
+//   memcpy(remote_con_data.gid, tmp_con_data.gid, 16);
+//   fprintf(stdout, "Remote QP number = 0x%x\n", remote_con_data.qp_num);
+//   fprintf(stdout, "Remote LID = 0x%x\n", remote_con_data.lid);
+//   if (connect_qp(remote_con_data, qp)) {
+//     fprintf(stderr, "failed to connect QPs\n");
+//   }
 //
-//  ibv_mr* send_mr;
-//  char* send_buff;
-//  if (!Local_Memory_Register(&send_buff, &send_mr, 1000, std::string())) {
-//    fprintf(stderr, "memory registering failed by size of 0x%x\n", 1000);
-//  }
-//  ibv_mr* recv_mr;
-//  char* recv_buff;
-//  if (!Local_Memory_Register(&recv_buff, &recv_mr, 1000, std::string())) {
-//    fprintf(stderr, "memory registering failed by size of 0x%x\n", 1000);
-//  }
-//  //  post_receive<int>(recv_mr, client_ip);
+//   ibv_mr* send_mr;
+//   char* send_buff;
+//   if (!Local_Memory_Register(&send_buff, &send_mr, 1000, std::string())) {
+//     fprintf(stderr, "memory registering failed by size of 0x%x\n", 1000);
+//   }
+//   ibv_mr* recv_mr;
+//   char* recv_buff;
+//   if (!Local_Memory_Register(&recv_buff, &recv_mr, 1000, std::string())) {
+//     fprintf(stderr, "memory registering failed by size of 0x%x\n", 1000);
+//   }
+//   //  post_receive<int>(recv_mr, client_ip);
 //
-//  post_receive<computing_to_memory_msg>(recv_mr, client_ip);
+//   post_receive<computing_to_memory_msg>(recv_mr, client_ip);
 //
-//  // sync after send & recv buffer creation and receive request posting.
-//  if (sock_sync_data(socket_fd, 1, temp_send,
-//                     temp_receive)) /* just send a dummy char back and forth */
-//  {
-//    fprintf(stderr, "sync error after QPs are were moved to RTS\n");
-//    rc = 1;
-//  }
-//  shutdown(socket_fd, 2);
-//  close(socket_fd);
-//  //  post_send<int>(res->mr_send, client_ip);
-//  ibv_wc wc[3] = {};
-//  //  if(poll_completion(wc, 2, client_ip))
-//  //    printf("The main qp not create correctly");
-//  //  else
-//  //    printf("The main qp not create correctly");
-//  // Computing node and share memory connection succeed.
-//  // Now is the communication through rdma.
-//  computing_to_memory_msg receive_msg_buf;
+//   // sync after send & recv buffer creation and receive request posting.
+//   if (sock_sync_data(socket_fd, 1, temp_send,
+//                      temp_receive)) /* just send a dummy char back and forth
+//                      */
+//   {
+//     fprintf(stderr, "sync error after QPs are were moved to RTS\n");
+//     rc = 1;
+//   }
+//   shutdown(socket_fd, 2);
+//   close(socket_fd);
+//   //  post_send<int>(res->mr_send, client_ip);
+//   ibv_wc wc[3] = {};
+//   //  if(poll_completion(wc, 2, client_ip))
+//   //    printf("The main qp not create correctly");
+//   //  else
+//   //    printf("The main qp not create correctly");
+//   // Computing node and share memory connection succeed.
+//   // Now is the communication through rdma.
+//   computing_to_memory_msg receive_msg_buf;
 //
-//  //  receive_msg_buf = (computing_to_memory_msg*)recv_buff;
-//  //  receive_msg_buf->command = ntohl(receive_msg_buf->command);
-//  //  receive_msg_buf->content.qp_config.qp_num = ntohl(receive_msg_buf->content.qp_config.qp_num);
-//  //  receive_msg_buf->content.qp_config.lid = ntohs(receive_msg_buf->content.qp_config.lid);
-//  //  ibv_wc wc[3] = {};
-//  // TODO: implement a heart beat mechanism.
-//  while (true) {
-//    poll_completion(wc, 1, client_ip);
-//    memcpy(&receive_msg_buf, recv_buff, sizeof(computing_to_memory_msg));
-//    // copy the pointer of receive buf to a new place because
-//    // it is the same with send buff pointer.
-//    if (receive_msg_buf.command == create_mr_) {
-//      std::cout << "create memory region command receive for" << client_ip
-//                << std::endl;
-//      ibv_mr* send_pointer = (ibv_mr*)send_buff;
-//      ibv_mr* mr;
-//      char* buff;
-//      if (!Local_Memory_Register(&buff, &mr, receive_msg_buf.content.mem_size,
-//                                 std::string())) {
-//        fprintf(stderr, "memory registering failed by size of 0x%x\n",
-//                static_cast<unsigned>(receive_msg_buf.content.mem_size));
-//      }
-//      printf("Now the total Registered memory is %zu GB", local_mem_pool.size());
-//      *send_pointer = *mr;
-//      post_receive<computing_to_memory_msg>(recv_mr, client_ip);
-//      post_send<ibv_mr>(
-//          send_mr,
-//          client_ip);  // note here should be the mr point to the send buffer.
-//      poll_completion(wc, 1, client_ip);
-//    } else if (receive_msg_buf.command == create_qp_) {
-//      char gid_str[17];
-//      memset(gid_str, 0, 17);
-//      memcpy(gid_str, receive_msg_buf.content.qp_config.gid, 16);
-//      std::string new_qp_id =
-//          std::string(gid_str) +
-//          std::to_string(receive_msg_buf.content.qp_config.lid) +
-//          std::to_string(receive_msg_buf.content.qp_config.qp_num);
-//      std::cout << "create query pair command receive for" << client_ip
-//                << std::endl;
-//      fprintf(stdout, "Remote QP number=0x%x\n",
-//              receive_msg_buf.content.qp_config.qp_num);
-//      fprintf(stdout, "Remote LID = 0x%x\n",
-//              receive_msg_buf.content.qp_config.lid);
-//      registered_qp_config* send_pointer = (registered_qp_config*)send_buff;
-//      ibv_qp* qp = create_qp(new_qp_id);
-//      if (rdma_config.gid_idx >= 0) {
-//        rc = ibv_query_gid(res->ib_ctx, rdma_config.ib_port,
-//                           rdma_config.gid_idx, &(res->my_gid));
-//        if (rc) {
-//          fprintf(stderr, "could not get gid for port %d, index %d\n",
-//                  rdma_config.ib_port, rdma_config.gid_idx);
-//          return;
-//        }
-//      } else
-//        memset(&(res->my_gid), 0, sizeof(res->my_gid));
-//      /* exchange using TCP sockets info required to connect QPs */
-//      send_pointer->qp_num = res->qp_map[new_qp_id]->qp_num;
-//      send_pointer->lid = res->port_attr.lid;
-//      memcpy(send_pointer->gid, &(res->my_gid), 16);
-//      connect_qp(receive_msg_buf.content.qp_config, qp);
-//      post_receive<computing_to_memory_msg>(recv_mr, client_ip);
-//      post_send<registered_qp_config>(send_mr, client_ip);
-//      poll_completion(wc, 1, client_ip);
-//      //    }else if (receive_msg_buf.command == retrieve_fs_serialized_data){
-//      //      printf("retrieve_fs_serialized_data message received successfully\n"); post_receive(recv_mr,client_ip, 1000);
-//      //      post_send<int>(send_mr,client_ip);
-//      //      // prepare the receive for db name, the name should not exceed 1000byte
-//      //
-//      //      poll_completion(wc, 2, client_ip);
-//      //      std::string dbname;
-//      //      // Here could be some problem.
-//      //      dbname = std::string(recv_buff);
-//      //      std::cout << "retrieve db_name is: " << dbname <<std::endl;
-//      //      ibv_mr* local_data_mr;
-//      //      std::shared_lock<std::shared_mutex> l(fs_image_mutex);
-//      //      if (fs_image.find(dbname)!= fs_image.end()){
-//      //        local_data_mr = fs_image.at(dbname);
-//      //        l.unlock();
-//      //        *(reinterpret_cast<size_t*>(send_buff)) = local_data_mr->length;
-//      //        post_send<size_t>(send_mr,client_ip);
-//      //        post_receive<char>(recv_mr,client_ip);
-//      //        post_send(local_data_mr,client_ip, local_data_mr->length);
-//      //        poll_completion(wc, 3, client_ip);
-//      //      }else{
-//      //        l.unlock();
-//      //        *(reinterpret_cast<size_t*>(send_buff)) = 0;
-//      //        post_receive<computing_to_memory_msg>(recv_mr, client_ip);
-//      //        post_send<size_t>(send_mr,client_ip);
-//      //        poll_completion(wc, 1, client_ip);
-//      //      }
-//      //
-//      //
-//      //    }else if (receive_msg_buf.command == save_fs_serialized_data){
-//      //      printf("save_fs_serialized_data message received successfully\n");
-//      //      int buff_size = receive_msg_buf.content.fs_sync_cmd.data_size;
-//      //      file_type filetype = receive_msg_buf.content.fs_sync_cmd.type;
-//      //
-//      //      char* buff = static_cast<char*>(malloc(buff_size));
-//      //      ibv_mr* local_data_mr;
-//      //      int mr_flags =
-//      //          IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
-//      //      local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff), buff_size, mr_flags); post_receive(local_data_mr,client_ip, buff_size);
-//      //      post_receive<computing_to_memory_msg>(recv_mr, client_ip);
-//      //      post_send<char>(recv_mr,client_ip);
-//      //      poll_completion(wc, 2, client_ip);
-//      //
-//      //      char* temp = static_cast<char*>(local_data_mr->addr);
-//      //      size_t namenumber_net;
-//      //      memcpy(&namenumber_net, temp, sizeof(size_t));
-//      //      size_t namenumber = htonl(namenumber_net);
-//      //      temp = temp + sizeof(size_t);
-//      //
-//      //      char dbname_[namenumber+1];
-//      //      memcpy(dbname_, temp, namenumber);
-//      //      dbname_[namenumber] = '\0';
-//      //      temp = temp + namenumber;
-//      //      std::string db_name = std::string(dbname_);
-//      //      std::cout << "save db_name is: " << db_name <<std::endl;
-//      //      if (fs_image.find(db_name)!= fs_image.end()){
-//      //        void* to_delete = fs_image.at(db_name)->addr;
-//      //        ibv_dereg_mr(fs_image.at(db_name));
-//      //        free(to_delete);
-//      //        fs_image.at(db_name) = local_data_mr;
-//      //      }else{
-//      //        fs_image[db_name] = local_data_mr;
-//      //      }
-//      //
-//      //
-//      //
-//      //
-//      //
-//      ////      break;
-//      //    }else if(receive_msg_buf.command == save_log_serialized_data){
-//      //      printf("retrieve_log_serialized_data message received successfully\n");
-//      //
-//      //      int buff_size = receive_msg_buf.content.fs_sync_cmd.data_size;
-//      //      file_type filetype = receive_msg_buf.content.fs_sync_cmd.type;
-//      //      post_receive(recv_mr,client_ip, 1000);
-//      //
-//      //      post_send<int>(send_mr,client_ip);
-//      //      poll_completion(wc, 2, client_ip);
-//      //
-//      //      std::string dbname;
-//      //      // Here could be some problem.
-//      //      dbname = std::string(recv_buff);
-//      //      std::cout << "retrieve db_name is: " << dbname <<std::endl;
-//      //      ibv_mr* local_data_mr;
-//      //      if (log_image.find(dbname) == log_image.end()){
-//      //        void* buff = malloc(1024*1024);
-//      //        int mr_flags =
-//      //            IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
-//      //        local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff), buff_size, mr_flags); log_image.insert({dbname, local_data_mr});
-//      //      }else{
-//      //        local_data_mr = log_image.at(dbname);
-//      //      }
-//      //      post_receive(local_data_mr, client_ip, buff_size);
-//      //      post_receive<computing_to_memory_msg>(recv_mr, client_ip);
-//      //      post_send<int>(send_mr,client_ip);
-//      //      poll_completion(wc, 2, client_ip);
-//      //
-//      //
-//      //    }else if(receive_msg_buf.command == retrieve_log_serialized_data){
-//      ////      printf("retrieve_log_serialized_data message received successfully\n"); /      post_receive(recv_mr,client_ip, 1000); /      post_send<int>(send_mr,client_ip); /      // prepare the receive for db name, the name should not exceed 1000byte
-//      ////
-//      ////      poll_completion(wc, 2, client_ip);
-//      ////      std::string dbname;
-//      ////      // Here could be some problem.
-//      ////      dbname = std::string(recv_buff);
-//      ////      std::cout << "retrieve db_name is: " << dbname <<std::endl;
-//      ////      ibv_mr* local_data_mr;
-//      ////      std::shared_lock<std::shared_mutex> l(fs_image_mutex);
-//      ////      if (log_image.find(dbname)!= fs_image.end()){
-//      ////        local_data_mr = fs_image.at(dbname);
-//      ////        l.unlock();
-//      ////        *(reinterpret_cast<size_t*>(send_buff)) = local_data_mr->length;
-//      ////        post_send<size_t>(send_mr,client_ip);
-//      ////        post_receive<char>(recv_mr,client_ip);
-//      ////        post_send(local_data_mr,client_ip, local_data_mr->length);
-//      ////        poll_completion(wc, 3, client_ip);
-//      ////      }else{
-//      ////        l.unlock();
-//      ////        *(reinterpret_cast<size_t*>(send_buff)) = 0;
-//      ////        post_receive<computing_to_memory_msg>(recv_mr, client_ip);
-//      ////        post_send<size_t>(send_mr,client_ip);
-//      ////        poll_completion(wc, 1, client_ip);
-//      ////      }
-//    } else {
-//      printf("corrupt message from client.");
-//    }
-//  }
-//  return;
-//  // TODO: Build up a exit method for shared memory side, don't forget to destroy all the RDMA resourses.
-//}
-void RDMA_Manager::compute_message_handling_thread(std::string q_id, uint8_t shard_target_node_id) {
-
+//   //  receive_msg_buf = (computing_to_memory_msg*)recv_buff;
+//   //  receive_msg_buf->command = ntohl(receive_msg_buf->command);
+//   //  receive_msg_buf->content.qp_config.qp_num =
+//   ntohl(receive_msg_buf->content.qp_config.qp_num);
+//   //  receive_msg_buf->content.qp_config.lid =
+//   ntohs(receive_msg_buf->content.qp_config.lid);
+//   //  ibv_wc wc[3] = {};
+//   // TODO: implement a heart beat mechanism.
+//   while (true) {
+//     poll_completion(wc, 1, client_ip);
+//     memcpy(&receive_msg_buf, recv_buff, sizeof(computing_to_memory_msg));
+//     // copy the pointer of receive buf to a new place because
+//     // it is the same with send buff pointer.
+//     if (receive_msg_buf.command == create_mr_) {
+//       std::cout << "create memory region command receive for" << client_ip
+//                 << std::endl;
+//       ibv_mr* send_pointer = (ibv_mr*)send_buff;
+//       ibv_mr* mr;
+//       char* buff;
+//       if (!Local_Memory_Register(&buff, &mr,
+//       receive_msg_buf.content.mem_size,
+//                                  std::string())) {
+//         fprintf(stderr, "memory registering failed by size of 0x%x\n",
+//                 static_cast<unsigned>(receive_msg_buf.content.mem_size));
+//       }
+//       printf("Now the total Registered memory is %zu GB",
+//       local_mem_pool.size()); *send_pointer = *mr;
+//       post_receive<computing_to_memory_msg>(recv_mr, client_ip);
+//       post_send<ibv_mr>(
+//           send_mr,
+//           client_ip);  // note here should be the mr point to the send
+//           buffer.
+//       poll_completion(wc, 1, client_ip);
+//     } else if (receive_msg_buf.command == create_qp_) {
+//       char gid_str[17];
+//       memset(gid_str, 0, 17);
+//       memcpy(gid_str, receive_msg_buf.content.qp_config.gid, 16);
+//       std::string new_qp_id =
+//           std::string(gid_str) +
+//           std::to_string(receive_msg_buf.content.qp_config.lid) +
+//           std::to_string(receive_msg_buf.content.qp_config.qp_num);
+//       std::cout << "create query pair command receive for" << client_ip
+//                 << std::endl;
+//       fprintf(stdout, "Remote QP number=0x%x\n",
+//               receive_msg_buf.content.qp_config.qp_num);
+//       fprintf(stdout, "Remote LID = 0x%x\n",
+//               receive_msg_buf.content.qp_config.lid);
+//       registered_qp_config* send_pointer = (registered_qp_config*)send_buff;
+//       ibv_qp* qp = create_qp(new_qp_id);
+//       if (rdma_config.gid_idx >= 0) {
+//         rc = ibv_query_gid(res->ib_ctx, rdma_config.ib_port,
+//                            rdma_config.gid_idx, &(res->my_gid));
+//         if (rc) {
+//           fprintf(stderr, "could not get gid for port %d, index %d\n",
+//                   rdma_config.ib_port, rdma_config.gid_idx);
+//           return;
+//         }
+//       } else
+//         memset(&(res->my_gid), 0, sizeof(res->my_gid));
+//       /* exchange using TCP sockets info required to connect QPs */
+//       send_pointer->qp_num = res->qp_map[new_qp_id]->qp_num;
+//       send_pointer->lid = res->port_attr.lid;
+//       memcpy(send_pointer->gid, &(res->my_gid), 16);
+//       connect_qp(receive_msg_buf.content.qp_config, qp);
+//       post_receive<computing_to_memory_msg>(recv_mr, client_ip);
+//       post_send<registered_qp_config>(send_mr, client_ip);
+//       poll_completion(wc, 1, client_ip);
+//       //    }else if (receive_msg_buf.command ==
+//       retrieve_fs_serialized_data){
+//       //      printf("retrieve_fs_serialized_data message received
+//       successfully\n"); post_receive(recv_mr,client_ip, 1000);
+//       //      post_send<int>(send_mr,client_ip);
+//       //      // prepare the receive for db name, the name should not exceed
+//       1000byte
+//       //
+//       //      poll_completion(wc, 2, client_ip);
+//       //      std::string dbname;
+//       //      // Here could be some problem.
+//       //      dbname = std::string(recv_buff);
+//       //      std::cout << "retrieve db_name is: " << dbname <<std::endl;
+//       //      ibv_mr* local_data_mr;
+//       //      std::shared_lock<std::shared_mutex> l(fs_image_mutex);
+//       //      if (fs_image.find(dbname)!= fs_image.end()){
+//       //        local_data_mr = fs_image.at(dbname);
+//       //        l.unlock();
+//       //        *(reinterpret_cast<size_t*>(send_buff)) =
+//       local_data_mr->length;
+//       //        post_send<size_t>(send_mr,client_ip);
+//       //        post_receive<char>(recv_mr,client_ip);
+//       //        post_send(local_data_mr,client_ip, local_data_mr->length);
+//       //        poll_completion(wc, 3, client_ip);
+//       //      }else{
+//       //        l.unlock();
+//       //        *(reinterpret_cast<size_t*>(send_buff)) = 0;
+//       //        post_receive<computing_to_memory_msg>(recv_mr, client_ip);
+//       //        post_send<size_t>(send_mr,client_ip);
+//       //        poll_completion(wc, 1, client_ip);
+//       //      }
+//       //
+//       //
+//       //    }else if (receive_msg_buf.command == save_fs_serialized_data){
+//       //      printf("save_fs_serialized_data message received
+//       successfully\n");
+//       //      int buff_size = receive_msg_buf.content.fs_sync_cmd.data_size;
+//       //      file_type filetype = receive_msg_buf.content.fs_sync_cmd.type;
+//       //
+//       //      char* buff = static_cast<char*>(malloc(buff_size));
+//       //      ibv_mr* local_data_mr;
+//       //      int mr_flags =
+//       //          IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+//       IBV_ACCESS_REMOTE_WRITE;
+//       //      local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff),
+//       buff_size, mr_flags); post_receive(local_data_mr,client_ip, buff_size);
+//       //      post_receive<computing_to_memory_msg>(recv_mr, client_ip);
+//       //      post_send<char>(recv_mr,client_ip);
+//       //      poll_completion(wc, 2, client_ip);
+//       //
+//       //      char* temp = static_cast<char*>(local_data_mr->addr);
+//       //      size_t namenumber_net;
+//       //      memcpy(&namenumber_net, temp, sizeof(size_t));
+//       //      size_t namenumber = htonl(namenumber_net);
+//       //      temp = temp + sizeof(size_t);
+//       //
+//       //      char dbname_[namenumber+1];
+//       //      memcpy(dbname_, temp, namenumber);
+//       //      dbname_[namenumber] = '\0';
+//       //      temp = temp + namenumber;
+//       //      std::string db_name = std::string(dbname_);
+//       //      std::cout << "save db_name is: " << db_name <<std::endl;
+//       //      if (fs_image.find(db_name)!= fs_image.end()){
+//       //        void* to_delete = fs_image.at(db_name)->addr;
+//       //        ibv_dereg_mr(fs_image.at(db_name));
+//       //        free(to_delete);
+//       //        fs_image.at(db_name) = local_data_mr;
+//       //      }else{
+//       //        fs_image[db_name] = local_data_mr;
+//       //      }
+//       //
+//       //
+//       //
+//       //
+//       //
+//       ////      break;
+//       //    }else if(receive_msg_buf.command == save_log_serialized_data){
+//       //      printf("retrieve_log_serialized_data message received
+//       successfully\n");
+//       //
+//       //      int buff_size = receive_msg_buf.content.fs_sync_cmd.data_size;
+//       //      file_type filetype = receive_msg_buf.content.fs_sync_cmd.type;
+//       //      post_receive(recv_mr,client_ip, 1000);
+//       //
+//       //      post_send<int>(send_mr,client_ip);
+//       //      poll_completion(wc, 2, client_ip);
+//       //
+//       //      std::string dbname;
+//       //      // Here could be some problem.
+//       //      dbname = std::string(recv_buff);
+//       //      std::cout << "retrieve db_name is: " << dbname <<std::endl;
+//       //      ibv_mr* local_data_mr;
+//       //      if (log_image.find(dbname) == log_image.end()){
+//       //        void* buff = malloc(1024*1024);
+//       //        int mr_flags =
+//       //            IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+//       IBV_ACCESS_REMOTE_WRITE;
+//       //        local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff),
+//       buff_size, mr_flags); log_image.insert({dbname, local_data_mr});
+//       //      }else{
+//       //        local_data_mr = log_image.at(dbname);
+//       //      }
+//       //      post_receive(local_data_mr, client_ip, buff_size);
+//       //      post_receive<computing_to_memory_msg>(recv_mr, client_ip);
+//       //      post_send<int>(send_mr,client_ip);
+//       //      poll_completion(wc, 2, client_ip);
+//       //
+//       //
+//       //    }else if(receive_msg_buf.command ==
+//       retrieve_log_serialized_data){
+//       ////      printf("retrieve_log_serialized_data message received
+//       successfully\n"); /      post_receive(recv_mr,client_ip, 1000); /
+//       post_send<int>(send_mr,client_ip); /      // prepare the receive for db
+//       name, the name should not exceed 1000byte
+//       ////
+//       ////      poll_completion(wc, 2, client_ip);
+//       ////      std::string dbname;
+//       ////      // Here could be some problem.
+//       ////      dbname = std::string(recv_buff);
+//       ////      std::cout << "retrieve db_name is: " << dbname <<std::endl;
+//       ////      ibv_mr* local_data_mr;
+//       ////      std::shared_lock<std::shared_mutex> l(fs_image_mutex);
+//       ////      if (log_image.find(dbname)!= fs_image.end()){
+//       ////        local_data_mr = fs_image.at(dbname);
+//       ////        l.unlock();
+//       ////        *(reinterpret_cast<size_t*>(send_buff)) =
+//       local_data_mr->length;
+//       ////        post_send<size_t>(send_mr,client_ip);
+//       ////        post_receive<char>(recv_mr,client_ip);
+//       ////        post_send(local_data_mr,client_ip, local_data_mr->length);
+//       ////        poll_completion(wc, 3, client_ip);
+//       ////      }else{
+//       ////        l.unlock();
+//       ////        *(reinterpret_cast<size_t*>(send_buff)) = 0;
+//       ////        post_receive<computing_to_memory_msg>(recv_mr, client_ip);
+//       ////        post_send<size_t>(send_mr,client_ip);
+//       ////        poll_completion(wc, 1, client_ip);
+//       ////      }
+//     } else {
+//       printf("corrupt message from client.");
+//     }
+//   }
+//   return;
+//   // TODO: Build up a exit method for shared memory side, don't forget to
+//   destroy all the RDMA resourses.
+// }
+void RDMA_Manager::compute_message_handling_thread(
+    std::string q_id, uint8_t shard_target_node_id) {
   ibv_qp* qp;
   int rc = 0;
 
   ibv_mr* recv_mr;
   int buffer_counter;
-  //TODO: keep the recv mr in rdma manager so that next time we restart
-  // the database we can retrieve from the rdma_mg.
-  if (comm_thread_recv_mrs.find(shard_target_node_id) != comm_thread_recv_mrs.end()){
+  // TODO: keep the recv mr in rdma manager so that next time we restart
+  //  the database we can retrieve from the rdma_mg.
+  if (comm_thread_recv_mrs.find(shard_target_node_id) !=
+      comm_thread_recv_mrs.end()) {
     recv_mr = comm_thread_recv_mrs.at(shard_target_node_id);
     buffer_counter = comm_thread_buffer.at(shard_target_node_id);
-  }else{
+  } else {
     // Some where we need to delete the recv_mr in case of memory leak.
     recv_mr = new ibv_mr[R_SIZE]();
-    for(int i = 0; i<R_SIZE; i++){
+    for (int i = 0; i < R_SIZE; i++) {
       Allocate_Local_RDMA_Slot(recv_mr[i], Message);
     }
 
-    for(int i = 0; i<R_SIZE; i++) {
+    for (int i = 0; i < R_SIZE; i++) {
       post_receive<RDMA_Request>(&recv_mr[i], shard_target_node_id, q_id);
     }
     buffer_counter = 0;
     comm_thread_recv_mrs.insert({shard_target_node_id, recv_mr});
   }
   printf("Start to sync options\n");
-//  sync_option_to_remote(shard_target_node_id);
+  //  sync_option_to_remote(shard_target_node_id);
   ibv_wc wc[3] = {};
   //    RDMA_Request receive_msg_buf;
-//  {
-//    std::unique_lock<std::mutex> lck(superversion_memlist_mtx);
-    main_comm_thread_ready_num.fetch_add(1);
-//    write_stall_cv.notify_one();
-//  }
+  //  {
+  //    std::unique_lock<std::mutex> lck(superversion_memlist_mtx);
+  main_comm_thread_ready_num.fetch_add(1);
+  //    write_stall_cv.notify_one();
+  //  }
   printf("client handling thread\n");
   std::mutex* mtx_imme = mtx_imme_map.at(shard_target_node_id);
   std::atomic<uint32_t>* imm_gen = imm_gen_map.at(shard_target_node_id);
@@ -616,74 +639,76 @@ void RDMA_Manager::compute_message_handling_thread(std::string q_id, uint8_t sha
   while (1) {
     // we can only use try_poll... rather than poll_com.. because we need to
     // make sure the shutting down signal can work.
-    if(try_poll_completions(wc, 1, q_id, false,
-                                      shard_target_node_id) >0){
-      if(wc[0].wc_flags & IBV_WC_WITH_IMM){
-        wc[0].imm_data;// use this to find the correct condition variable.
+    if (try_poll_completions(wc, 1, q_id, false, shard_target_node_id) > 0) {
+      if (wc[0].wc_flags & IBV_WC_WITH_IMM) {
+        wc[0].imm_data;  // use this to find the correct condition variable.
         std::unique_lock<std::mutex> lck(*mtx_imme);
-        // why imme_data not zero? some other thread has overwrite this function.
-        // buffer overflow?
+        // why imme_data not zero? some other thread has overwrite this
+        // function. buffer overflow?
         assert(*imme_data == 0);
         assert(*byte_len == 0);
         *imme_data = wc[0].imm_data;
         *byte_len = wc[0].byte_len;
         cv_imme->notify_all();
         lck.unlock();
-        while (*imme_data != 0 || *byte_len != 0 ){
+        while (*imme_data != 0 || *byte_len != 0) {
           cv_imme->notify_one();
         }
         post_receive<RDMA_Request>(&recv_mr[buffer_counter],
-                                            shard_target_node_id,
-                                            "main");
+                                   shard_target_node_id, "main");
         // increase the buffer index
-        if (buffer_counter== R_SIZE-1 ){
+        if (buffer_counter == R_SIZE - 1) {
           buffer_counter = 0;
-        } else{
+        } else {
           buffer_counter++;
         }
         continue;
       }
       RDMA_Request* receive_msg_buf = new RDMA_Request();
-      memcpy(receive_msg_buf, recv_mr[buffer_counter].addr, sizeof(RDMA_Request));
+      memcpy(receive_msg_buf, recv_mr[buffer_counter].addr,
+             sizeof(RDMA_Request));
       //        printf("Buffer counter %d has been used!\n", buffer_counter);
 
       // copy the pointer of receive buf to a new place because
       // it is the same with send buff pointer.
       if (receive_msg_buf->command == install_version_edit) {
-        ((RDMA_Request*) recv_mr[buffer_counter].addr)->command = invalid_command_;
+        ((RDMA_Request*)recv_mr[buffer_counter].addr)->command =
+            invalid_command_;
         assert(false);
         post_receive<RDMA_Request>(&recv_mr[buffer_counter],
-                                            shard_target_node_id,
-                                            "main");
+                                   shard_target_node_id, "main");
 //        install_version_edit_handler(receive_msg_buf, q_id);
 #ifdef WITHPERSISTENCE
-      } else if(receive_msg_buf->command == persist_unpin_) {
-        //TODO: implement the persistent unpin dispatch machenism
+      } else if (receive_msg_buf->command == persist_unpin_) {
+        // TODO: implement the persistent unpin dispatch machenism
         rdma_mg->post_receive<RDMA_Request>(&recv_mr[buffer_counter], "main");
         auto start = std::chrono::high_resolution_clock::now();
-        Arg_for_handler* argforhandler = new Arg_for_handler{.request=receive_msg_buf,.client_ip = "main"};
-        BGThreadMetadata* thread_pool_args = new BGThreadMetadata{.db = this, .func_args = argforhandler};
-        Unpin_bg_pool_.Schedule(&DBImpl::SSTable_Unpin_Dispatch, thread_pool_args);
+        Arg_for_handler* argforhandler = new Arg_for_handler{
+            .request = receive_msg_buf, .client_ip = "main"};
+        BGThreadMetadata* thread_pool_args =
+            new BGThreadMetadata{.db = this, .func_args = argforhandler};
+        Unpin_bg_pool_.Schedule(&DBImpl::SSTable_Unpin_Dispatch,
+                                thread_pool_args);
         auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-        printf("unpin for %lu files time elapse is %ld",
-               (receive_msg_buf->content.psu.buffer_size-1)/sizeof(uint64_t),
-               duration.count());
+        auto duration =
+            std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+        printf(
+            "unpin for %lu files time elapse is %ld",
+            (receive_msg_buf->content.psu.buffer_size - 1) / sizeof(uint64_t),
+            duration.count());
 #endif
       } else {
         printf("corrupt message from client.");
         break;
       }
       // increase the buffer index
-      if (buffer_counter== R_SIZE-1 ){
+      if (buffer_counter == R_SIZE - 1) {
         buffer_counter = 0;
-      } else{
+      } else {
         buffer_counter++;
       }
     }
     //        rdma_mg->poll_completion(wc, 1, q_id, false);
-
-
   }
 
   //    remote_qp_reset(q_id);
@@ -695,55 +720,50 @@ void RDMA_Manager::compute_message_handling_thread(std::string q_id, uint8_t sha
 }
 void RDMA_Manager::ConnectQPThroughSocket(std::string qp_type, int socket_fd,
                                           uint8_t& target_node_id) {
-
   struct registered_qp_config local_con_data;
   struct registered_qp_config* remote_con_data = new registered_qp_config();
   struct registered_qp_config tmp_con_data;
   //  std::string qp_id = "main";
 
-
   /* exchange using TCP sockets info required to connect QPs */
   printf("checkpoint1");
 
+  bool seperated_cq = true;
+  struct ibv_qp_init_attr qp_init_attr;
+  /* each side will send only one WR, so Completion Queue with 1 entry is enough
+   */
+  int cq_size = 1024;
+  // cq1 send queue, cq2 receive queue
+  ibv_cq* cq1 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
+  ibv_cq* cq2;
+  if (seperated_cq) cq2 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
 
-    bool seperated_cq = true;
-    struct ibv_qp_init_attr qp_init_attr;
-    /* each side will send only one WR, so Completion Queue with 1 entry is enough
-     */
-    int cq_size = 1024;
-    // cq1 send queue, cq2 receive queue
-    ibv_cq* cq1 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
-    ibv_cq* cq2;
-    if (seperated_cq)
-      cq2 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
+  if (!cq1) {
+    fprintf(stderr, "failed to create CQ with %u entries\n", cq_size);
+  }
 
-    if (!cq1) {
-      fprintf(stderr, "failed to create CQ with %u entries\n", cq_size);
-    }
-
-
-
-    /* create the Queue Pair */
-    memset(&qp_init_attr, 0, sizeof(qp_init_attr));
-    qp_init_attr.qp_type = IBV_QPT_RC;
-    qp_init_attr.sq_sig_all = 0;
-    qp_init_attr.send_cq = cq1;
-    if (seperated_cq)
-      qp_init_attr.recv_cq = cq2;
-    else
-      qp_init_attr.recv_cq = cq1;
-    qp_init_attr.cap.max_send_wr = 2500;
-    qp_init_attr.cap.max_recv_wr = 2500;
-    qp_init_attr.cap.max_send_sge = 30;
-    qp_init_attr.cap.max_recv_sge = 30;
-    //  qp_init_attr.cap.max_inline_data = -1;
-    ibv_qp* qp = ibv_create_qp(res->pd, &qp_init_attr);
-    if (!qp) {
-      fprintf(stderr, "failed to create QP\n");
-    }
-    fprintf(stdout, "QP was created, QP number=0x%x\n", qp->qp_num);
-//  Used to be "ibv_qp* qp = create_qp(shard_target_node_id, true, qp_type);", but the
-    // shard_target_node_id is not available so we unwrap the function
+  /* create the Queue Pair */
+  memset(&qp_init_attr, 0, sizeof(qp_init_attr));
+  qp_init_attr.qp_type = IBV_QPT_RC;
+  qp_init_attr.sq_sig_all = 0;
+  qp_init_attr.send_cq = cq1;
+  if (seperated_cq)
+    qp_init_attr.recv_cq = cq2;
+  else
+    qp_init_attr.recv_cq = cq1;
+  qp_init_attr.cap.max_send_wr = 2500;
+  qp_init_attr.cap.max_recv_wr = 2500;
+  qp_init_attr.cap.max_send_sge = 30;
+  qp_init_attr.cap.max_recv_sge = 30;
+  //  qp_init_attr.cap.max_inline_data = -1;
+  ibv_qp* qp = ibv_create_qp(res->pd, &qp_init_attr);
+  if (!qp) {
+    fprintf(stderr, "failed to create QP\n");
+  }
+  fprintf(stdout, "QP was created, QP number=0x%x\n", qp->qp_num);
+  //  Used to be "ibv_qp* qp = create_qp(shard_target_node_id, true, qp_type);",
+  //  but the
+  // shard_target_node_id is not available so we unwrap the function
   local_con_data.qp_num = htonl(qp->qp_num);
   local_con_data.lid = htons(res->port_attr.lid);
   memcpy(local_con_data.gid, &res->my_gid, 16);
@@ -752,7 +772,7 @@ void RDMA_Manager::ConnectQPThroughSocket(std::string qp_type, int socket_fd,
   fprintf(stdout, "\nLocal LID = 0x%x\n", res->port_attr.lid);
 
   if (sock_sync_data(socket_fd, sizeof(struct registered_qp_config),
-      (char*)&local_con_data, (char*)&tmp_con_data) < 0) {
+                     (char*)&local_con_data, (char*)&tmp_con_data) < 0) {
     fprintf(stderr, "failed to exchange connection data between sides\n");
   }
   remote_con_data->qp_num = ntohl(tmp_con_data.qp_num);
@@ -768,30 +788,32 @@ void RDMA_Manager::ConnectQPThroughSocket(std::string qp_type, int socket_fd,
   assert(qp_type != "read_local");
   assert(qp_type != "write_local_compact");
   assert(qp_type != "write_local_flush");
-//  if (qp_type == "read_local" )
-//    ((QP_Info_Map*)local_read_qp_info->Get())->insert({shard_target_node_id, remote_con_data});
-//  //    local_read_qp_info->Reset(remote_con_data);
-//  else if(qp_type == "write_local_compact")
-//    ((QP_Info_Map*)local_write_compact_qp_info->Get())->insert({shard_target_node_id, remote_con_data});
-////    local_write_compact_qp_info->Reset(remote_con_data);
-//  else if(qp_type == "write_local_flush")
-//    ((QP_Info_Map*)local_write_flush_qp_info->Get())->insert({shard_target_node_id, remote_con_data});
-////    local_write_flush_qp_info->Reset(remote_con_data);
-//  else
-    res->qp_main_connection_info.insert({target_node_id,remote_con_data});
+  //  if (qp_type == "read_local" )
+  //    ((QP_Info_Map*)local_read_qp_info->Get())->insert({shard_target_node_id,
+  //    remote_con_data});
+  //  //    local_read_qp_info->Reset(remote_con_data);
+  //  else if(qp_type == "write_local_compact")
+  //    ((QP_Info_Map*)local_write_compact_qp_info->Get())->insert({shard_target_node_id,
+  //    remote_con_data});
+  ////    local_write_compact_qp_info->Reset(remote_con_data);
+  //  else if(qp_type == "write_local_flush")
+  //    ((QP_Info_Map*)local_write_flush_qp_info->Get())->insert({shard_target_node_id,
+  //    remote_con_data});
+  ////    local_write_flush_qp_info->Reset(remote_con_data);
+  //  else
+  res->qp_main_connection_info.insert({target_node_id, remote_con_data});
   l.unlock();
   if (connect_qp(qp, qp_type, target_node_id)) {
     fprintf(stderr, "failed to connect QPs\n");
   }
-
 }
-//    Register the memory through ibv_reg_mr on the local side. this function will be called by both of the server side and client side.
+//    Register the memory through ibv_reg_mr on the local side. this function
+//    will be called by both of the server side and client side.
 bool RDMA_Manager::Local_Memory_Register(char** p2buffpointer,
                                          ibv_mr** p2mrpointer, size_t size,
                                          Chunk_type pool_name) {
   int mr_flags = 0;
-  if (node_id%2 == 1 || pre_allocated_pool.empty()){
-
+  if (node_id % 2 == 1 || pre_allocated_pool.empty()) {
     *p2buffpointer = new char[size];
     if (!*p2buffpointer) {
       fprintf(stderr, "failed to malloc bytes to memory buffer\n");
@@ -800,18 +822,22 @@ bool RDMA_Manager::Local_Memory_Register(char** p2buffpointer,
     memset(*p2buffpointer, 0, size);
 
     /* register the memory buffer */
-    mr_flags =
-        IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
+    mr_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+               IBV_ACCESS_REMOTE_WRITE;
     //  auto start = std::chrono::high_resolution_clock::now();
     *p2mrpointer = ibv_reg_mr(res->pd, *p2buffpointer, size, mr_flags);
     //  auto stop = std::chrono::high_resolution_clock::now();
-    //  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); std::printf("Memory registeration size: %zu time elapse (%ld) us\n", size, duration.count());
+    //  auto duration =
+    //  std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    //  std::printf("Memory registeration size: %zu time elapse (%ld) us\n",
+    //  size, duration.count());
     local_mem_pool.push_back(*p2mrpointer);
     fprintf(stdout,
-            "New MR was registered with addr=%p, lkey=0x%x, rkey=0x%x, flags=0x%x, size=%lu, total registered size is %lu\n",
+            "New MR was registered with addr=%p, lkey=0x%x, rkey=0x%x, "
+            "flags=0x%x, size=%lu, total registered size is %lu\n",
             (*p2mrpointer)->addr, (*p2mrpointer)->lkey, (*p2mrpointer)->rkey,
             mr_flags, size, total_registered_size);
-  }else{
+  } else {
     *p2mrpointer = pre_allocated_pool.back();
     pre_allocated_pool.pop_back();
     *p2buffpointer = (char*)(*p2mrpointer)->addr;
@@ -823,74 +849,77 @@ bool RDMA_Manager::Local_Memory_Register(char** p2buffpointer,
         "ibv_reg_mr failed with mr_flags=0x%x, size = %zu, region num = %zu\n",
         mr_flags, size, local_mem_pool.size());
     return false;
-  } else if(pool_name!= Default) {
-    // if pool name == Default, then no bit map will be created. The registered memory is used for remote compute node RDMA read and write
-    // If chunk size equals 0, which means that this buffer should not be add to Local Bit Map, will not be regulated by the RDMA manager.
+  } else if (pool_name != Default) {
+    // if pool name == Default, then no bit map will be created. The registered
+    // memory is used for remote compute node RDMA read and write If chunk size
+    // equals 0, which means that this buffer should not be add to Local Bit
+    // Map, will not be regulated by the RDMA manager.
 
     int placeholder_num =
         (*p2mrpointer)->length /
         (name_to_chunksize.at(
             pool_name));  // here we supposing the SSTables are 4 megabytes
-    auto* in_use_array = new In_Use_Array(placeholder_num, name_to_chunksize.at(pool_name),
-                              *p2mrpointer);
-    // TODO: Modify it to allocate the memory according to the memory chunk types
+    auto* in_use_array = new In_Use_Array(
+        placeholder_num, name_to_chunksize.at(pool_name), *p2mrpointer);
+    // TODO: Modify it to allocate the memory according to the memory chunk
+    // types
 
     name_to_mem_pool.at(pool_name).insert({(*p2mrpointer)->addr, in_use_array});
-  }
-    else
-      printf("Register memory for computing node\n");
+  } else
+    printf("Register memory for computing node\n");
   total_registered_size = total_registered_size + (*p2mrpointer)->length;
-
 
   return true;
 };
 bool RDMA_Manager::Remote_Memory_Deallocation_Fetch_Buff(
     uint64_t** ptr, size_t size, uint8_t target_node_id) {
   std::unique_lock<std::mutex> lck(*dealloc_mtx.at(target_node_id));
-//  memcpy(deallocation_buffers + top * sizeof(uint64_t), ptr, size);
-  while(top.at(target_node_id) >= REMOTE_DEALLOC_BUFF_SIZE / sizeof(uint64_t) - 128){
+  //  memcpy(deallocation_buffers + top * sizeof(uint64_t), ptr, size);
+  while (top.at(target_node_id) >=
+         REMOTE_DEALLOC_BUFF_SIZE / sizeof(uint64_t) - 128) {
     dealloc_cv.at(target_node_id)->wait(lck);
   }
   *ptr = deallocation_buffers.at(target_node_id) + top.at(target_node_id);
   top[target_node_id] += size;
-  if (top.at(target_node_id) >= REMOTE_DEALLOC_BUFF_SIZE / sizeof(uint64_t) - 128)
+  if (top.at(target_node_id) >=
+      REMOTE_DEALLOC_BUFF_SIZE / sizeof(uint64_t) - 128)
     return true;
   else
     return false;
-
 }
 void RDMA_Manager::Memory_Deallocation_RPC(uint8_t target_node_id) {
   RDMA_Request* send_pointer;
   ibv_mr send_mr = {};
-//  ibv_mr send_mr_ve = {};
+  //  ibv_mr send_mr_ve = {};
 
   ibv_mr receive_mr = {};
   Allocate_Local_RDMA_Slot(send_mr, Message);
-//  Allocate_Local_RDMA_Slot(send_mr_ve, "version_edit");
+  //  Allocate_Local_RDMA_Slot(send_mr_ve, "version_edit");
   Allocate_Local_RDMA_Slot(receive_mr, Message);
   send_pointer = (RDMA_Request*)send_mr.addr;
   send_pointer->command = SSTable_gc;
-  send_pointer->content.gc.buffer_size = top.at(target_node_id) * sizeof(uint64_t);
+  send_pointer->content.gc.buffer_size =
+      top.at(target_node_id) * sizeof(uint64_t);
   send_pointer->buffer = receive_mr.addr;
   send_pointer->rkey = receive_mr.rkey;
   send_pointer->imm_num = 0;
   RDMA_Reply* receive_pointer;
   receive_pointer = (RDMA_Reply*)receive_mr.addr;
-  //Clear the reply buffer for the polling.
+  // Clear the reply buffer for the polling.
   *receive_pointer = {};
-  asm volatile ("sfence\n" : : );
-  asm volatile ("lfence\n" : : );
-  asm volatile ("mfence\n" : : );
+  asm volatile("sfence\n" : :);
+  asm volatile("lfence\n" : :);
+  asm volatile("mfence\n" : :);
   post_send<RDMA_Request>(&send_mr, target_node_id, std::string("main"));
   ibv_wc wc[2] = {};
-  if (poll_completion(wc, 1, std::string("main"), true, target_node_id)){
+  if (poll_completion(wc, 1, std::string("main"), true, target_node_id)) {
     fprintf(stderr, "failed to poll send for edit version edit sync\n");
     return;
   }
-  asm volatile ("sfence\n" : : );
-  asm volatile ("lfence\n" : : );
-  asm volatile ("mfence\n" : : );
-  if(!poll_reply_buffer(receive_pointer)) // poll the receive for 2 entires
+  asm volatile("sfence\n" : :);
+  asm volatile("lfence\n" : :);
+  asm volatile("mfence\n" : :);
+  if (!poll_reply_buffer(receive_pointer))  // poll the receive for 2 entires
   {
     printf("Reply buffer is %p", receive_pointer->buffer);
     printf("Received is %d", receive_pointer->received);
@@ -898,26 +927,30 @@ void RDMA_Manager::Memory_Deallocation_RPC(uint8_t target_node_id) {
     exit(0);
   }
   //  end = std::chrono::high_resolution_clock::now();
-  //  duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  //  printf("Sync version edit time elapse: %ld us part 5 receive the reply\n", duration.count());
+  //  duration = std::chrono::duration_cast<std::chrono::microseconds>(end -
+  //  start); printf("Sync version edit time elapse: %ld us part 5 receive the
+  //  reply\n", duration.count());
 
-  //Note: here multiple threads will RDMA_Write the "main" qp at the same time,
-  // which means the polling result may not belongs to this thread, but it does not
-  // matter in our case because we do not care when will the message arrive at the other side.
-  asm volatile ("sfence\n" : : );
-  asm volatile ("lfence\n" : : );
-  asm volatile ("mfence\n" : : );
+  // Note: here multiple threads will RDMA_Write the "main" qp at the same time,
+  //  which means the polling result may not belongs to this thread, but it does
+  //  not matter in our case because we do not care when will the message arrive
+  //  at the other side.
+  asm volatile("sfence\n" : :);
+  asm volatile("lfence\n" : :);
+  asm volatile("mfence\n" : :);
   RDMA_Write(receive_pointer->buffer_large, receive_pointer->rkey_large,
-             dealloc_mr.at(target_node_id), top.at(target_node_id) * sizeof(uint64_t), "main", IBV_SEND_SIGNALED, 1,
-             target_node_id);
-  //TODO: implement a wait function for the received bit. THe problem is when to
-  // reset the buffer to zero (we may need different buffer for the compaction reply)
-  // and how to make sure that the reply will wake up this waiting thread. The
-  // signal may comes befoer the thread go to sleep.
+             dealloc_mr.at(target_node_id),
+             top.at(target_node_id) * sizeof(uint64_t), "main",
+             IBV_SEND_SIGNALED, 1, target_node_id);
+  // TODO: implement a wait function for the received bit. THe problem is when
+  // to
+  //  reset the buffer to zero (we may need different buffer for the compaction
+  //  reply) and how to make sure that the reply will wake up this waiting
+  //  thread. The signal may comes befoer the thread go to sleep.
   //
-  //  start = std::chrono::high_resolution_clock::now();
-  Deallocate_Local_RDMA_Slot(send_mr.addr,Message);
-  Deallocate_Local_RDMA_Slot(receive_mr.addr,Message);
+  //   start = std::chrono::high_resolution_clock::now();
+  Deallocate_Local_RDMA_Slot(send_mr.addr, Message);
+  Deallocate_Local_RDMA_Slot(receive_mr.addr, Message);
   // Notify all the other deallocation threads that the buffer has been cleared.
   std::unique_lock<std::mutex> lck(*dealloc_mtx.at(target_node_id));
   assert(top.find(target_node_id) != top.end());
@@ -926,9 +959,9 @@ void RDMA_Manager::Memory_Deallocation_RPC(uint8_t target_node_id) {
 }
 bool RDMA_Manager::Preregister_Memory(int gb_number) {
   int mr_flags = 0;
-  size_t size = 1024*1024*1024;
-  if (node_id == 2){
-    void* dummy = malloc(size*2);
+  size_t size = 1024 * 1024 * 1024;
+  if (node_id == 2) {
+    void* dummy = malloc(size * 2);
   }
   for (int i = 0; i < gb_number; ++i) {
     total_registered_size = total_registered_size + size;
@@ -942,15 +975,15 @@ bool RDMA_Manager::Preregister_Memory(int gb_number) {
     memset(buff_pointer, 0, size);
 
     /* register the memory buffer */
-    mr_flags =
-        IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
+    mr_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+               IBV_ACCESS_REMOTE_WRITE;
     //  auto start = std::chrono::high_resolution_clock::now();
     ibv_mr* mrpointer = ibv_reg_mr(res->pd, buff_pointer, size, mr_flags);
     if (!mrpointer) {
-      fprintf(
-          stderr,
-          "ibv_reg_mr failed with mr_flags=0x%x, size = %zu, region num = %zu\n",
-          mr_flags, size, local_mem_pool.size());
+      fprintf(stderr,
+              "ibv_reg_mr failed with mr_flags=0x%x, size = %zu, region num = "
+              "%zu\n",
+              mr_flags, size, local_mem_pool.size());
       return false;
     }
     local_mem_pool.push_back(mrpointer);
@@ -960,21 +993,21 @@ bool RDMA_Manager::Preregister_Memory(int gb_number) {
 }
 
 /******************************************************************************
-* Function: set_up_RDMA
-*
-* Input
-* argv0 command line arguments
-*
-* Output
-* none
-*
-* Returns
-* none
-*
-* Description
-* set up the connection to shared memroy.
-* memory node ids are even, compute node ids are odd.
-******************************************************************************/
+ * Function: set_up_RDMA
+ *
+ * Input
+ * argv0 command line arguments
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * none
+ *
+ * Description
+ * set up the connection to shared memroy.
+ * memory node ids are even, compute node ids are odd.
+ ******************************************************************************/
 void RDMA_Manager::Client_Set_Up_Resources() {
   //  int rc = 1;
   // int trans_times;
@@ -983,37 +1016,36 @@ void RDMA_Manager::Client_Set_Up_Resources() {
   std::string connection_conf;
   size_t pos = 0;
   std::ifstream myfile;
-  myfile.open (config_file_name, std::ios_base::in);
+  myfile.open(config_file_name, std::ios_base::in);
   std::string space_delimiter = " ";
 
-  std::getline(myfile,connection_conf );
-  std::cout << "connection_conf "<<connection_conf << std::endl;
+  std::getline(myfile, connection_conf);
+  std::cout << "connection_conf " << connection_conf << std::endl;
   uint8_t i = 0;
   uint8_t id;
   while ((pos = connection_conf.find(space_delimiter)) != std::string::npos) {
-    id = 2*i + 1;
+    id = 2 * i + 1;
     compute_nodes.insert({id, connection_conf.substr(0, pos)});
     connection_conf.erase(0, pos + space_delimiter.length());
     i++;
   }
-  compute_nodes.insert({2*i+1, connection_conf});
-  assert((node_id - 1)/2 <  compute_nodes.size());
+  compute_nodes.insert({2 * i + 1, connection_conf});
+  assert((node_id - 1) / 2 < compute_nodes.size());
   i = 0;
-  std::getline(myfile,connection_conf );
-    std::cout << "connection_conf "<<connection_conf << std::endl;
+  std::getline(myfile, connection_conf);
+  std::cout << "connection_conf " << connection_conf << std::endl;
   while ((pos = connection_conf.find(space_delimiter)) != std::string::npos) {
-    id = 2*i;
+    id = 2 * i;
     memory_nodes.insert({id, connection_conf.substr(0, pos)});
     connection_conf.erase(0, pos + space_delimiter.length());
     i++;
   }
-  memory_nodes.insert({2*i, connection_conf});
+  memory_nodes.insert({2 * i, connection_conf});
   i++;
   Initialize_threadlocal_map();
-//  std::string ip_add;
-//  std::cout << "please insert the ip address for the remote memory" << std::endl;
-//  std::cin >> ip_add;
-//  rdma_config.server_name = ip_add.c_str();
+  //  std::string ip_add;
+  //  std::cout << "please insert the ip address for the remote memory" <<
+  //  std::endl; std::cin >> ip_add; rdma_config.server_name = ip_add.c_str();
   /* if client side */
   printf("Mark: valgrind socket info1\n");
   if (resources_create()) {
@@ -1021,72 +1053,84 @@ void RDMA_Manager::Client_Set_Up_Resources() {
     return;
   }
   std::vector<std::thread> threads;
-  for(int i = 0; i < memory_nodes.size(); i++){
-    uint8_t target_node_id =  2*i;
-    res->sock_map[target_node_id] =
-        client_sock_connect(memory_nodes[target_node_id].c_str(), rdma_config.tcp_port);
+  for (int i = 0; i < memory_nodes.size(); i++) {
+    uint8_t target_node_id = 2 * i;
+    res->sock_map[target_node_id] = client_sock_connect(
+        memory_nodes[target_node_id].c_str(), rdma_config.tcp_port);
     printf("connect to node id %d", target_node_id);
     if (res->sock_map[target_node_id] < 0) {
       fprintf(stderr,
               "failed to establish TCP connection to server %s, port %d\n",
               rdma_config.server_name, rdma_config.tcp_port);
     }
-//    assert(memory_nodes.size() == 2);
-    //TODO: use mulitple thread to initialize the queue pairs.
-    threads.emplace_back(&RDMA_Manager::Get_Remote_qp_Info_Then_Connect,this,target_node_id);
-//    Get_Remote_qp_Info_Then_Connect(shard_target_node_id);
+    //    assert(memory_nodes.size() == 2);
+    // TODO: use mulitple thread to initialize the queue pairs.
+    threads.emplace_back(&RDMA_Manager::Get_Remote_qp_Info_Then_Connect, this,
+                         target_node_id);
+    //    Get_Remote_qp_Info_Then_Connect(shard_target_node_id);
     threads.back().detach();
   }
   while (connection_counter.load() != memory_nodes.size());
-//  for (auto & thread : threads) {
-//    thread.join();
-//  }
+  //  for (auto & thread : threads) {
+  //    thread.join();
+  //  }
 }
-void RDMA_Manager::Initialize_threadlocal_map(){
+void RDMA_Manager::Initialize_threadlocal_map() {
   uint8_t target_node_id;
   for (int i = 0; i < memory_nodes.size(); ++i) {
-    target_node_id = 2*i;
-    qp_local_write_flush.insert({target_node_id,new ThreadLocalPtr(&UnrefHandle_qp)});
-    cq_local_write_flush.insert({target_node_id, new ThreadLocalPtr(&UnrefHandle_cq)});
-    local_write_flush_qp_info.insert({target_node_id, new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)});
-    qp_local_write_compact.insert({target_node_id,new ThreadLocalPtr(&UnrefHandle_qp)});
-    cq_local_write_compact.insert({target_node_id, new ThreadLocalPtr(&UnrefHandle_cq)});
-    local_write_compact_qp_info.insert({target_node_id, new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)});
+    target_node_id = 2 * i;
+    qp_local_write_flush.insert(
+        {target_node_id, new ThreadLocalPtr(&UnrefHandle_qp)});
+    cq_local_write_flush.insert(
+        {target_node_id, new ThreadLocalPtr(&UnrefHandle_cq)});
+    local_write_flush_qp_info.insert(
+        {target_node_id,
+         new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)});
+    qp_local_write_compact.insert(
+        {target_node_id, new ThreadLocalPtr(&UnrefHandle_qp)});
+    cq_local_write_compact.insert(
+        {target_node_id, new ThreadLocalPtr(&UnrefHandle_cq)});
+    local_write_compact_qp_info.insert(
+        {target_node_id,
+         new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)});
     qp_local_read.insert({target_node_id, new ThreadLocalPtr(&UnrefHandle_qp)});
     cq_local_read.insert({target_node_id, new ThreadLocalPtr(&UnrefHandle_cq)});
-    local_read_qp_info.insert({target_node_id, new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)});
-    Remote_Mem_Bitmap.insert({target_node_id, new std::map<void*, In_Use_Array*>()});
-    deallocation_buffers.insert({target_node_id, new uint64_t[REMOTE_DEALLOC_BUFF_SIZE / sizeof(uint64_t)]});
+    local_read_qp_info.insert(
+        {target_node_id,
+         new ThreadLocalPtr(&General_Destroy<registered_qp_config*>)});
+    Remote_Mem_Bitmap.insert(
+        {target_node_id, new std::map<void*, In_Use_Array*>()});
+    deallocation_buffers.insert(
+        {target_node_id,
+         new uint64_t[REMOTE_DEALLOC_BUFF_SIZE / sizeof(uint64_t)]});
     dealloc_mtx.insert({target_node_id, new std::mutex});
     dealloc_cv.insert({target_node_id, new std::condition_variable});
     dealloc_mr.insert({target_node_id, nullptr});
-    top.insert({target_node_id,0});
+    top.insert({target_node_id, 0});
     mtx_imme_map.insert({target_node_id, new std::mutex});
     imm_gen_map.insert({target_node_id, new std::atomic<uint32_t>{0}});
-    imme_data_map.insert({target_node_id, new  uint32_t{0}});
-    byte_len_map.insert({target_node_id, new  uint32_t{0}});
+    imme_data_map.insert({target_node_id, new uint32_t{0}});
+    byte_len_map.insert({target_node_id, new uint32_t{0}});
     cv_imme_map.insert({target_node_id, new std::condition_variable});
   }
-
-
 }
 /******************************************************************************
-* Function: resources_create
-*
-* Input
-* res pointer to resources structure to be filled in
-*
-* Output
-* res filled in with resources
-*
-* Returns
-* 0 on success, 1 on failure
-*
-* Description
-*
-* This function creates and allocates all necessary system resources. These
-* are stored in res.
-*****************************************************************************/
+ * Function: resources_create
+ *
+ * Input
+ * res pointer to resources structure to be filled in
+ *
+ * Output
+ * res filled in with resources
+ *
+ * Returns
+ * 0 on success, 1 on failure
+ *
+ * Description
+ *
+ * This function creates and allocates all necessary system resources. These
+ * are stored in res.
+ *****************************************************************************/
 int RDMA_Manager::resources_create() {
   struct ibv_device** dev_list = NULL;
   struct ibv_device* ib_dev = NULL;
@@ -1154,7 +1198,8 @@ int RDMA_Manager::resources_create() {
   //  if (rdma_config.server_name) {
   //    ibv_mr* mr;
   //    char* buff;
-  //    if (!Local_Memory_Register(&buff, &mr, rdma_config.init_local_buffer_size,
+  //    if (!Local_Memory_Register(&buff, &mr,
+  //    rdma_config.init_local_buffer_size,
   //                               0)) {
   //      fprintf(stderr, "memory registering failed by size of 0x%x\n",
   //              static_cast<unsigned>(rdma_config.init_local_buffer_size));
@@ -1163,9 +1208,10 @@ int RDMA_Manager::resources_create() {
   //              static_cast<unsigned>(rdma_config.init_local_buffer_size));
   //    }
   //  }
-  //todo: shrink this size.
-  Local_Memory_Register(&(res->send_buf), &(res->mr_send), 2500*4096, Message);
-  Local_Memory_Register(&(res->receive_buf), &(res->mr_receive), 2500*4096,
+  // todo: shrink this size.
+  Local_Memory_Register(&(res->send_buf), &(res->mr_send), 2500 * 4096,
+                        Message);
+  Local_Memory_Register(&(res->receive_buf), &(res->mr_receive), 2500 * 4096,
                         Message);
   //        if(condition){
   //          fprintf(stderr, "Local memory registering failed\n");
@@ -1175,19 +1221,18 @@ int RDMA_Manager::resources_create() {
       IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
   //  auto start = std::chrono::high_resolution_clock::now();
   // Register the deallocation buffers.
-  for(auto iter : deallocation_buffers){
-    dealloc_mr[iter.first] = ibv_reg_mr(res->pd, iter.second,
-                            REMOTE_DEALLOC_BUFF_SIZE, mr_flags);
-    if (dealloc_mr[iter.first] == nullptr){
+  for (auto iter : deallocation_buffers) {
+    dealloc_mr[iter.first] =
+        ibv_reg_mr(res->pd, iter.second, REMOTE_DEALLOC_BUFF_SIZE, mr_flags);
+    if (dealloc_mr[iter.first] == nullptr) {
       fprintf(stdout, "dealloc_mr registration failed\n");
-
     }
   }
 
-
   fprintf(stdout, "SST buffer, send&receive buffer were registered with a\n");
   rc = ibv_query_device(res->ib_ctx, &(res->device_attr));
-  std::cout << "maximum outstanding wr number is"  << res->device_attr.max_qp_wr <<std::endl;
+  std::cout << "maximum outstanding wr number is" << res->device_attr.max_qp_wr
+            << std::endl;
   std::cout << "maximum query pair number is" << res->device_attr.max_qp
             << std::endl;
   std::cout << "maximum completion queue number is" << res->device_attr.max_cq
@@ -1228,7 +1273,8 @@ bool RDMA_Manager::Get_Remote_qp_Info_Then_Connect(uint8_t target_node_id) {
   memcpy(local_con_data.gid, &my_gid, 16);
   local_con_data.node_id = node_id;
   fprintf(stdout, "\nLocal LID = 0x%x\n", res->port_attr.lid);
-  if (sock_sync_data(res->sock_map[target_node_id], sizeof(struct registered_qp_config),
+  if (sock_sync_data(res->sock_map[target_node_id],
+                     sizeof(struct registered_qp_config),
                      (char*)&local_con_data, (char*)&tmp_con_data) < 0) {
     fprintf(stderr, "failed to exchange connection data between sides\n");
     rc = 1;
@@ -1240,37 +1286,37 @@ bool RDMA_Manager::Get_Remote_qp_Info_Then_Connect(uint8_t target_node_id) {
   fprintf(stdout, "Remote QP number = 0x%x\n", remote_con_data->qp_num);
   fprintf(stdout, "Remote LID = 0x%x\n", remote_con_data->lid);
   std::unique_lock<std::shared_mutex> l(qp_cq_map_mutex);
-  if (qp_type == "read_local" ){
+  if (qp_type == "read_local") {
     assert(local_read_qp_info.at(target_node_id) != nullptr);
     local_read_qp_info.at(target_node_id)->Reset(remote_con_data);
   }
-//    ((QP_Info_Map*)local_read_qp_info->Get())->insert({shard_target_node_id, remote_con_data});
-  //    local_read_qp_info->Reset(remote_con_data);
-  else if(qp_type == "write_local_compact"){
+  //    ((QP_Info_Map*)local_read_qp_info->Get())->insert({shard_target_node_id,
+  //    remote_con_data}); local_read_qp_info->Reset(remote_con_data);
+  else if (qp_type == "write_local_compact") {
     assert(local_write_compact_qp_info.at(target_node_id) != nullptr);
     local_write_compact_qp_info.at(target_node_id)->Reset(remote_con_data);
   }
-//    ((QP_Info_Map*)local_write_compact_qp_info->Get())->insert({shard_target_node_id, remote_con_data});
-  //    local_write_compact_qp_info->Reset(remote_con_data);
-  else if(qp_type == "write_local_flush"){
+  //    ((QP_Info_Map*)local_write_compact_qp_info->Get())->insert({shard_target_node_id,
+  //    remote_con_data}); local_write_compact_qp_info->Reset(remote_con_data);
+  else if (qp_type == "write_local_flush") {
     assert(local_write_flush_qp_info.at(target_node_id) != nullptr);
     local_write_flush_qp_info.at(target_node_id)->Reset(remote_con_data);
   }
-//    ((QP_Info_Map*)local_write_flush_qp_info->Get())->insert({shard_target_node_id, remote_con_data});
-  //    local_write_flush_qp_info->Reset(remote_con_data);
+  //    ((QP_Info_Map*)local_write_flush_qp_info->Get())->insert({shard_target_node_id,
+  //    remote_con_data}); local_write_flush_qp_info->Reset(remote_con_data);
   else
-    res->qp_main_connection_info.insert({target_node_id,remote_con_data});
+    res->qp_main_connection_info.insert({target_node_id, remote_con_data});
   l.unlock();
   connect_qp(qp, qp_type, target_node_id);
 
   //  post_receive<int>(res->mr_receive, std::string("main"));
   if (sock_sync_data(res->sock_map[target_node_id], 1, temp_send,
                      temp_receive)) /* just send a dummy char back and forth */
-    {
+  {
     fprintf(stderr, "sync error after QPs are were moved to RTS\n");
     rc = 1;
-    }
-    printf("Finish the connection with node %d\n", target_node_id);
+  }
+  printf("Finish the connection with node %d\n", target_node_id);
   // sync the communication by rdma.
 
   //  post_send<int>(res->mr_send, std::string("main"));
@@ -1289,22 +1335,23 @@ void RDMA_Manager::sync_with_computes_Cside() {
   char temp_receive[2];
   char temp_send[] = "Q";
   auto start = std::chrono::high_resolution_clock::now();
-  //Node 0 is the coordinator server
-  sock_sync_data(res->sock_map[0], 1, temp_send,
-                 temp_receive);
+  // Node 0 is the coordinator server
+  sock_sync_data(res->sock_map[0], 1, temp_send, temp_receive);
   auto stop = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+  auto duration =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
   printf("sync wait time is %ld", duration.count());
 }
 ibv_mr* RDMA_Manager::Get_local_read_mr() {
   ibv_mr* ret;
   ret = (ibv_mr*)read_buffer->Get();
-  if (ret == nullptr){
+  if (ret == nullptr) {
     char* buffer = new char[name_to_chunksize.at(DataChunk)];
-    auto mr_flags =
-        IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
+    auto mr_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+                    IBV_ACCESS_REMOTE_WRITE;
     //  auto start = std::chrono::high_resolution_clock::now();
-    ret = ibv_reg_mr(res->pd, buffer, name_to_chunksize.at(DataChunk), mr_flags);
+    ret =
+        ibv_reg_mr(res->pd, buffer, name_to_chunksize.at(DataChunk), mr_flags);
     read_buffer->Reset(ret);
   }
   return ret;
@@ -1314,41 +1361,34 @@ void RDMA_Manager::sync_with_computes_Mside() {
   int number_of_ready = 0;
   uint64_t rc = 0;
 
-
-  while (1){
-    for(auto iter : res->sock_map){
-      rc =read(iter.second, buffer, 100);
-      if(rc != 0){
+  while (1) {
+    for (auto iter : res->sock_map) {
+      rc = read(iter.second, buffer, 100);
+      if (rc != 0) {
         number_of_ready++;
-        if (number_of_ready == compute_nodes.size()){
-          //TODO: answer back.
-          printf("compute node sync number is %d", number_of_ready );
+        if (number_of_ready == compute_nodes.size()) {
+          // TODO: answer back.
+          printf("compute node sync number is %d", number_of_ready);
           broadcast_to_computes();
           number_of_ready = 0;
         }
         rc = 0;
       }
     }
-
   }
-
-
 }
-void RDMA_Manager::broadcast_to_computes(){
+void RDMA_Manager::broadcast_to_computes() {
   int rc = 0;
   int read_bytes = 0;
   int total_read_bytes = 0;
   char local_data[] = "Q";
-  for(auto iter : res->sock_map){
+  for (auto iter : res->sock_map) {
     rc = write(iter.second, local_data, 1);
     assert(rc = 1);
   }
-
 }
 
-
-ibv_qp* RDMA_Manager::create_qp_Mside(bool seperated_cq,
-                                           std::string& qp_id) {
+ibv_qp* RDMA_Manager::create_qp_Mside(bool seperated_cq, std::string& qp_id) {
   struct ibv_qp_init_attr qp_init_attr;
 
   /* each side will send only one WR, so Completion Queue with 1 entry is enough
@@ -1357,8 +1397,7 @@ ibv_qp* RDMA_Manager::create_qp_Mside(bool seperated_cq,
   // cq1 send queue, cq2 receive queue
   ibv_cq* cq1 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
   ibv_cq* cq2;
-  if (seperated_cq)
-    cq2 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
+  if (seperated_cq) cq2 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
 
   if (!cq1) {
     fprintf(stderr, "failed to create CQ with %u entries\n", cq_size);
@@ -1388,13 +1427,14 @@ ibv_qp* RDMA_Manager::create_qp_Mside(bool seperated_cq,
     fprintf(stderr, "failed to create QP\n");
   }
 
-    qp_map_Mside[qp_id] = qp;
+  qp_map_Mside[qp_id] = qp;
   fprintf(stdout, "QP was created, QP number=0x%x\n", qp->qp_num);
   //  uint8_t* p = qp->gid;
   //  fprintf(stdout,
-  //          "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ",
-  //          p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10],
-  //          p[11], p[12], p[13], p[14], p[15]);
+  //          "Remote GID
+  //          =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n
+  //          ", p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9],
+  //          p[10], p[11], p[12], p[13], p[14], p[15]);
   return qp;
 }
 ibv_qp* RDMA_Manager::create_qp(uint8_t target_node_id, bool seperated_cq,
@@ -1407,30 +1447,30 @@ ibv_qp* RDMA_Manager::create_qp(uint8_t target_node_id, bool seperated_cq,
   // cq1 send queue, cq2 receive queue
   ibv_cq* cq1 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
   ibv_cq* cq2;
-  if (seperated_cq)
-    cq2 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
+  if (seperated_cq) cq2 = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
 
   if (!cq1) {
     fprintf(stderr, "failed to create CQ with %u entries\n", cq_size);
   }
   std::unique_lock<std::shared_mutex> l(qp_cq_map_mutex);
-  if (qp_type == "read_local" ){
-    assert(cq_local_read[target_node_id]!= nullptr);
+  if (qp_type == "read_local") {
+    assert(cq_local_read[target_node_id] != nullptr);
     cq_local_read[target_node_id]->Reset(cq1);
   }
-//    ((CQ_Map*)cq_local_read->Get())->insert({shard_target_node_id, cq1});
-//    cq_local_read->Reset(cq1);
-  else if(qp_type == "write_local_compact"){
-    assert(cq_local_write_compact[target_node_id]!= nullptr);
+  //    ((CQ_Map*)cq_local_read->Get())->insert({shard_target_node_id, cq1});
+  //    cq_local_read->Reset(cq1);
+  else if (qp_type == "write_local_compact") {
+    assert(cq_local_write_compact[target_node_id] != nullptr);
     cq_local_write_compact[target_node_id]->Reset(cq1);
   }
-//    ((CQ_Map*)cq_local_write_compact->Get())->insert({shard_target_node_id, cq1});
-//    cq_local_write_compact->Reset(cq1);
-  else if(qp_type == "write_local_flush"){
-    assert(cq_local_write_flush[target_node_id]!= nullptr);
+  //    ((CQ_Map*)cq_local_write_compact->Get())->insert({shard_target_node_id,
+  //    cq1}); cq_local_write_compact->Reset(cq1);
+  else if (qp_type == "write_local_flush") {
+    assert(cq_local_write_flush[target_node_id] != nullptr);
     cq_local_write_flush[target_node_id]->Reset(cq1);
-    }
-//    ((CQ_Map*)cq_local_write_flush->Get())->insert({shard_target_node_id, cq1});
+  }
+  //    ((CQ_Map*)cq_local_write_flush->Get())->insert({shard_target_node_id,
+  //    cq1});
   else if (seperated_cq)
     res->cq_map.insert({target_node_id, std::make_pair(cq1, cq2)});
   else
@@ -1454,32 +1494,33 @@ ibv_qp* RDMA_Manager::create_qp(uint8_t target_node_id, bool seperated_cq,
   if (!qp) {
     fprintf(stderr, "failed to create QP\n");
   }
-  if (qp_type == "read_local" ){
-    assert(qp_local_read[target_node_id]!= nullptr);
+  if (qp_type == "read_local") {
+    assert(qp_local_read[target_node_id] != nullptr);
     qp_local_read[target_node_id]->Reset(qp);
   }
-//    ((QP_Map*)qp_local_read->Get())->insert({shard_target_node_id, qp});
-//    qp_local_read->Reset(qp);
-  else if(qp_type == "write_local_flush"){
-    assert(qp_local_write_flush[target_node_id]!= nullptr);
+  //    ((QP_Map*)qp_local_read->Get())->insert({shard_target_node_id, qp});
+  //    qp_local_read->Reset(qp);
+  else if (qp_type == "write_local_flush") {
+    assert(qp_local_write_flush[target_node_id] != nullptr);
     qp_local_write_flush[target_node_id]->Reset(qp);
-    }
-//    ((QP_Map*)qp_local_write_flush->Get())->insert({shard_target_node_id, qp});
-//    qp_local_write_flush->Reset(qp);
-  else if(qp_type == "write_local_compact"){
-      assert(qp_local_write_compact[target_node_id]!= nullptr);
-      qp_local_write_compact[target_node_id]->Reset(qp);
   }
-//    ((QP_Map*)qp_local_write_compact->Get())->insert({shard_target_node_id, qp});
-//    qp_local_write_compact->Reset(qp);
+  //    ((QP_Map*)qp_local_write_flush->Get())->insert({shard_target_node_id,
+  //    qp}); qp_local_write_flush->Reset(qp);
+  else if (qp_type == "write_local_compact") {
+    assert(qp_local_write_compact[target_node_id] != nullptr);
+    qp_local_write_compact[target_node_id]->Reset(qp);
+  }
+  //    ((QP_Map*)qp_local_write_compact->Get())->insert({shard_target_node_id,
+  //    qp}); qp_local_write_compact->Reset(qp);
   else
     res->qp_map[target_node_id] = qp;
   fprintf(stdout, "QP was created, QP number=0x%x\n", qp->qp_num);
-//  uint8_t* p = qp->gid;
-//  fprintf(stdout,
-//          "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ",
-//          p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10],
-//          p[11], p[12], p[13], p[14], p[15]);
+  //  uint8_t* p = qp->gid;
+  //  fprintf(stdout,
+  //          "Remote GID
+  //          =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n
+  //          ", p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9],
+  //          p[10], p[11], p[12], p[13], p[14], p[15]);
   return qp;
 }
 int RDMA_Manager::connect_qp_Mside(ibv_qp* qp, std::string& q_id) {
@@ -1502,13 +1543,14 @@ int RDMA_Manager::connect_qp_Mside(ibv_qp* qp, std::string& q_id) {
   registered_qp_config* remote_con_data;
   std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
 
-
-    remote_con_data = qp_main_connection_info_Mside.at(q_id);
+  remote_con_data = qp_main_connection_info_Mside.at(q_id);
   l.unlock();
   if (rdma_config.gid_idx >= 0) {
     uint8_t* p = remote_con_data->gid;
     fprintf(stdout,
-            "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ",
+            "Remote GID "
+            "=%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:"
+            "%02x:%02x:%02x\n ",
             p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10],
             p[11], p[12], p[13], p[14], p[15]);
   }
@@ -1535,94 +1577,28 @@ int RDMA_Manager::connect_qp_Mside(ibv_qp* qp, std::string& q_id) {
   //    printf("connection built up!\n");
   //  }
   fprintf(stdout, "QP %p state was change to RTS\n", qp);
-/* sync to make sure that both sides are in states that they can connect to prevent packet loose */
+/* sync to make sure that both sides are in states that they can connect to
+ * prevent packet loose */
 connect_qp_exit:
   return rc;
 }
 /******************************************************************************
-* Function: connect_qp
-*
-* Input
-* res pointer to resources structure
-*
-* Output
-* none
-*
-* Returns
-* 0 on success, error code on failure
-*
-* Description
-* Connect the QP. Transition the server side to RTR, sender side to RTS
-******************************************************************************/
+ * Function: connect_qp
+ *
+ * Input
+ * res pointer to resources structure
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * 0 on success, error code on failure
+ *
+ * Description
+ * Connect the QP. Transition the server side to RTR, sender side to RTS
+ ******************************************************************************/
 int RDMA_Manager::connect_qp(ibv_qp* qp, std::string& qp_type,
                              uint8_t target_node_id) {
-  int rc;
-//  ibv_qp* qp;
-//  if (qp_id == "read_local" ){
-//    qp = static_cast<ibv_qp*>(qp_local_read->Get());
-//    assert(qp!= nullptr);
-//  }
-//  else if(qp_id == "write_local"){
-//    qp = static_cast<ibv_qp*>(qp_local_write_flush->Get());
-//
-//  }
-//  else{
-//    qp = res->qp_map[qp_id];
-//    assert(qp!= nullptr);
-//  }
-// protect the res->qp_main_connection_info outside this function
-
-  registered_qp_config* remote_con_data;
-  std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
-
-  if (qp_type == "read_local" )
-    remote_con_data = (registered_qp_config*)local_read_qp_info[target_node_id]->Get();
-
-//    remote_con_data = ((QP_Info_Map*)local_read_qp_info->Get())->at(shard_target_node_id);
-  else if(qp_type == "write_local_compact")
-    remote_con_data = (registered_qp_config*)local_write_compact_qp_info[target_node_id]->Get();
-//    remote_con_data = ((QP_Info_Map*)local_write_compact_qp_info->Get())->at(shard_target_node_id);
-  else if(qp_type == "write_local_flush")
-    remote_con_data = (registered_qp_config*)local_write_flush_qp_info[target_node_id]->Get();
-//    remote_con_data = ((QP_Info_Map*)local_write_flush_qp_info->Get())->at(shard_target_node_id);
-  else
-    remote_con_data = res->qp_main_connection_info.at(target_node_id);
-  l.unlock();
-  if (rdma_config.gid_idx >= 0) {
-    uint8_t* p = remote_con_data->gid;
-    fprintf(stdout,
-            "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ",
-            p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10],
-            p[11], p[12], p[13], p[14], p[15]);
-  }
-  /* modify the QP to init */
-  rc = modify_qp_to_init(qp);
-  if (rc) {
-    fprintf(stderr, "change QP state to INIT failed\n");
-    goto connect_qp_exit;
-  }
-
-  /* modify the QP to RTR */
-  rc = modify_qp_to_rtr(qp, remote_con_data->qp_num, remote_con_data->lid,
-                        remote_con_data->gid);
-  if (rc) {
-    fprintf(stderr, "failed to modify QP state to RTR\n");
-    goto connect_qp_exit;
-  }
-  rc = modify_qp_to_rts(qp);
-  if (rc) {
-    fprintf(stderr, "failed to modify QP state to RTS\n");
-    goto connect_qp_exit;
-  }
-//  else{
-//    printf("connection built up!\n");
-//  }
-  fprintf(stdout, "QP %p state was change to RTS\n", qp);
-/* sync to make sure that both sides are in states that they can connect to prevent packet loose */
-connect_qp_exit:
-  return rc;
-}
-int RDMA_Manager::connect_qp(ibv_qp* qp, registered_qp_config* remote_con_data) {
   int rc;
   //  ibv_qp* qp;
   //  if (qp_id == "read_local" ){
@@ -1639,11 +1615,90 @@ int RDMA_Manager::connect_qp(ibv_qp* qp, registered_qp_config* remote_con_data) 
   //  }
   // protect the res->qp_main_connection_info outside this function
 
+  registered_qp_config* remote_con_data;
+  std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
+
+  if (qp_type == "read_local")
+    remote_con_data =
+        (registered_qp_config*)local_read_qp_info[target_node_id]->Get();
+
+  //    remote_con_data =
+  //    ((QP_Info_Map*)local_read_qp_info->Get())->at(shard_target_node_id);
+  else if (qp_type == "write_local_compact")
+    remote_con_data =
+        (registered_qp_config*)local_write_compact_qp_info[target_node_id]
+            ->Get();
+  //    remote_con_data =
+  //    ((QP_Info_Map*)local_write_compact_qp_info->Get())->at(shard_target_node_id);
+  else if (qp_type == "write_local_flush")
+    remote_con_data =
+        (registered_qp_config*)local_write_flush_qp_info[target_node_id]->Get();
+  //    remote_con_data =
+  //    ((QP_Info_Map*)local_write_flush_qp_info->Get())->at(shard_target_node_id);
+  else
+    remote_con_data = res->qp_main_connection_info.at(target_node_id);
+  l.unlock();
+  if (rdma_config.gid_idx >= 0) {
+    uint8_t* p = remote_con_data->gid;
+    fprintf(stdout,
+            "Remote GID "
+            "=%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:"
+            "%02x:%02x:%02x\n ",
+            p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10],
+            p[11], p[12], p[13], p[14], p[15]);
+  }
+  /* modify the QP to init */
+  rc = modify_qp_to_init(qp);
+  if (rc) {
+    fprintf(stderr, "change QP state to INIT failed\n");
+    goto connect_qp_exit;
+  }
+
+  /* modify the QP to RTR */
+  rc = modify_qp_to_rtr(qp, remote_con_data->qp_num, remote_con_data->lid,
+                        remote_con_data->gid);
+  if (rc) {
+    fprintf(stderr, "failed to modify QP state to RTR\n");
+    goto connect_qp_exit;
+  }
+  rc = modify_qp_to_rts(qp);
+  if (rc) {
+    fprintf(stderr, "failed to modify QP state to RTS\n");
+    goto connect_qp_exit;
+  }
+  //  else{
+  //    printf("connection built up!\n");
+  //  }
+  fprintf(stdout, "QP %p state was change to RTS\n", qp);
+/* sync to make sure that both sides are in states that they can connect to
+ * prevent packet loose */
+connect_qp_exit:
+  return rc;
+}
+int RDMA_Manager::connect_qp(ibv_qp* qp,
+                             registered_qp_config* remote_con_data) {
+  int rc;
+  //  ibv_qp* qp;
+  //  if (qp_id == "read_local" ){
+  //    qp = static_cast<ibv_qp*>(qp_local_read->Get());
+  //    assert(qp!= nullptr);
+  //  }
+  //  else if(qp_id == "write_local"){
+  //    qp = static_cast<ibv_qp*>(qp_local_write_flush->Get());
+  //
+  //  }
+  //  else{
+  //    qp = res->qp_map[qp_id];
+  //    assert(qp!= nullptr);
+  //  }
+  // protect the res->qp_main_connection_info outside this function
 
   if (rdma_config.gid_idx >= 0) {
     uint8_t* p = remote_con_data->gid;
     fprintf(stdout,
-            "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ",
+            "Remote GID "
+            "=%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:"
+            "%02x:%02x:%02x\n ",
             p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10],
             p[11], p[12], p[13], p[14], p[15]);
   }
@@ -1667,8 +1722,9 @@ int RDMA_Manager::connect_qp(ibv_qp* qp, registered_qp_config* remote_con_data) 
     goto connect_qp_exit;
   }
   fprintf(stdout, "QP %p state was change to RTS\n", qp);
-  /* sync to make sure that both sides are in states that they can connect to prevent packet loose */
-  connect_qp_exit:
+/* sync to make sure that both sides are in states that they can connect to
+ * prevent packet loose */
+connect_qp_exit:
   return rc;
 }
 int RDMA_Manager::modify_qp_to_reset(ibv_qp* qp) {
@@ -1683,20 +1739,20 @@ int RDMA_Manager::modify_qp_to_reset(ibv_qp* qp) {
   return rc;
 }
 /******************************************************************************
-* Function: modify_qp_to_init
-*
-* Input
-* qp QP to transition
-*
-* Output
-* none
-*
-* Returns
-* 0 on success, ibv_modify_qp failure code on failure
-*
-* Description
-* Transition a QP from the RESET to INIT state
-******************************************************************************/
+ * Function: modify_qp_to_init
+ *
+ * Input
+ * qp QP to transition
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * 0 on success, ibv_modify_qp failure code on failure
+ *
+ * Description
+ * Transition a QP from the RESET to INIT state
+ ******************************************************************************/
 int RDMA_Manager::modify_qp_to_init(struct ibv_qp* qp) {
   struct ibv_qp_attr attr;
   int flags;
@@ -1705,31 +1761,31 @@ int RDMA_Manager::modify_qp_to_init(struct ibv_qp* qp) {
   attr.qp_state = IBV_QPS_INIT;
   attr.port_num = rdma_config.ib_port;
   attr.pkey_index = 0;
-  attr.qp_access_flags =
-      IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE |IBV_ACCESS_REMOTE_ATOMIC;
+  attr.qp_access_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+                         IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_ATOMIC;
   flags = IBV_QP_STATE | IBV_QP_PKEY_INDEX | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS;
   rc = ibv_modify_qp(qp, &attr, flags);
   if (rc) fprintf(stderr, "failed to modify QP state to INIT\n");
   return rc;
 }
 /******************************************************************************
-* Function: modify_qp_to_rtr
-*
-* Input
-* qp QP to transition
-* remote_qpn remote QP number
-* dlid destination LID
-* dgid destination GID (mandatory for RoCEE)
-*
-* Output
-* none
-*
-* Returns
-* 0 on success, ibv_modify_qp failure code on failure
-*
-* Description
-* Transition a QP from the INIT to RTR state, using the specified QP number
-******************************************************************************/
+ * Function: modify_qp_to_rtr
+ *
+ * Input
+ * qp QP to transition
+ * remote_qpn remote QP number
+ * dlid destination LID
+ * dgid destination GID (mandatory for RoCEE)
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * 0 on success, ibv_modify_qp failure code on failure
+ *
+ * Description
+ * Transition a QP from the INIT to RTR state, using the specified QP number
+ ******************************************************************************/
 int RDMA_Manager::modify_qp_to_rtr(struct ibv_qp* qp, uint32_t remote_qpn,
                                    uint16_t dlid, uint8_t* dgid) {
   struct ibv_qp_attr attr;
@@ -1763,20 +1819,20 @@ int RDMA_Manager::modify_qp_to_rtr(struct ibv_qp* qp, uint32_t remote_qpn,
   return rc;
 }
 /******************************************************************************
-* Function: modify_qp_to_rts
-*
-* Input
-* qp QP to transition
-*
-* Output
-* none
-*
-* Returns
-* 0 on success, ibv_modify_qp failure code on failure
-*
-* Description
-* Transition a QP from the RTR to RTS state
-******************************************************************************/
+ * Function: modify_qp_to_rts
+ *
+ * Input
+ * qp QP to transition
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * 0 on success, ibv_modify_qp failure code on failure
+ *
+ * Description
+ * Transition a QP from the RTR to RTS state
+ ******************************************************************************/
 int RDMA_Manager::modify_qp_to_rts(struct ibv_qp* qp) {
   struct ibv_qp_attr attr;
   int flags;
@@ -1795,29 +1851,29 @@ int RDMA_Manager::modify_qp_to_rts(struct ibv_qp* qp) {
   return rc;
 }
 /******************************************************************************
-* Function: sock_sync_data
-*
-* Input
-* sock socket to transfer data on
-* xfer_size size of data to transfer
-* local_data pointer to data to be sent to remote
-*
-* Output
-* remote_data pointer to buffer to receive remote data
-*
-* Returns
-* 0 on success, negative error code on failure
-*
-* Description
-* Sync data across a socket. The indicated local data will be sent to the
-* remote. It will then wait for the remote to send its data back. It is
-* assumed that the two sides are in sync and call this function in the proper
-* order. Chaos will ensue if they are not. :)
-*
-* Also note this is a blocking function and will wait for the full data to be
-* received from the remote.
-*
-******************************************************************************/
+ * Function: sock_sync_data
+ *
+ * Input
+ * sock socket to transfer data on
+ * xfer_size size of data to transfer
+ * local_data pointer to data to be sent to remote
+ *
+ * Output
+ * remote_data pointer to buffer to receive remote data
+ *
+ * Returns
+ * 0 on success, negative error code on failure
+ *
+ * Description
+ * Sync data across a socket. The indicated local data will be sent to the
+ * remote. It will then wait for the remote to send its data back. It is
+ * assumed that the two sides are in sync and call this function in the proper
+ * order. Chaos will ensue if they are not. :)
+ *
+ * Also note this is a blocking function and will wait for the full data to be
+ * received from the remote.
+ *
+ ******************************************************************************/
 int RDMA_Manager::sock_sync_data(int sock, int xfer_size, char* local_data,
                                  char* remote_data) {
   int rc = 0;
@@ -1839,8 +1895,8 @@ int RDMA_Manager::sock_sync_data(int sock, int xfer_size, char* local_data,
     else
       rc = read_bytes;
   }
-//  fprintf(stdout, "The data which has been read through is %s size is %d\n",
-//          remote_data, read_bytes);
+  //  fprintf(stdout, "The data which has been read through is %s size is %d\n",
+  //          remote_data, read_bytes);
   return rc;
 }
 /******************************************************************************
@@ -1850,11 +1906,12 @@ End of socket operations
 // return 0 means success
 int RDMA_Manager::RDMA_Read(ibv_mr* remote_mr, ibv_mr* local_mr,
                             size_t msg_size, std::string qp_type,
-                            size_t send_flag, int poll_num, uint8_t target_node_id) {
-//#ifdef GETANALYSIS
-//  auto start = std::chrono::high_resolution_clock::now();
-//#endif
-//  assert(poll_num == 1);
+                            size_t send_flag, int poll_num,
+                            uint8_t target_node_id) {
+  // #ifdef GETANALYSIS
+  //   auto start = std::chrono::high_resolution_clock::now();
+  // #endif
+  //   assert(poll_num == 1);
   struct ibv_send_wr sr;
   struct ibv_sge sge;
   struct ibv_send_wr* bad_wr = NULL;
@@ -1877,41 +1934,45 @@ int RDMA_Manager::RDMA_Read(ibv_mr* remote_mr, ibv_mr* local_mr,
   sr.wr.rdma.remote_addr = reinterpret_cast<uint64_t>(remote_mr->addr);
   sr.wr.rdma.rkey = remote_mr->rkey;
 
-  /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
+  /* there is a Receive Request in the responder side, so we won't get any into
+   * RNR flow */
   //*(start) = std::chrono::steady_clock::now();
   // start = std::chrono::steady_clock::now();
   //  auto stop = std::chrono::high_resolution_clock::now();
-  //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); std::printf("rdma read  send prepare for (%zu), time elapse : (%ld)\n", msg_size, duration.count()); start = std::chrono::high_resolution_clock::now();
+  //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop
+  //  - start); std::printf("rdma read  send prepare for (%zu), time elapse :
+  //  (%ld)\n", msg_size, duration.count()); start =
+  //  std::chrono::high_resolution_clock::now();
   ibv_qp* qp;
-  if (qp_type == "read_local"){
-//    assert(false);// Never comes to here
+  if (qp_type == "read_local") {
+    //    assert(false);// Never comes to here
     // TODO: Need a mutex to protect the map access. (shared exclusive lock)
     qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
-  }else if (qp_type == "write_local_flush"){
+  } else if (qp_type == "write_local_flush") {
     assert(false);
-//    ibv_qp* qp = static_cast<ibv_qp*>(qp_local_write_flush->Get());
-//    if (qp == NULL) {
-//      Remote_Query_Pair_Connection(qp_type);
-//      qp = static_cast<ibv_qp*>(qp_local_write_flush->Get());
-//    }
-//    rc = ibv_post_send(qp, &sr, &bad_wr);
-  }else if (qp_type == "write_local_compact"){
+    //    ibv_qp* qp = static_cast<ibv_qp*>(qp_local_write_flush->Get());
+    //    if (qp == NULL) {
+    //      Remote_Query_Pair_Connection(qp_type);
+    //      qp = static_cast<ibv_qp*>(qp_local_write_flush->Get());
+    //    }
+    //    rc = ibv_post_send(qp, &sr, &bad_wr);
+  } else if (qp_type == "write_local_compact") {
     assert(false);
-//    ibv_qp* qp = static_cast<ibv_qp*>(qp_local_write_compact->Get());
-//    if (qp == NULL) {
-//      Remote_Query_Pair_Connection(qp_type);
-//      qp = static_cast<ibv_qp*>(qp_local_write_compact->Get());
-//    }
-//    rc = ibv_post_send(qp, &sr, &bad_wr);
+    //    ibv_qp* qp = static_cast<ibv_qp*>(qp_local_write_compact->Get());
+    //    if (qp == NULL) {
+    //      Remote_Query_Pair_Connection(qp_type);
+    //      qp = static_cast<ibv_qp*>(qp_local_write_compact->Get());
+    //    }
+    //    rc = ibv_post_send(qp, &sr, &bad_wr);
   } else {
-//    std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
+    //    std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
     rc = ibv_post_send(res->qp_map.at(target_node_id), &sr, &bad_wr);
-//    l.unlock();
+    //    l.unlock();
   }
   //    std::cout << " " << msg_size << "time elapse :" <<  << std::endl;
   //  start = std::chrono::high_resolution_clock::now();
@@ -1925,7 +1986,8 @@ int RDMA_Manager::RDMA_Read(ibv_mr* remote_mr, ibv_mr* local_mr,
   }
   //  else
   //  {
-//      fprintf(stdout, "RDMA Read Request was posted, OPCODE is %d\n", sr.opcode);
+  //      fprintf(stdout, "RDMA Read Request was posted, OPCODE is %d\n",
+  //      sr.opcode);
   //  }
   if (poll_num != 0) {
     ibv_wc* wc = new ibv_wc[poll_num]();
@@ -1941,21 +2003,24 @@ int RDMA_Manager::RDMA_Read(ibv_mr* remote_mr, ibv_mr* local_mr,
     delete[] wc;
   }
   ibv_wc wc;
-//#ifdef GETANALYSIS
-//  auto stop = std::chrono::high_resolution_clock::now();
-//  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-////    std::printf("Get from SSTables (not found) time elapse is %zu\n",  duration.count());
-//  if (msg_size <= 8192){
-//    RDMA_Manager::RDMAReadTimeElapseSum.fetch_add(duration.count());
-//    RDMA_Manager::ReadCount.fetch_add(1);
-//  }
-//
-//#endif
+  // #ifdef GETANALYSIS
+  //   auto stop = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop
+  //   - start);
+  ////    std::printf("Get from SSTables (not found) time elapse is %zu\n",
+  /// duration.count());
+  //  if (msg_size <= 8192){
+  //    RDMA_Manager::RDMAReadTimeElapseSum.fetch_add(duration.count());
+  //    RDMA_Manager::ReadCount.fetch_add(1);
+  //  }
+  //
+  // #endif
   return rc;
 }
 int RDMA_Manager::RDMA_Write(ibv_mr* remote_mr, ibv_mr* local_mr,
                              size_t msg_size, std::string qp_type,
-                             size_t send_flag, int poll_num, uint8_t target_node_id) {
+                             size_t send_flag, int poll_num,
+                             uint8_t target_node_id) {
   //  auto start = std::chrono::high_resolution_clock::now();
   struct ibv_send_wr sr;
   struct ibv_sge sge;
@@ -1976,33 +2041,38 @@ int RDMA_Manager::RDMA_Write(ibv_mr* remote_mr, ibv_mr* local_mr,
   if (send_flag != 0) sr.send_flags = send_flag;
   sr.wr.rdma.remote_addr = reinterpret_cast<uint64_t>(remote_mr->addr);
   sr.wr.rdma.rkey = remote_mr->rkey;
-  /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
+  /* there is a Receive Request in the responder side, so we won't get any into
+   * RNR flow */
   //*(start) = std::chrono::steady_clock::now();
   // start = std::chrono::steady_clock::now();
   //  auto stop = std::chrono::high_resolution_clock::now();
-  //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); printf("RDMA Write send preparation size: %zu elapse: %ld\n", msg_size, duration.count()); start = std::chrono::high_resolution_clock::now();
+  //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop
+  //  - start); printf("RDMA Write send preparation size: %zu elapse: %ld\n",
+  //  msg_size, duration.count()); start =
+  //  std::chrono::high_resolution_clock::now();
   ibv_qp* qp;
-  if (qp_type == "read_local"){
+  if (qp_type == "read_local") {
     //    assert(false);// Never comes to here
     qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
-  }else if (qp_type == "write_local_flush"){
+  } else if (qp_type == "write_local_flush") {
     qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
 
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
-      qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
+      qp = static_cast<ibv_qp*>(
+          qp_local_write_compact.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
   } else {
@@ -2015,12 +2085,14 @@ int RDMA_Manager::RDMA_Write(ibv_mr* remote_mr, ibv_mr* local_mr,
   if (rc) fprintf(stderr, "failed to post SR, return is %d\n", rc);
   //  else
   //  {
-//      fprintf(stdout, "RDMA Write Request was posted, OPCODE is %d\n", sr.opcode);
+  //      fprintf(stdout, "RDMA Write Request was posted, OPCODE is %d\n",
+  //      sr.opcode);
   //  }
   if (poll_num != 0) {
     ibv_wc* wc = new ibv_wc[poll_num]();
     //  auto start = std::chrono::high_resolution_clock::now();
-    //  while(std::chrono::high_resolution_clock::now()-start < std::chrono::nanoseconds(msg_size+200000));
+    //  while(std::chrono::high_resolution_clock::now()-start <
+    //  std::chrono::nanoseconds(msg_size+200000));
     // wait until the job complete.
     rc = poll_completion(wc, poll_num, qp_type, true, 0);
     if (rc != 0) {
@@ -2031,91 +2103,103 @@ int RDMA_Manager::RDMA_Write(ibv_mr* remote_mr, ibv_mr* local_mr,
     delete[] wc;
   }
   //  stop = std::chrono::high_resolution_clock::now();
-  //  duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); printf("RDMA Write post send and poll size: %zu elapse: %ld\n", msg_size, duration.count());
+  //  duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop -
+  //  start); printf("RDMA Write post send and poll size: %zu elapse: %ld\n",
+  //  msg_size, duration.count());
   return rc;
 }
 int RDMA_Manager::RDMA_Write(void* addr, uint32_t rkey, ibv_mr* local_mr,
                              size_t msg_size, std::string qp_type,
-                             size_t send_flag, int poll_num, uint8_t target_node_id) {
-    //  auto start = std::chrono::high_resolution_clock::now();
-    struct ibv_send_wr sr;
-    struct ibv_sge sge;
-    struct ibv_send_wr* bad_wr = NULL;
-    int rc;
-    /* prepare the scatter/gather entry */
-    memset(&sge, 0, sizeof(sge));
-    sge.addr = (uintptr_t)local_mr->addr;
-    sge.length = msg_size;
-    sge.lkey = local_mr->lkey;
-    /* prepare the send work request */
-    memset(&sr, 0, sizeof(sr));
-    sr.next = NULL;
-    sr.wr_id = 0;
-    sr.sg_list = &sge;
-    sr.num_sge = 1;
-    sr.opcode = IBV_WR_RDMA_WRITE;
-    if (send_flag != 0) sr.send_flags = send_flag;
-    sr.wr.rdma.remote_addr = (uint64_t)addr;
-    sr.wr.rdma.rkey = rkey;
-    /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
-    //*(start) = std::chrono::steady_clock::now();
-    // start = std::chrono::steady_clock::now();
-    //  auto stop = std::chrono::high_resolution_clock::now();
-    //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); printf("RDMA Write send preparation size: %zu elapse: %ld\n", msg_size, duration.count()); start = std::chrono::high_resolution_clock::now();
-    ibv_qp* qp;
-    if (qp_type == "read_local"){
-      //    assert(false);// Never comes to here
+                             size_t send_flag, int poll_num,
+                             uint8_t target_node_id) {
+  //  auto start = std::chrono::high_resolution_clock::now();
+  struct ibv_send_wr sr;
+  struct ibv_sge sge;
+  struct ibv_send_wr* bad_wr = NULL;
+  int rc;
+  /* prepare the scatter/gather entry */
+  memset(&sge, 0, sizeof(sge));
+  sge.addr = (uintptr_t)local_mr->addr;
+  sge.length = msg_size;
+  sge.lkey = local_mr->lkey;
+  /* prepare the send work request */
+  memset(&sr, 0, sizeof(sr));
+  sr.next = NULL;
+  sr.wr_id = 0;
+  sr.sg_list = &sge;
+  sr.num_sge = 1;
+  sr.opcode = IBV_WR_RDMA_WRITE;
+  if (send_flag != 0) sr.send_flags = send_flag;
+  sr.wr.rdma.remote_addr = (uint64_t)addr;
+  sr.wr.rdma.rkey = rkey;
+  /* there is a Receive Request in the responder side, so we won't get any into
+   * RNR flow */
+  //*(start) = std::chrono::steady_clock::now();
+  // start = std::chrono::steady_clock::now();
+  //  auto stop = std::chrono::high_resolution_clock::now();
+  //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop
+  //  - start); printf("RDMA Write send preparation size: %zu elapse: %ld\n",
+  //  msg_size, duration.count()); start =
+  //  std::chrono::high_resolution_clock::now();
+  ibv_qp* qp;
+  if (qp_type == "read_local") {
+    //    assert(false);// Never comes to here
+    qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
+    if (qp == NULL) {
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
-      if (qp == NULL) {
-        Remote_Query_Pair_Connection(qp_type,target_node_id);
-        qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
-      }
-      rc = ibv_post_send(qp, &sr, &bad_wr);
-    }else if (qp_type == "write_local_flush"){
+    }
+    rc = ibv_post_send(qp, &sr, &bad_wr);
+  } else if (qp_type == "write_local_flush") {
+    qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
+    if (qp == NULL) {
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
-      if (qp == NULL) {
-        Remote_Query_Pair_Connection(qp_type,target_node_id);
-        qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
-      }
-      rc = ibv_post_send(qp, &sr, &bad_wr);
+    }
+    rc = ibv_post_send(qp, &sr, &bad_wr);
 
-    }else if (qp_type == "write_local_compact"){
-      qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
-      if (qp == NULL) {
-        Remote_Query_Pair_Connection(qp_type,target_node_id);
-        qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
-      }
-      rc = ibv_post_send(qp, &sr, &bad_wr);
+  } else if (qp_type == "write_local_compact") {
+    qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
+    if (qp == NULL) {
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
+      qp = static_cast<ibv_qp*>(
+          qp_local_write_compact.at(target_node_id)->Get());
+    }
+    rc = ibv_post_send(qp, &sr, &bad_wr);
+  } else {
+    std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
+    rc = ibv_post_send(res->qp_map.at(target_node_id), &sr, &bad_wr);
+    l.unlock();
+  }
+
+  //  start = std::chrono::high_resolution_clock::now();
+  if (rc) fprintf(stderr, "failed to post SR, return is %d\n", rc);
+  //  else
+  //  {
+  //      fprintf(stdout, "RDMA Write Request was posted, OPCODE is %d\n",
+  //      sr.opcode);
+  //  }
+  if (poll_num != 0) {
+    ibv_wc* wc = new ibv_wc[poll_num]();
+    //  auto start = std::chrono::high_resolution_clock::now();
+    //  while(std::chrono::high_resolution_clock::now()-start <
+    //  std::chrono::nanoseconds(msg_size+200000));
+    // wait until the job complete.
+    rc = poll_completion(wc, poll_num, qp_type, true, target_node_id);
+    if (rc != 0) {
+      std::cout << "RDMA Write Failed" << std::endl;
+      std::cout << "q id is" << qp_type << std::endl;
+      fprintf(stdout, "QP number=0x%x\n", res->qp_map[target_node_id]->qp_num);
     } else {
-      std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
-      rc = ibv_post_send(res->qp_map.at(target_node_id), &sr, &bad_wr);
-      l.unlock();
+      DEBUG("RDMA write successfully\n");
     }
-
-    //  start = std::chrono::high_resolution_clock::now();
-    if (rc) fprintf(stderr, "failed to post SR, return is %d\n", rc);
-    //  else
-    //  {
-    //      fprintf(stdout, "RDMA Write Request was posted, OPCODE is %d\n", sr.opcode);
-    //  }
-    if (poll_num != 0) {
-      ibv_wc* wc = new ibv_wc[poll_num]();
-      //  auto start = std::chrono::high_resolution_clock::now();
-      //  while(std::chrono::high_resolution_clock::now()-start < std::chrono::nanoseconds(msg_size+200000));
-      // wait until the job complete.
-      rc = poll_completion(wc, poll_num, qp_type, true, target_node_id);
-      if (rc != 0) {
-        std::cout << "RDMA Write Failed" << std::endl;
-        std::cout << "q id is" << qp_type << std::endl;
-        fprintf(stdout, "QP number=0x%x\n", res->qp_map[target_node_id]->qp_num);
-      }else{
-        DEBUG("RDMA write successfully\n");
-      }
-      delete[] wc;
-    }
-    //  stop = std::chrono::high_resolution_clock::now();
-    //  duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); printf("RDMA Write post send and poll size: %zu elapse: %ld\n", msg_size, duration.count());
-    return rc;
+    delete[] wc;
+  }
+  //  stop = std::chrono::high_resolution_clock::now();
+  //  duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop -
+  //  start); printf("RDMA Write post send and poll size: %zu elapse: %ld\n",
+  //  msg_size, duration.count());
+  return rc;
 }
 
 int RDMA_Manager::RDMA_Write_Imme(void* addr, uint32_t rkey, ibv_mr* local_mr,
@@ -2143,33 +2227,38 @@ int RDMA_Manager::RDMA_Write_Imme(void* addr, uint32_t rkey, ibv_mr* local_mr,
   if (send_flag != 0) sr.send_flags = send_flag;
   sr.wr.rdma.remote_addr = (uint64_t)addr;
   sr.wr.rdma.rkey = rkey;
-  /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
+  /* there is a Receive Request in the responder side, so we won't get any into
+   * RNR flow */
   //*(start) = std::chrono::steady_clock::now();
   // start = std::chrono::steady_clock::now();
   //  auto stop = std::chrono::high_resolution_clock::now();
-  //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); printf("RDMA Write send preparation size: %zu elapse: %ld\n", msg_size, duration.count()); start = std::chrono::high_resolution_clock::now();
+  //  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop
+  //  - start); printf("RDMA Write send preparation size: %zu elapse: %ld\n",
+  //  msg_size, duration.count()); start =
+  //  std::chrono::high_resolution_clock::now();
   ibv_qp* qp;
-  if (qp_type == "read_local"){
+  if (qp_type == "read_local") {
     //    assert(false);// Never comes to here
     qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
-  }else if (qp_type == "write_local_flush"){
+  } else if (qp_type == "write_local_flush") {
     qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
 
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
-      qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
+      qp = static_cast<ibv_qp*>(
+          qp_local_write_compact.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
   } else {
@@ -2183,25 +2272,29 @@ int RDMA_Manager::RDMA_Write_Imme(void* addr, uint32_t rkey, ibv_mr* local_mr,
   if (rc) fprintf(stderr, "failed to post SR, return is %d\n", rc);
   //  else
   //  {
-  //      fprintf(stdout, "RDMA Write Request was posted, OPCODE is %d\n", sr.opcode);
+  //      fprintf(stdout, "RDMA Write Request was posted, OPCODE is %d\n",
+  //      sr.opcode);
   //  }
   if (poll_num != 0) {
     ibv_wc* wc = new ibv_wc[poll_num]();
     //  auto start = std::chrono::high_resolution_clock::now();
-    //  while(std::chrono::high_resolution_clock::now()-start < std::chrono::nanoseconds(msg_size+200000));
+    //  while(std::chrono::high_resolution_clock::now()-start <
+    //  std::chrono::nanoseconds(msg_size+200000));
     // wait until the job complete.
     rc = poll_completion(wc, poll_num, qp_type, true, target_node_id);
     if (rc != 0) {
       std::cout << "RDMA Write Failed" << std::endl;
       std::cout << "q id is" << qp_type << std::endl;
       fprintf(stdout, "QP number=0x%x\n", res->qp_map[target_node_id]->qp_num);
-    }else{
+    } else {
       DEBUG("RDMA write successfully\n");
     }
     delete[] wc;
   }
   //  stop = std::chrono::high_resolution_clock::now();
-  //  duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); printf("RDMA Write post send and poll size: %zu elapse: %ld\n", msg_size, duration.count());
+  //  duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop -
+  //  start); printf("RDMA Write post send and poll size: %zu elapse: %ld\n",
+  //  msg_size, duration.count());
   return rc;
 }
 
@@ -2230,7 +2323,8 @@ int RDMA_Manager::RDMA_Write_Imme(void* addr, uint32_t rkey, ibv_mr* local_mr,
 //    sr.wr.rdma.remote_addr = res->mem_regions.addr;
 //    sr.wr.rdma.rkey = res->mem_regions.rkey;
 //  }
-//  /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
+//  /* there is a Receive Request in the responder side, so we won't get any
+//  into RNR flow */
 //  //*(start) = std::chrono::steady_clock::now();
 //  //start = std::chrono::steady_clock::now();
 //  rc = ibv_post_send(res->qp, &sr, &bad_wr);
@@ -2287,36 +2381,38 @@ int RDMA_Manager::post_send(ibv_mr* mr, std::string qp_type, size_t size,
   sr.opcode = static_cast<ibv_wr_opcode>(IBV_WR_SEND);
   sr.send_flags = IBV_SEND_SIGNALED;
 
-  /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
+  /* there is a Receive Request in the responder side, so we won't get any into
+   * RNR flow */
   //*(start) = std::chrono::steady_clock::now();
   // start = std::chrono::steady_clock::now();
 
-//  if (rdma_config.server_name)
-//    rc = ibv_post_send(res->qp_map["main"], &sr, &bad_wr);
-//  else
-//    rc = ibv_post_send(res->qp_map[qp_id], &sr, &bad_wr);
+  //  if (rdma_config.server_name)
+  //    rc = ibv_post_send(res->qp_map["main"], &sr, &bad_wr);
+  //  else
+  //    rc = ibv_post_send(res->qp_map[qp_id], &sr, &bad_wr);
   ibv_qp* qp;
-  if (qp_type == "read_local"){
+  if (qp_type == "read_local") {
     //    assert(false);// Never comes to here
     qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
-  }else if (qp_type == "write_local_flush"){
+  } else if (qp_type == "write_local_flush") {
     qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
 
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
-      qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
+      qp = static_cast<ibv_qp*>(
+          qp_local_write_compact.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
   } else {
@@ -2366,36 +2462,38 @@ int RDMA_Manager::post_send(ibv_mr** mr_list, size_t sge_size,
   sr.opcode = static_cast<ibv_wr_opcode>(IBV_WR_SEND);
   sr.send_flags = IBV_SEND_SIGNALED;
 
-  /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
+  /* there is a Receive Request in the responder side, so we won't get any into
+   * RNR flow */
   //*(start) = std::chrono::steady_clock::now();
   // start = std::chrono::steady_clock::now();
 
-//  if (rdma_config.server_name)
-//    rc = ibv_post_send(res->qp_map["main"], &sr, &bad_wr);
-//  else
-//    rc = ibv_post_send(res->qp_map[qp_id], &sr, &bad_wr);
+  //  if (rdma_config.server_name)
+  //    rc = ibv_post_send(res->qp_map["main"], &sr, &bad_wr);
+  //  else
+  //    rc = ibv_post_send(res->qp_map[qp_id], &sr, &bad_wr);
   ibv_qp* qp;
-  if (qp_type == "read_local"){
+  if (qp_type == "read_local") {
     //    assert(false);// Never comes to here
     qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
-  }else if (qp_type == "write_local_flush"){
+  } else if (qp_type == "write_local_flush") {
     qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
 
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
-      qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
+      qp = static_cast<ibv_qp*>(
+          qp_local_write_compact.at(target_node_id)->Get());
     }
     rc = ibv_post_send(qp, &sr, &bad_wr);
   } else {
@@ -2444,32 +2542,33 @@ int RDMA_Manager::post_receive(ibv_mr** mr_list, size_t sge_size,
   rr.sg_list = sge;
   rr.num_sge = sge_size;
   /* post the Receive Request to the RQ */
-//  if (rdma_config.server_name)
-//    rc = ibv_post_recv(res->qp_map["main"], &rr, &bad_wr);
-//  else
-//    rc = ibv_post_recv(res->qp_map[qp_id], &rr, &bad_wr);
+  //  if (rdma_config.server_name)
+  //    rc = ibv_post_recv(res->qp_map["main"], &rr, &bad_wr);
+  //  else
+  //    rc = ibv_post_recv(res->qp_map[qp_id], &rr, &bad_wr);
   ibv_qp* qp;
-  if (qp_type == "read_local"){
+  if (qp_type == "read_local") {
     //    assert(false);// Never comes to here
     qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     }
     rc = ibv_post_recv(qp, &rr, &bad_wr);
-  }else if (qp_type == "write_local_flush"){
+  } else if (qp_type == "write_local_flush") {
     qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     }
     rc = ibv_post_recv(qp, &rr, &bad_wr);
 
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
-      qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
+      qp = static_cast<ibv_qp*>(
+          qp_local_write_compact.at(target_node_id)->Get());
     }
     rc = ibv_post_recv(qp, &rr, &bad_wr);
   } else {
@@ -2514,32 +2613,33 @@ int RDMA_Manager::post_receive(ibv_mr* mr, std::string qp_type, size_t size,
   rr.sg_list = &sge;
   rr.num_sge = 1;
   /* post the Receive Request to the RQ */
-//  if (rdma_config.server_name)
-//    rc = ibv_post_recv(res->qp_map["main"], &rr, &bad_wr);
-//  else
-//    rc = ibv_post_recv(res->qp_map[q_id], &rr, &bad_wr);
+  //  if (rdma_config.server_name)
+  //    rc = ibv_post_recv(res->qp_map["main"], &rr, &bad_wr);
+  //  else
+  //    rc = ibv_post_recv(res->qp_map[q_id], &rr, &bad_wr);
   ibv_qp* qp;
-  if (qp_type == "read_local"){
+  if (qp_type == "read_local") {
     //    assert(false);// Never comes to here
     qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_read.at(target_node_id)->Get());
     }
     rc = ibv_post_recv(qp, &rr, &bad_wr);
-  }else if (qp_type == "write_local_flush"){
+  } else if (qp_type == "write_local_flush") {
     qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
       qp = static_cast<ibv_qp*>(qp_local_write_flush.at(target_node_id)->Get());
     }
     rc = ibv_post_recv(qp, &rr, &bad_wr);
 
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
     if (qp == NULL) {
-      Remote_Query_Pair_Connection(qp_type,target_node_id);
-      qp = static_cast<ibv_qp*>(qp_local_write_compact.at(target_node_id)->Get());
+      Remote_Query_Pair_Connection(qp_type, target_node_id);
+      qp = static_cast<ibv_qp*>(
+          qp_local_write_compact.at(target_node_id)->Get());
     }
     rc = ibv_post_recv(qp, &rr, &bad_wr);
   } else {
@@ -2555,22 +2655,22 @@ int RDMA_Manager::post_receive(ibv_mr* mr, std::string qp_type, size_t size,
 }
 /* poll_completion */
 /******************************************************************************
-* Function: poll_completion
-*
-* Input
-* res pointer to resources structure
-*
-* Output
-* none
-*
-* Returns
-* 0 on success, 1 on failure
-*
-* Description
-* Poll the completion queue for a single event. This function will continue to
-* poll the queue until MAX_POLL_CQ_TIMEOUT milliseconds have passed.
-*
-******************************************************************************/
+ * Function: poll_completion
+ *
+ * Input
+ * res pointer to resources structure
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * 0 on success, 1 on failure
+ *
+ * Description
+ * Poll the completion queue for a single event. This function will continue to
+ * poll the queue until MAX_POLL_CQ_TIMEOUT milliseconds have passed.
+ *
+ ******************************************************************************/
 int RDMA_Manager::poll_completion(ibv_wc* wc_p, int num_entries,
                                   std::string qp_type, bool send_cq,
                                   uint8_t target_node_id) {
@@ -2585,23 +2685,23 @@ int RDMA_Manager::poll_completion(ibv_wc* wc_p, int num_entries,
   // gettimeofday(&cur_time, NULL);
   // start_time_msec = (cur_time.tv_sec * 1000) + (cur_time.tv_usec / 1000);
   std::shared_lock<std::shared_mutex> l(qp_cq_map_mutex);
-  if (qp_type == "write_local_flush"){
+  if (qp_type == "write_local_flush") {
     cq = (ibv_cq*)cq_local_write_flush.at(target_node_id)->Get();
     assert(cq != nullptr);
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     cq = (ibv_cq*)cq_local_write_compact.at(target_node_id)->Get();
-//    cq = ((CQ_Map*)cq_local_write_compact->Get())->at(shard_target_node_id);
-//    cq = static_cast<ibv_cq*>(cq_local_write_compact->Get());
+    //    cq =
+    //    ((CQ_Map*)cq_local_write_compact->Get())->at(shard_target_node_id); cq
+    //    = static_cast<ibv_cq*>(cq_local_write_compact->Get());
     assert(cq != nullptr);
 
-  }else if (qp_type == "read_local"){
+  } else if (qp_type == "read_local") {
     cq = (ibv_cq*)cq_local_read.at(target_node_id)->Get();
-//    cq = ((CQ_Map*)cq_local_read->Get())->at(shard_target_node_id);
-//    cq = static_cast<ibv_cq*>(cq_local_read->Get());
+    //    cq = ((CQ_Map*)cq_local_read->Get())->at(shard_target_node_id);
+    //    cq = static_cast<ibv_cq*>(cq_local_read->Get());
     assert(cq != nullptr);
-  }
-  else{
-//    assert(res->cq_map.contains());
+  } else {
+    //    assert(res->cq_map.contains());
     if (send_cq)
       cq = res->cq_map.at(target_node_id).first;
     else
@@ -2617,7 +2717,8 @@ int RDMA_Manager::poll_completion(ibv_wc* wc_p, int num_entries,
       poll_num = poll_num + poll_result;
     /*gettimeofday(&cur_time, NULL);
     cur_time_msec = (cur_time.tv_sec * 1000) + (cur_time.tv_usec / 1000);*/
-  } while (poll_num < num_entries);  // && ((cur_time_msec - start_time_msec) < MAX_POLL_CQ_TIMEOUT));
+  } while (poll_num < num_entries);  // && ((cur_time_msec - start_time_msec) <
+                                     // MAX_POLL_CQ_TIMEOUT));
   //*(end) = std::chrono::steady_clock::now();
   // end = std::chrono::steady_clock::now();
   assert(poll_num == num_entries);
@@ -2630,14 +2731,18 @@ int RDMA_Manager::poll_completion(ibv_wc* wc_p, int num_entries,
     rc = 1;
   } else {
     /* CQE found */
-    // fprintf(stdout, "completion was found in CQ with status 0x%x\n", wc.status);
-    /* check the completion status (here we don't care about the completion opcode */
+    // fprintf(stdout, "completion was found in CQ with status 0x%x\n",
+    // wc.status);
+    /* check the completion status (here we don't care about the completion
+     * opcode */
     for (auto i = 0; i < num_entries; i++) {
       if (wc_p[i].status !=
-          IBV_WC_SUCCESS)  // TODO:: could be modified into check all the entries in the array
+          IBV_WC_SUCCESS)  // TODO:: could be modified into check all the
+                           // entries in the array
       {
         fprintf(stderr,
-                "number %d got bad completion with status: 0x%x, vendor syndrome: 0x%x\n",
+                "number %d got bad completion with status: 0x%x, vendor "
+                "syndrome: 0x%x\n",
                 i, wc_p[i].status, wc_p[i].vendor_err);
         assert(false);
         rc = 1;
@@ -2647,33 +2752,31 @@ int RDMA_Manager::poll_completion(ibv_wc* wc_p, int num_entries,
   return rc;
 }
 
-int RDMA_Manager::try_poll_completions(ibv_wc* wc_p,
-                                                   int num_entries,
-                                                   std::string& qp_type,
-                                                   bool send_cq,
-                                                   uint8_t target_node_id) {
+int RDMA_Manager::try_poll_completions(ibv_wc* wc_p, int num_entries,
+                                       std::string& qp_type, bool send_cq,
+                                       uint8_t target_node_id) {
   int poll_result = 0;
   int poll_num = 0;
   ibv_cq* cq;
   /* poll the completion for a while before giving up of doing it .. */
   // gettimeofday(&cur_time, NULL);
   // start_time_msec = (cur_time.tv_sec * 1000) + (cur_time.tv_usec / 1000);
-  if (qp_type == "write_local_flush"){
+  if (qp_type == "write_local_flush") {
     cq = (ibv_cq*)cq_local_write_flush.at(target_node_id)->Get();
     assert(cq != nullptr);
-  }else if (qp_type == "write_local_compact"){
+  } else if (qp_type == "write_local_compact") {
     cq = (ibv_cq*)cq_local_write_compact.at(target_node_id)->Get();
-    //    cq = ((CQ_Map*)cq_local_write_compact->Get())->at(shard_target_node_id);
-    //    cq = static_cast<ibv_cq*>(cq_local_write_compact->Get());
+    //    cq =
+    //    ((CQ_Map*)cq_local_write_compact->Get())->at(shard_target_node_id); cq
+    //    = static_cast<ibv_cq*>(cq_local_write_compact->Get());
     assert(cq != nullptr);
 
-  }else if (qp_type == "read_local"){
+  } else if (qp_type == "read_local") {
     cq = (ibv_cq*)cq_local_read.at(target_node_id)->Get();
     //    cq = ((CQ_Map*)cq_local_read->Get())->at(shard_target_node_id);
     //    cq = static_cast<ibv_cq*>(cq_local_read->Get());
     assert(cq != nullptr);
-  }
-  else{
+  } else {
     if (send_cq)
       cq = res->cq_map.at(target_node_id).first;
     else
@@ -2683,13 +2786,16 @@ int RDMA_Manager::try_poll_completions(ibv_wc* wc_p,
 
   poll_result = ibv_poll_cq(cq, num_entries, &wc_p[poll_num]);
 #ifndef NDEBUG
-  if (poll_result > 0){
-    if (wc_p[poll_result-1].status !=
-    IBV_WC_SUCCESS)  // TODO:: could be modified into check all the entries in the array
+  if (poll_result > 0) {
+    if (wc_p[poll_result - 1].status !=
+        IBV_WC_SUCCESS)  // TODO:: could be modified into check all the entries
+                         // in the array
     {
       fprintf(stderr,
-              "number %d got bad completion with status: 0x%x, vendor syndrome: 0x%x\n",
-              poll_result-1, wc_p[poll_result-1].status, wc_p[poll_result-1].vendor_err);
+              "number %d got bad completion with status: 0x%x, vendor "
+              "syndrome: 0x%x\n",
+              poll_result - 1, wc_p[poll_result - 1].status,
+              wc_p[poll_result - 1].vendor_err);
       assert(false);
     }
   }
@@ -2697,20 +2803,20 @@ int RDMA_Manager::try_poll_completions(ibv_wc* wc_p,
   return poll_result;
 }
 /******************************************************************************
-* Function: print_config
-*
-* Input
-* none
-*
-* Output
-* none
-*
-* Returns
-* none
-*
-* Description
-* Print out config information
-******************************************************************************/
+ * Function: print_config
+ *
+ * Input
+ * none
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * none
+ *
+ * Description
+ * Print out config information
+ ******************************************************************************/
 void RDMA_Manager::print_config() {
   fprintf(stdout, " ------------------------------------------------\n");
   fprintf(stdout, " Device name : \"%s\"\n", rdma_config.dev_name);
@@ -2724,20 +2830,20 @@ void RDMA_Manager::print_config() {
 }
 
 /******************************************************************************
-* Function: usage
-*
-* Input
-* argv0 command line arguments
-*
-* Output
-* none
-*
-* Returns
-* none
-*
-* Description
-* print a description of command line syntax
-******************************************************************************/
+ * Function: usage
+ *
+ * Input
+ * argv0 command line arguments
+ *
+ * Output
+ * none
+ *
+ * Returns
+ * none
+ *
+ * Description
+ * print a description of command line syntax
+ ******************************************************************************/
 void RDMA_Manager::usage(const char* argv0) {
   fprintf(stdout, "Usage:\n");
   fprintf(stdout, " %s start a server and wait for connection\n", argv0);
@@ -2753,11 +2859,12 @@ void RDMA_Manager::usage(const char* argv0) {
   fprintf(stdout,
           " -i, --ib-port <port> use port <port> of IB device (default 1)\n");
   fprintf(stdout,
-          " -g, --gid_idx <git index> gid index to be used in GRH (default not used)\n");
+          " -g, --gid_idx <git index> gid index to be used in GRH (default not "
+          "used)\n");
 }
 
 bool RDMA_Manager::Remote_Memory_Register(size_t size, uint8_t target_node_id) {
-//  std::unique_lock<std::shared_mutex> l(main_qp_mutex);
+  //  std::unique_lock<std::shared_mutex> l(main_qp_mutex);
   // register the memory block from the remote memory
 
   RDMA_Request* send_pointer;
@@ -2772,36 +2879,42 @@ bool RDMA_Manager::Remote_Memory_Register(size_t size, uint8_t target_node_id) {
   send_pointer->rkey = receive_mr.rkey;
   RDMA_Reply* receive_pointer;
   receive_pointer = (RDMA_Reply*)receive_mr.addr;
-  //Clear the reply buffer for the polling.
+  // Clear the reply buffer for the polling.
   *receive_pointer = {};
   post_send<RDMA_Request>(&send_mr, target_node_id, std::string("main"));
   ibv_wc wc[2] = {};
 
-
-  if (poll_completion(wc, 1, std::string("main"), true, target_node_id)){
+  if (poll_completion(wc, 1, std::string("main"), true, target_node_id)) {
     fprintf(stderr, "failed to poll send for remote memory register\n");
     return false;
   }
-//  asm volatile ("sfence\n" : : );
-//  asm volatile ("lfence\n" : : );
-//  asm volatile ("mfence\n" : : );
+  //  asm volatile ("sfence\n" : : );
+  //  asm volatile ("lfence\n" : : );
+  //  asm volatile ("mfence\n" : : );
   printf("Remote memory registeration, size: %zu\n", size);
-  poll_reply_buffer(receive_pointer); // poll the receive for 2 entires
+  poll_reply_buffer(receive_pointer);  // poll the receive for 2 entires
   printf("polled reply buffer\n");
   auto* temp_pointer = new ibv_mr();
   // Memory leak?, No, the ibv_mr pointer will be push to the remote mem pool,
-  // Please remember to delete it when diregistering mem region from the remote memory
-  *temp_pointer = receive_pointer->content.mr;  // create a new ibv_mr for storing the new remote memory region handler
+  // Please remember to delete it when diregistering mem region from the remote
+  // memory
+  *temp_pointer =
+      receive_pointer->content.mr;  // create a new ibv_mr for storing the new
+                                    // remote memory region handler
   remote_mem_pool.push_back(
-      temp_pointer);  // push the new pointer for the new ibv_mr (different from the receive buffer) to remote_mem_pool
+      temp_pointer);  // push the new pointer for the new ibv_mr (different from
+                      // the receive buffer) to remote_mem_pool
 
-  // push the bitmap of the new registed buffer to the bitmap vector in resource.
+  // push the bitmap of the new registed buffer to the bitmap vector in
+  // resource.
   int placeholder_num =
       static_cast<int>(temp_pointer->length) /
       (Table_Size);  // here we supposing the SSTables are 4 megabytes
-  In_Use_Array* in_use_array = new In_Use_Array(placeholder_num, Table_Size, temp_pointer);
+  In_Use_Array* in_use_array =
+      new In_Use_Array(placeholder_num, Table_Size, temp_pointer);
   //    std::unique_lock l(remote_pool_mutex);
-  Remote_Mem_Bitmap.at(target_node_id)->insert({temp_pointer->addr, in_use_array});
+  Remote_Mem_Bitmap.at(target_node_id)
+      ->insert({temp_pointer->addr, in_use_array});
   //    l.unlock();
   //  l.unlock();
   Deallocate_Local_RDMA_Slot(send_mr.addr, Message);
@@ -2825,10 +2938,10 @@ bool RDMA_Manager::Remote_Query_Pair_Connection(std::string& qp_type,
     }
   } else
     memset(&my_gid, 0, sizeof my_gid);
-//  std::unique_lock<std::shared_mutex> l(main_qp_mutex);
+  //  std::unique_lock<std::shared_mutex> l(main_qp_mutex);
   // lock should be here because from here on we will modify the send buffer.
-  // TODO: Try to understand whether this kind of memcopy without serialization is correct.
-  // Could be wrong on different machine, because of the alignment
+  // TODO: Try to understand whether this kind of memcopy without serialization
+  // is correct. Could be wrong on different machine, because of the alignment
   RDMA_Request* send_pointer;
   ibv_mr send_mr = {};
   ibv_mr receive_mr = {};
@@ -2845,9 +2958,9 @@ bool RDMA_Manager::Remote_Query_Pair_Connection(std::string& qp_type,
   send_pointer->rkey = receive_mr.rkey;
   RDMA_Reply* receive_pointer;
   receive_pointer = (RDMA_Reply*)receive_mr.addr;
-  //Clear the reply buffer for the polling.
+  // Clear the reply buffer for the polling.
   *receive_pointer = {};
-//  post_receive<registered_qp_config>(res->mr_receive, std::string("main"));
+  //  post_receive<registered_qp_config>(res->mr_receive, std::string("main"));
   post_send<RDMA_Request>(&send_mr, target_node_id, std::string("main"));
   ibv_wc wc[2] = {};
   //  while(wc.opcode != IBV_WC_RECV){
@@ -2858,32 +2971,32 @@ bool RDMA_Manager::Remote_Query_Pair_Connection(std::string& qp_type,
   //
   //  }
   //  assert(wc.opcode == IBV_WC_RECV);
-  if (poll_completion(wc, 1, std::string("main"),
-                      true, target_node_id)){
-//    assert(try_poll_completions(wc, 1, std::string("main"),true) == 0);
+  if (poll_completion(wc, 1, std::string("main"), true, target_node_id)) {
+    //    assert(try_poll_completions(wc, 1, std::string("main"),true) == 0);
     fprintf(stderr, "failed to poll send for remote memory register\n");
     return false;
   }
-  asm volatile ("sfence\n" : : );
-  asm volatile ("lfence\n" : : );
-  asm volatile ("mfence\n" : : );
-  poll_reply_buffer(receive_pointer); // poll the receive for 2 entires
-  registered_qp_config* temp_buff = new registered_qp_config(receive_pointer->content.qp_config);
+  asm volatile("sfence\n" : :);
+  asm volatile("lfence\n" : :);
+  asm volatile("mfence\n" : :);
+  poll_reply_buffer(receive_pointer);  // poll the receive for 2 entires
+  registered_qp_config* temp_buff =
+      new registered_qp_config(receive_pointer->content.qp_config);
   std::shared_lock<std::shared_mutex> l1(qp_cq_map_mutex);
-  if (qp_type == "read_local" )
+  if (qp_type == "read_local")
     local_read_qp_info.at(target_node_id)->Reset(temp_buff);
-//    ((QP_Info_Map*)local_read_qp_info->Get())->insert({shard_target_node_id, temp_buff});
-//    local_read_qp_info->Reset(temp_buff);
-  else if(qp_type == "write_local_compact")
+  //    ((QP_Info_Map*)local_read_qp_info->Get())->insert({shard_target_node_id,
+  //    temp_buff}); local_read_qp_info->Reset(temp_buff);
+  else if (qp_type == "write_local_compact")
     local_write_compact_qp_info.at(target_node_id)->Reset(temp_buff);
-//    ((QP_Info_Map*)local_write_compact_qp_info->Get())->insert({shard_target_node_id, temp_buff});
-//    local_write_compact_qp_info->Reset(temp_buff);
-  else if(qp_type == "write_local_flush")
+  //    ((QP_Info_Map*)local_write_compact_qp_info->Get())->insert({shard_target_node_id,
+  //    temp_buff}); local_write_compact_qp_info->Reset(temp_buff);
+  else if (qp_type == "write_local_flush")
     local_write_flush_qp_info.at(target_node_id)->Reset(temp_buff);
-//    ((QP_Info_Map*)local_write_flush_qp_info->Get())->insert({shard_target_node_id, temp_buff});
-//    local_write_flush_qp_info->Reset(temp_buff);
+  //    ((QP_Info_Map*)local_write_flush_qp_info->Get())->insert({shard_target_node_id,
+  //    temp_buff}); local_write_flush_qp_info->Reset(temp_buff);
   else
-    res->qp_main_connection_info.insert({target_node_id,temp_buff});
+    res->qp_main_connection_info.insert({target_node_id, temp_buff});
   l1.unlock();
   fprintf(stdout, "Remote QP number=0x%x\n", temp_buff->qp_num);
   fprintf(stdout, "Remote LID = 0x%x\n", temp_buff->lid);
@@ -2921,43 +3034,51 @@ void RDMA_Manager::Allocate_Remote_RDMA_Slot(ibv_mr& remote_mr,
 
   while (ptr != Remote_Mem_Bitmap.at(target_node_id)->end()) {
     // iterate among all the remote memory region
-    // find the first empty SSTable Placeholder's iterator, iterator->first is ibv_mr* second is the bool vector for this ibv_mr*. Each ibv_mr is the origin block get from the remote memory. The memory was divided into chunks with size == SSTable size.
+    // find the first empty SSTable Placeholder's iterator, iterator->first is
+    // ibv_mr* second is the bool vector for this ibv_mr*. Each ibv_mr is the
+    // origin block get from the remote memory. The memory was divided into
+    // chunks with size == SSTable size.
     int sst_index = ptr->second->allocate_memory_slot();
     if (sst_index >= 0) {
       remote_mr = *((ptr->second)->get_mr_ori());
       remote_mr.addr = static_cast<void*>(static_cast<char*>(remote_mr.addr) +
-                                           sst_index * Table_Size);
+                                          sst_index * Table_Size);
       remote_mr.length = Table_Size;
 
-//        remote_data_mrs->fname = file_name;
-//        remote_data_mrs->map_pointer =
-//          (ptr->second).get_mr_ori();  // it could be confused that the map_pointer is for the memtadata deletion
-// so that we can easily find where to deallocate our RDMA buffer. The key is a pointer to ibv_mr.
-//      remote_data_mrs->file_size = 0;
-//      DEBUG_arg("Allocate Remote pointer %p",  remote_mr.addr);
+      //        remote_data_mrs->fname = file_name;
+      //        remote_data_mrs->map_pointer =
+      //          (ptr->second).get_mr_ori();  // it could be confused that the
+      //          map_pointer is for the memtadata deletion
+      // so that we can easily find where to deallocate our RDMA buffer. The key
+      // is a pointer to ibv_mr.
+      //      remote_data_mrs->file_size = 0;
+      //      DEBUG_arg("Allocate Remote pointer %p",  remote_mr.addr);
       return;
     } else
       ptr++;
   }
   mem_read_lock.unlock();
-  // If not find remote buffers are all used, allocate another remote memory region.
+  // If not find remote buffers are all used, allocate another remote memory
+  // region.
   std::unique_lock<std::shared_mutex> mem_write_lock(remote_mem_mutex);
   Remote_Memory_Register(1 * 1024 * 1024 * 1024, target_node_id);
   //  fs_meta_save();
   ibv_mr* mr_last;
   mr_last = remote_mem_pool.back();
-  int sst_index = Remote_Mem_Bitmap.at(target_node_id)->at(mr_last->addr)->allocate_memory_slot();
+  int sst_index = Remote_Mem_Bitmap.at(target_node_id)
+                      ->at(mr_last->addr)
+                      ->allocate_memory_slot();
   assert(sst_index >= 0);
   mem_write_lock.unlock();
 
   //  sst_meta->mr = new ibv_mr();
   remote_mr = *(mr_last);
   remote_mr.addr = static_cast<void*>(static_cast<char*>(remote_mr.addr) +
-                                       sst_index * Table_Size);
+                                      sst_index * Table_Size);
   remote_mr.length = Table_Size;
   //    remote_data_mrs->fname = file_name;
   //    remote_data_mrs->map_pointer = mr_last;
-//  DEBUG_arg("Allocate Remote pointer %p",  remote_mr.addr);
+  //  DEBUG_arg("Allocate Remote pointer %p",  remote_mr.addr);
   return;
 }
 // A function try to allocate RDMA registered local memory
@@ -2973,18 +3094,23 @@ void RDMA_Manager::Allocate_Local_RDMA_Slot(ibv_mr& mr_input,
     if (name_to_mem_pool.at(pool_name).empty()) {
       ibv_mr* mr;
       char* buff;
-      // the developer can define how much memory cna one time RDMA allocation get.
+      // the developer can define how much memory cna one time RDMA allocation
+      // get.
       Local_Memory_Register(&buff, &mr,
-  name_to_allocated_size.at(pool_name) == 0 ?
-      1024*1024*1024:name_to_allocated_size.at(pool_name), pool_name);
-      if (node_id%2 == 1)
-        printf("Memory used up, Initially, allocate new one, memory pool is %s, total memory this pool is %lu\n",
-               EnumStrings[pool_name], name_to_mem_pool.at(pool_name).size());
+                            name_to_allocated_size.at(pool_name) == 0
+                                ? 1024 * 1024 * 1024
+                                : name_to_allocated_size.at(pool_name),
+                            pool_name);
+      if (node_id % 2 == 1)
+        printf(
+            "Memory used up, Initially, allocate new one, memory pool is %s, "
+            "total memory this pool is %lu\n",
+            EnumStrings[pool_name], name_to_mem_pool.at(pool_name).size());
     }
     mem_write_lock.unlock();
     mem_read_lock.lock();
   }
-//  std::shared_lock<std::shared_mutex> mem_read_lock(local_mem_mutex);
+  //  std::shared_lock<std::shared_mutex> mem_read_lock(local_mem_mutex);
   auto ptr = name_to_mem_pool.at(pool_name).begin();
 
   while (ptr != name_to_mem_pool.at(pool_name).end()) {
@@ -2995,13 +3121,13 @@ void RDMA_Manager::Allocate_Local_RDMA_Slot(ibv_mr& mr_input,
     }
     int block_index = ptr->second->allocate_memory_slot();
     if (block_index >= 0) {
-//      mr_input = new ibv_mr();
+      //      mr_input = new ibv_mr();
       //      map_pointer = (ptr->second).get_mr_ori();
       mr_input = *((ptr->second)->get_mr_ori());
       mr_input.addr = static_cast<void*>(static_cast<char*>(mr_input.addr) +
-                                          block_index * chunk_size);
+                                         block_index * chunk_size);
       mr_input.length = chunk_size;
-//      DEBUG_arg("Allocate pointer %p", mr_input.addr);
+      //      DEBUG_arg("Allocate pointer %p", mr_input.addr);
       return;
     } else
       ptr++;
@@ -3009,32 +3135,40 @@ void RDMA_Manager::Allocate_Local_RDMA_Slot(ibv_mr& mr_input,
   mem_read_lock.unlock();
   // if not find available Local block buffer then allocate a new buffer. then
   // pick up one buffer from the new Local memory region.
-  // TODO:: It could happen that the local buffer size is not enough, need to reallocate a new buff again,
+  // TODO:: It could happen that the local buffer size is not enough, need to
+  // reallocate a new buff again,
   // TODO:: Because there are two many thread going on at the same time.
   ibv_mr* mr_to_allocate = new ibv_mr();
   char* buff = new char[chunk_size];
 
   std::unique_lock<std::shared_mutex> mem_write_lock(local_mem_mutex);
 
-  Local_Memory_Register(&buff, &mr_to_allocate,name_to_allocated_size.at(pool_name) == 0 ?
-      1024*1024*1024:name_to_allocated_size.at(pool_name), pool_name);
-  if (node_id%2 == 1)
-    printf("Memory used up, allocate new one, memory pool is %s, total memory is %lu\n",
-           EnumStrings[pool_name], Calculate_size_of_pool(DataChunk)+
-           Calculate_size_of_pool(IndexChunk)+Calculate_size_of_pool(FilterChunk)
-           + Calculate_size_of_pool(FlushBuffer)+ Calculate_size_of_pool(Version_edit));
+  Local_Memory_Register(&buff, &mr_to_allocate,
+                        name_to_allocated_size.at(pool_name) == 0
+                            ? 1024 * 1024 * 1024
+                            : name_to_allocated_size.at(pool_name),
+                        pool_name);
+  if (node_id % 2 == 1)
+    printf(
+        "Memory used up, allocate new one, memory pool is %s, total memory is "
+        "%lu\n",
+        EnumStrings[pool_name],
+        Calculate_size_of_pool(DataChunk) + Calculate_size_of_pool(IndexChunk) +
+            Calculate_size_of_pool(FilterChunk) +
+            Calculate_size_of_pool(FlushBuffer) +
+            Calculate_size_of_pool(Version_edit));
   int block_index = name_to_mem_pool.at(pool_name)
                         .at(mr_to_allocate->addr)
                         ->allocate_memory_slot();
   mem_write_lock.unlock();
   if (block_index >= 0) {
-//    mr_input = new ibv_mr();
+    //    mr_input = new ibv_mr();
     //    map_pointer = mr_to_allocate;
     mr_input = *(mr_to_allocate);
     mr_input.addr = static_cast<void*>(static_cast<char*>(mr_input.addr) +
-                                        block_index * chunk_size);
+                                       block_index * chunk_size);
     mr_input.length = chunk_size;
-//    DEBUG_arg("Allocate pointer %p", mr_input.addr);
+    //    DEBUG_arg("Allocate pointer %p", mr_input.addr);
     //  mr_input.fname = file_name;
     return;
   }
@@ -3042,22 +3176,23 @@ void RDMA_Manager::Allocate_Local_RDMA_Slot(ibv_mr& mr_input,
 size_t RDMA_Manager::Calculate_size_of_pool(Chunk_type pool_name) {
   size_t Sum = 0;
   Sum = name_to_mem_pool.at(pool_name).size();
-//        *name_to_allocated_size.at(pool_name);
+  //        *name_to_allocated_size.at(pool_name);
   return Sum;
 }
 void RDMA_Manager::BatchGarbageCollection(uint64_t* ptr, size_t size) {
-  for (int i = 0; i < size/ sizeof(uint64_t); ++i) {
-//    assert()
+  for (int i = 0; i < size / sizeof(uint64_t); ++i) {
+    //    assert()
     bool result = Deallocate_Local_RDMA_Slot((void*)ptr[i], FlushBuffer);
     assert(result);
-//#ifndef NDEBUG
-//    printf("Sucessfully delete a SSTable %p", (void*)ptr[i]);
-//    assert(result);
-//#endif
+    // #ifndef NDEBUG
+    //     printf("Sucessfully delete a SSTable %p", (void*)ptr[i]);
+    //     assert(result);
+    // #endif
   }
 }
 
-// Remeber to delete the mr because it was created be new, otherwise memory leak.
+// Remeber to delete the mr because it was created be new, otherwise memory
+// leak.
 bool RDMA_Manager::Deallocate_Local_RDMA_Slot(ibv_mr* mr, ibv_mr* map_pointer,
                                               Chunk_type buffer_type) {
   size_t buff_offset =
@@ -3071,7 +3206,7 @@ bool RDMA_Manager::Deallocate_Local_RDMA_Slot(ibv_mr* mr, ibv_mr* map_pointer,
 }
 bool RDMA_Manager::Deallocate_Local_RDMA_Slot(void* p, Chunk_type buff_type) {
   std::shared_lock<std::shared_mutex> read_lock(local_mem_mutex);
-//  DEBUG_arg("Deallocate pointer %p", p);
+  //  DEBUG_arg("Deallocate pointer %p", p);
   std::map<void*, In_Use_Array*>* Bitmap;
   Bitmap = &name_to_mem_pool.at(buff_type);
   auto mr_iter = Bitmap->upper_bound(p);
@@ -3082,38 +3217,36 @@ bool RDMA_Manager::Deallocate_Local_RDMA_Slot(void* p, Chunk_type buff_type) {
     size_t buff_offset =
         static_cast<char*>(p) - static_cast<char*>(mr_iter->first);
     //      assert(buff_offset>=0);
-    if (buff_offset < mr_iter->second->get_mr_ori()->length){
+    if (buff_offset < mr_iter->second->get_mr_ori()->length) {
       assert(buff_offset % mr_iter->second->get_chunk_size() == 0);
-      assert(buff_offset / mr_iter->second->get_chunk_size() <= std::numeric_limits<int>::max());
+      assert(buff_offset / mr_iter->second->get_chunk_size() <=
+             std::numeric_limits<int>::max());
       bool status = mr_iter->second->deallocate_memory_slot(
           buff_offset / mr_iter->second->get_chunk_size());
       assert(status);
       return status;
-    }
-    else
+    } else
       return false;
   } else {
     mr_iter--;
     size_t buff_offset =
         static_cast<char*>(p) - static_cast<char*>(mr_iter->first);
     //      assert(buff_offset>=0);
-    if (buff_offset < mr_iter->second->get_mr_ori()->length){
+    if (buff_offset < mr_iter->second->get_mr_ori()->length) {
       assert(buff_offset % mr_iter->second->get_chunk_size() == 0);
 
       bool status = mr_iter->second->deallocate_memory_slot(
           buff_offset / mr_iter->second->get_chunk_size());
       assert(status);
       return status;
-    }
-    else
+    } else
       return false;
-
   }
   return false;
 }
 bool RDMA_Manager::Deallocate_Remote_RDMA_Slot(void* p,
                                                uint8_t target_node_id) {
-//  DEBUG_arg("Delete Remote pointer %p", p);
+  //  DEBUG_arg("Delete Remote pointer %p", p);
   std::shared_lock<std::shared_mutex> read_lock(remote_mem_mutex);
   std::map<void*, In_Use_Array*>* Bitmap;
   Bitmap = Remote_Mem_Bitmap.at(target_node_id);
@@ -3125,30 +3258,28 @@ bool RDMA_Manager::Deallocate_Remote_RDMA_Slot(void* p,
     size_t buff_offset =
         static_cast<char*>(p) - static_cast<char*>(mr_iter->first);
     //      assert(buff_offset>=0);
-    if (buff_offset < mr_iter->second->get_mr_ori()->length){
+    if (buff_offset < mr_iter->second->get_mr_ori()->length) {
       assert(buff_offset % mr_iter->second->get_chunk_size() == 0);
       bool status = mr_iter->second->deallocate_memory_slot(
           buff_offset / mr_iter->second->get_chunk_size());
       assert(status);
       return status;
-    }
-    else
+    } else
       return false;
   } else {
     mr_iter--;
     size_t buff_offset =
         static_cast<char*>(p) - static_cast<char*>(mr_iter->first);
     //      assert(buff_offset>=0);
-    if (buff_offset < mr_iter->second->get_mr_ori()->length){
+    if (buff_offset < mr_iter->second->get_mr_ori()->length) {
       assert(buff_offset % mr_iter->second->get_chunk_size() == 0);
       bool status = mr_iter->second->deallocate_memory_slot(
           buff_offset / mr_iter->second->get_chunk_size());
       assert(status);
       return status;
-    }else{
+    } else {
       return false;
     }
-
   }
   return false;
 }
@@ -3157,13 +3288,14 @@ bool RDMA_Manager::Deallocate_Remote_RDMA_Slot(void* p,
 //  int buff_offset = static_cast<char*>(sst_meta->mr->addr) -
 //                    static_cast<char*>(sst_meta->map_pointer->addr);
 //  assert(buff_offset % Table_Size == 0);
-//#ifndef NDEBUG
-////  std::cout <<"Chunk deallocate at" << sst_meta->mr->addr << "index: " << buff_offset/Table_Size << std::endl;
-//#endif
-//  std::shared_lock<std::shared_mutex> read_lock(local_mem_mutex);
-//  return Remote_Mem_Bitmap->at(sst_meta->map_pointer->addr)
-//      .deallocate_memory_slot(buff_offset / Table_Size);
-//}
+// #ifndef NDEBUG
+////  std::cout <<"Chunk deallocate at" << sst_meta->mr->addr << "index: " <<
+/// buff_offset/Table_Size << std::endl;
+// #endif
+//   std::shared_lock<std::shared_mutex> read_lock(local_mem_mutex);
+//   return Remote_Mem_Bitmap->at(sst_meta->map_pointer->addr)
+//       .deallocate_memory_slot(buff_offset / Table_Size);
+// }
 
 bool RDMA_Manager::CheckInsideLocalBuff(
     void* p,
@@ -3190,7 +3322,8 @@ bool RDMA_Manager::CheckInsideLocalBuff(
       if (buff_offset < mr_iter->second.get_mr_ori()->length) return true;
     }
   } else {
-    // TODO: Implement a iteration to check that address in all the mempool, in case that the block size has been changed.
+    // TODO: Implement a iteration to check that address in all the mempool, in
+    // case that the block size has been changed.
     return false;
   }
   return false;
@@ -3207,30 +3340,27 @@ bool RDMA_Manager::CheckInsideRemoteBuff(void* p, uint8_t target_node_id) {
     size_t buff_offset =
         static_cast<char*>(p) - static_cast<char*>(mr_iter->first);
     //      assert(buff_offset>=0);
-    if (buff_offset < mr_iter->second->get_mr_ori()->length){
+    if (buff_offset < mr_iter->second->get_mr_ori()->length) {
       assert(buff_offset % mr_iter->second->get_chunk_size() == 0);
       return true;
-    }
-    else
+    } else
       return false;
   } else {
     mr_iter--;
     size_t buff_offset =
         static_cast<char*>(p) - static_cast<char*>(mr_iter->first);
     //      assert(buff_offset>=0);
-    if (buff_offset < mr_iter->second->get_mr_ori()->length){
+    if (buff_offset < mr_iter->second->get_mr_ori()->length) {
       assert(buff_offset % mr_iter->second->get_chunk_size() == 0);
       return true;
-    }else{
+    } else {
       return false;
     }
-
   }
   return false;
 }
 bool RDMA_Manager::Mempool_initialize(Chunk_type pool_name, size_t size,
                                       size_t allocated_size) {
-
   if (name_to_mem_pool.find(pool_name) != name_to_mem_pool.end()) return false;
 
   std::map<void*, In_Use_Array*> mem_sub_pool;
@@ -3256,142 +3386,143 @@ void RDMA_Manager::mr_serialization(char*& temp, size_t& size, ibv_mr* mr) {
   temp = temp + sizeof(uint32_t);
 }
 
-//void RDMA_Manager::fs_serialization(
-//    char*& buff, size_t& size, std::string& db_name,
-//    std::unordered_map<std::string, SST_Metadata*>& file_to_sst_meta,
-//    std::map<void*, In_Use_Array>& remote_mem_bitmap) {
-//  auto start = std::chrono::high_resolution_clock::now();
-//  char* temp = buff;
+// void RDMA_Manager::fs_serialization(
+//     char*& buff, size_t& size, std::string& db_name,
+//     std::unordered_map<std::string, SST_Metadata*>& file_to_sst_meta,
+//     std::map<void*, In_Use_Array>& remote_mem_bitmap) {
+//   auto start = std::chrono::high_resolution_clock::now();
+//   char* temp = buff;
 //
-//  size_t namenumber = db_name.size();
-//  size_t namenumber_net = htonl(namenumber);
-//  memcpy(temp, &namenumber_net, sizeof(size_t));
-//  temp = temp + sizeof(size_t);
+//   size_t namenumber = db_name.size();
+//   size_t namenumber_net = htonl(namenumber);
+//   memcpy(temp, &namenumber_net, sizeof(size_t));
+//   temp = temp + sizeof(size_t);
 //
-//  memcpy(temp, db_name.c_str(), namenumber);
-//  temp = temp + namenumber;
-//  // serialize the filename map
-//  {
-//    size_t filenumber = file_to_sst_meta.size();
-//    size_t filenumber_net = htonl(filenumber);
-//    memcpy(temp, &filenumber_net, sizeof(size_t));
-//    temp = temp + sizeof(size_t);
+//   memcpy(temp, db_name.c_str(), namenumber);
+//   temp = temp + namenumber;
+//   // serialize the filename map
+//   {
+//     size_t filenumber = file_to_sst_meta.size();
+//     size_t filenumber_net = htonl(filenumber);
+//     memcpy(temp, &filenumber_net, sizeof(size_t));
+//     temp = temp + sizeof(size_t);
 //
-//    for (auto iter : file_to_sst_meta) {
-//      size_t filename_length = iter.first.size();
-//      size_t filename_length_net = htonl(filename_length);
-//      memcpy(temp, &filename_length_net, sizeof(size_t));
-//      temp = temp + sizeof(size_t);
+//     for (auto iter : file_to_sst_meta) {
+//       size_t filename_length = iter.first.size();
+//       size_t filename_length_net = htonl(filename_length);
+//       memcpy(temp, &filename_length_net, sizeof(size_t));
+//       temp = temp + sizeof(size_t);
 //
-//      memcpy(temp, iter.first.c_str(), filename_length);
-//      temp = temp + filename_length;
+//       memcpy(temp, iter.first.c_str(), filename_length);
+//       temp = temp + filename_length;
 //
-//      unsigned int file_size = iter.second->file_size;
-//      unsigned int file_size_net = htonl(file_size);
-//      memcpy(temp, &file_size_net, sizeof(unsigned int));
-//      temp = temp + sizeof(unsigned int);
+//       unsigned int file_size = iter.second->file_size;
+//       unsigned int file_size_net = htonl(file_size);
+//       memcpy(temp, &file_size_net, sizeof(unsigned int));
+//       temp = temp + sizeof(unsigned int);
 //
-//      // check how long is the list
-//      SST_Metadata* meta_p = iter.second;
-//      SST_Metadata* temp_meta = meta_p;
-//      size_t list_len = 1;
-//      while (temp_meta->next_ptr != nullptr) {
-//        list_len++;
-//        temp_meta = temp_meta->next_ptr;
-//      }
-//      size_t list_len_net = ntohl(list_len);
-//      memcpy(temp, &list_len_net, sizeof(size_t));
-//      temp = temp + sizeof(size_t);
+//       // check how long is the list
+//       SST_Metadata* meta_p = iter.second;
+//       SST_Metadata* temp_meta = meta_p;
+//       size_t list_len = 1;
+//       while (temp_meta->next_ptr != nullptr) {
+//         list_len++;
+//         temp_meta = temp_meta->next_ptr;
+//       }
+//       size_t list_len_net = ntohl(list_len);
+//       memcpy(temp, &list_len_net, sizeof(size_t));
+//       temp = temp + sizeof(size_t);
 //
-//      meta_p = iter.second;
-//      size_t length_map = meta_p->map_pointer->length;
-//      size_t length_map_net = htonl(length_map);
-//      memcpy(temp, &length_map_net, sizeof(size_t));
-//      temp = temp + sizeof(size_t);
+//       meta_p = iter.second;
+//       size_t length_map = meta_p->map_pointer->length;
+//       size_t length_map_net = htonl(length_map);
+//       memcpy(temp, &length_map_net, sizeof(size_t));
+//       temp = temp + sizeof(size_t);
 //
-//      // Here we put context pd handle and length outside the serialization because we do not need
-//      void* p = meta_p->mr->context;
-//      // TODO: It can not be changed into net stream.
-//      //    void* p_net = htonll(p);
-//      memcpy(temp, &p, sizeof(void*));
-//      temp = temp + sizeof(void*);
+//       // Here we put context pd handle and length outside the serialization
+//       because we do not need void* p = meta_p->mr->context;
+//       // TODO: It can not be changed into net stream.
+//       //    void* p_net = htonll(p);
+//       memcpy(temp, &p, sizeof(void*));
+//       temp = temp + sizeof(void*);
 //
-//      p = meta_p->mr->pd;
-//      memcpy(temp, &p, sizeof(void*));
-//      temp = temp + sizeof(void*);
+//       p = meta_p->mr->pd;
+//       memcpy(temp, &p, sizeof(void*));
+//       temp = temp + sizeof(void*);
 //
-//      uint32_t handle = meta_p->mr->handle;
-//      uint32_t handle_net = htonl(handle);
-//      memcpy(temp, &handle_net, sizeof(uint32_t));
-//      temp = temp + sizeof(uint32_t);
+//       uint32_t handle = meta_p->mr->handle;
+//       uint32_t handle_net = htonl(handle);
+//       memcpy(temp, &handle_net, sizeof(uint32_t));
+//       temp = temp + sizeof(uint32_t);
 //
-//      size_t length_mr = meta_p->mr->length;
-//      size_t length_mr_net = htonl(length_mr);
-//      memcpy(temp, &length_mr_net, sizeof(size_t));
-//      temp = temp + sizeof(size_t);
+//       size_t length_mr = meta_p->mr->length;
+//       size_t length_mr_net = htonl(length_mr);
+//       memcpy(temp, &length_mr_net, sizeof(size_t));
+//       temp = temp + sizeof(size_t);
 //
-//      while (meta_p != nullptr) {
-//        mr_serialization(temp, size, meta_p->mr);
-//        // TODO: minimize the size of the serialized data. For exe, could we save
-//        // TODO: the mr length only once?
-//        p = meta_p->map_pointer->addr;
-//        memcpy(temp, &p, sizeof(void*));
-//        temp = temp + sizeof(void*);
-//        meta_p = meta_p->next_ptr;
-//      }
-//    }
-//  }
-//  // Serialization for the bitmap
-//  size_t bitmap_number = remote_mem_bitmap.size();
-//  size_t bitmap_number_net = htonl(bitmap_number);
-//  memcpy(temp, &bitmap_number_net, sizeof(size_t));
-//  temp = temp + sizeof(size_t);
-//  for (auto iter : remote_mem_bitmap) {
-//    void* p = iter.first;
-//    memcpy(temp, &p, sizeof(void*));
-//    temp = temp + sizeof(void*);
-//    size_t element_size = iter.second.get_element_size();
-//    size_t element_size_net = htonl(element_size);
-//    memcpy(temp, &element_size_net, sizeof(size_t));
-//    temp = temp + sizeof(size_t);
-//    size_t chunk_size = iter.second.get_chunk_size();
-//    size_t chunk_size_net = htonl(chunk_size);
-//    memcpy(temp, &chunk_size_net, sizeof(size_t));
-//    temp = temp + sizeof(size_t);
-//    std::atomic<bool>* in_use = iter.second.get_inuse_table();
-//    auto mr = iter.second.get_mr_ori();
-//    p = mr->context;
-//    // TODO: It can not be changed into net stream.
-//    //    void* p_net = htonll(p);
-//    memcpy(temp, &p, sizeof(void*));
-//    temp = temp + sizeof(void*);
+//       while (meta_p != nullptr) {
+//         mr_serialization(temp, size, meta_p->mr);
+//         // TODO: minimize the size of the serialized data. For exe, could we
+//         save
+//         // TODO: the mr length only once?
+//         p = meta_p->map_pointer->addr;
+//         memcpy(temp, &p, sizeof(void*));
+//         temp = temp + sizeof(void*);
+//         meta_p = meta_p->next_ptr;
+//       }
+//     }
+//   }
+//   // Serialization for the bitmap
+//   size_t bitmap_number = remote_mem_bitmap.size();
+//   size_t bitmap_number_net = htonl(bitmap_number);
+//   memcpy(temp, &bitmap_number_net, sizeof(size_t));
+//   temp = temp + sizeof(size_t);
+//   for (auto iter : remote_mem_bitmap) {
+//     void* p = iter.first;
+//     memcpy(temp, &p, sizeof(void*));
+//     temp = temp + sizeof(void*);
+//     size_t element_size = iter.second.get_element_size();
+//     size_t element_size_net = htonl(element_size);
+//     memcpy(temp, &element_size_net, sizeof(size_t));
+//     temp = temp + sizeof(size_t);
+//     size_t chunk_size = iter.second.get_chunk_size();
+//     size_t chunk_size_net = htonl(chunk_size);
+//     memcpy(temp, &chunk_size_net, sizeof(size_t));
+//     temp = temp + sizeof(size_t);
+//     std::atomic<bool>* in_use = iter.second.get_inuse_table();
+//     auto mr = iter.second.get_mr_ori();
+//     p = mr->context;
+//     // TODO: It can not be changed into net stream.
+//     //    void* p_net = htonll(p);
+//     memcpy(temp, &p, sizeof(void*));
+//     temp = temp + sizeof(void*);
 //
-//    p = mr->pd;
-//    memcpy(temp, &p, sizeof(void*));
-//    temp = temp + sizeof(void*);
+//     p = mr->pd;
+//     memcpy(temp, &p, sizeof(void*));
+//     temp = temp + sizeof(void*);
 //
-//    uint32_t handle = mr->handle;
-//    uint32_t handle_net = htonl(handle);
-//    memcpy(temp, &handle_net, sizeof(uint32_t));
-//    temp = temp + sizeof(uint32_t);
+//     uint32_t handle = mr->handle;
+//     uint32_t handle_net = htonl(handle);
+//     memcpy(temp, &handle_net, sizeof(uint32_t));
+//     temp = temp + sizeof(uint32_t);
 //
-//    size_t length_mr = mr->length;
-//    size_t length_mr_net = htonl(length_mr);
-//    memcpy(temp, &length_mr_net, sizeof(size_t));
-//    temp = temp + sizeof(size_t);
-//    for (size_t i = 0; i < element_size; i++) {
-//      bool bit_temp = in_use[i];
-//      memcpy(temp, &bit_temp, sizeof(bool));
-//      temp = temp + sizeof(bool);
-//    }
-//    mr_serialization(temp, size, iter.second.get_mr_ori());
-//  }
-//  size = temp - buff;
-//  auto stop = std::chrono::high_resolution_clock::now();
-//  auto duration =
-//      std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//  printf("fs serialization time elapse: %ld\n", duration.count());
-//}
+//     size_t length_mr = mr->length;
+//     size_t length_mr_net = htonl(length_mr);
+//     memcpy(temp, &length_mr_net, sizeof(size_t));
+//     temp = temp + sizeof(size_t);
+//     for (size_t i = 0; i < element_size; i++) {
+//       bool bit_temp = in_use[i];
+//       memcpy(temp, &bit_temp, sizeof(bool));
+//       temp = temp + sizeof(bool);
+//     }
+//     mr_serialization(temp, size, iter.second.get_mr_ori());
+//   }
+//   size = temp - buff;
+//   auto stop = std::chrono::high_resolution_clock::now();
+//   auto duration =
+//       std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+//   printf("fs serialization time elapse: %ld\n", duration.count());
+// }
 void RDMA_Manager::mr_deserialization(char*& temp, size_t& size, ibv_mr*& mr) {
   void* addr_p = nullptr;
   memcpy(&addr_p, temp, sizeof(void*));
@@ -3561,7 +3692,8 @@ void RDMA_Manager::fs_deserilization(
     }
 
     mr_deserialization(temp, size, mr_inuse);
-    In_Use_Array* in_use_array = new In_Use_Array(element_size, chunk_size, mr_inuse, in_use);
+    In_Use_Array* in_use_array =
+        new In_Use_Array(element_size, chunk_size, mr_inuse, in_use);
     remote_mem_bitmap.insert({p_key, in_use_array});
   }
   auto stop = std::chrono::high_resolution_clock::now();
@@ -3572,7 +3704,6 @@ void RDMA_Manager::fs_deserilization(
   free(buff);
 }
 
-
 // bool RDMA_Manager::client_save_serialized_data(const std::string& db_name,
 //                                               char* buff, size_t buff_size,
 //                                               file_type type,
@@ -3581,8 +3712,10 @@ void RDMA_Manager::fs_deserilization(
 //  bool destroy_flag;
 //  if (local_data_mr == nullptr){
 //    int mr_flags =
-//        IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
-//    local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff), buff_size, mr_flags); destroy_flag = true;
+//        IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+//        IBV_ACCESS_REMOTE_WRITE;
+//    local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff), buff_size,
+//    mr_flags); destroy_flag = true;
 //  }else
 //    destroy_flag = false;
 //
@@ -3610,7 +3743,9 @@ void RDMA_Manager::fs_deserilization(
 //      fprintf(stderr, "failed to poll send for serialized data send\n");
 ////  sleep(100);
 //    auto stop = std::chrono::high_resolution_clock::now();
-//    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start); printf("fs meta data save communication time elapse: %ld\n", duration.count());
+//    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop
+//    - start); printf("fs meta data save communication time elapse: %ld\n",
+//    duration.count());
 //
 //  }
 //  else if (type == log_type){
@@ -3636,25 +3771,29 @@ void RDMA_Manager::fs_deserilization(
 //
 //  return true;
 //}
-// bool RDMA_Manager::client_retrieve_serialized_data(const std::string& db_name,
+// bool RDMA_Manager::client_retrieve_serialized_data(const std::string&
+// db_name,
 //                                                   char*& buff,
 //                                                   size_t& buff_size,
 //                                                   ibv_mr*& local_data_mr,
 //                                                   file_type type) {
 //  auto start = std::chrono::high_resolution_clock::now();
 //  int mr_flags =
-//      IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
+//      IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ |
+//      IBV_ACCESS_REMOTE_WRITE;
 //  std::unique_lock<std::shared_mutex> l(main_qp_mutex);
 //  ibv_wc wc[2] = {};
 //  computing_to_memory_msg* send_pointer;
 //  send_pointer = (computing_to_memory_msg*)res->send_buf;
 //  if (type == others){
 //    send_pointer->command = retrieve_fs_serialized_data;
-//    //sync to make sure the shared memory has post the next receive for the dbname post_receive<int>(res->mr_receive, std::string("main"));
+//    //sync to make sure the shared memory has post the next receive for the
+//    dbname post_receive<int>(res->mr_receive, std::string("main"));
 //    // post the command for saving the serialized data.
 //    post_send<computing_to_memory_msg>(res->mr_send, std::string("main"));
 //    if (poll_completion(wc, 2, std::string("main"))) {
-//      fprintf(stderr, "failed to poll receive for serialized message <retreive>\n"); return false;
+//      fprintf(stderr, "failed to poll receive for serialized message
+//      <retreive>\n"); return false;
 //    }else
 //      printf("retrieve message was sent successfully");
 //    memcpy(res->send_buf, db_name.c_str(), db_name.size());
@@ -3664,13 +3803,17 @@ void RDMA_Manager::fs_deserilization(
 //    post_send(res->mr_send,"main", db_name.size()+1);
 //
 //    if (poll_completion(wc, 2, std::string("main"))) {
-//      fprintf(stderr, "failed to poll receive for serialized data size <retrieve>\n"); return false;
+//      fprintf(stderr, "failed to poll receive for serialized data size
+//      <retrieve>\n"); return false;
 //    }
 //    buff_size = *reinterpret_cast<size_t*>(res->receive_buf);
 //    if (buff_size!=0){
 //      buff = static_cast<char*>(malloc(buff_size));
-//      local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff), buff_size, mr_flags); post_receive(local_data_mr,"main", buff_size);
-//      // send a char to tell the shared memory that this computing node is ready to receive the data post_send<char>(res->mr_send, std::string("main"));
+//      local_data_mr = ibv_reg_mr(res->pd, static_cast<void*>(buff), buff_size,
+//      mr_flags); post_receive(local_data_mr,"main", buff_size);
+//      // send a char to tell the shared memory that this computing node is
+//      ready to receive the data post_send<char>(res->mr_send,
+//      std::string("main"));
 //    }
 //    else
 //      return false;
@@ -3679,15 +3822,18 @@ void RDMA_Manager::fs_deserilization(
 //      return false;
 //    }else{
 //      auto stop = std::chrono::high_resolution_clock::now();
-//      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//      printf("fs meta data unpure retrieve communication time elapse: %ld\n", duration.count()); return true;
+//      auto duration =
+//      std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+//      printf("fs meta data unpure retrieve communication time elapse: %ld\n",
+//      duration.count()); return true;
 //    }
 //  }else if (type == log_type){
 //    post_receive<int>(res->mr_receive, std::string("main"));
 //    // post the command for saving the serialized data.
 //    post_send<computing_to_memory_msg>(res->mr_send, std::string("main"));
 //    if (poll_completion(wc, 2, std::string("main"))) {
-//      fprintf(stderr, "failed to poll receive for serialized message <retreive>\n"); return false;
+//      fprintf(stderr, "failed to poll receive for serialized message
+//      <retreive>\n"); return false;
 //    }else
 //      printf("retrieve message was sent successfully");
 //    memcpy(res->send_buf, db_name.c_str(), db_name.size());
@@ -3697,14 +3843,17 @@ void RDMA_Manager::fs_deserilization(
 //    post_send(res->mr_send,"main", db_name.size()+1);
 //
 //    if (poll_completion(wc, 2, std::string("main"))) {
-//      fprintf(stderr, "failed to poll receive for serialized data size <retrieve>\n"); return false;
+//      fprintf(stderr, "failed to poll receive for serialized data size
+//      <retrieve>\n"); return false;
 //    }
 //    buff_size = *reinterpret_cast<size_t*>(res->receive_buf);
 //    if (buff_size!=0){
 //
 //      local_data_mr = log_image_mr.get();
 //      post_receive(local_data_mr,"main", buff_size);
-//      // send a char to tell the shared memory that this computing node is ready to receive the data post_send<char>(res->mr_send, std::string("main"));
+//      // send a char to tell the shared memory that this computing node is
+//      ready to receive the data post_send<char>(res->mr_send,
+//      std::string("main"));
 //    }
 //    else
 //      return false;
@@ -3713,8 +3862,10 @@ void RDMA_Manager::fs_deserilization(
 //      return false;
 //    }else{
 //      auto stop = std::chrono::high_resolution_clock::now();
-//      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//      printf("fs meta data unpure retrieve communication time elapse: %ld\n", duration.count()); return true;
+//      auto duration =
+//      std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+//      printf("fs meta data unpure retrieve communication time elapse: %ld\n",
+//      duration.count()); return true;
 //    }
 //  }
 //  return true;
@@ -3723,4 +3874,4 @@ void RDMA_Manager::fs_deserilization(
 //
 //}
 
-}
+}  // namespace dLSM

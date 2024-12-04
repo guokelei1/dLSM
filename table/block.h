@@ -22,8 +22,8 @@ namespace dLSM {
 
 struct BlockContents;
 class Comparator;
-//class IterKey;
-enum BlockType {DataBlock, IndexBlock, FilterBlock, Block_On_Memory_Side};
+// class IterKey;
+enum BlockType { DataBlock, IndexBlock, FilterBlock, Block_On_Memory_Side };
 class Block {
  public:
   // Initialize the block with the specified contents.
@@ -79,38 +79,38 @@ static inline const char* DecodeEntry(const char* p, const char* limit,
   return p;
 }
 
-
 class Block::Iter : public Iterator {
  public:
   inline int Compare(const Slice& a, const Slice& b) const {
     return comparator_->Compare(a, b);
   }
+
  private:
   const Comparator* const comparator_;
   const char* const data_;       // underlying block contents
-  uint32_t const restarts_;      // Offset of restart array (list of fixed32), should be the end of content.
+  uint32_t const restarts_;      // Offset of restart array (list of fixed32),
+                                 // should be the end of content.
   uint32_t const num_restarts_;  // Number of uint32_t entries in restart array
 
   // current_ is offset in data_ of current entry.  >= restarts_ if !Valid
   uint32_t current_;
   uint32_t restart_index_;  // Index of restart block in which current_ falls
-//  std::string key_1;
-//  std::string key_2;
-  //Maitain two switched key holder in case that sometime iterator want to peek back the key and value.
-  // This may not realize the peeking back correctly for the table compaction, because
-  // the block iterator may be discarded when crossing the boundary of data blocks.
+                            //  std::string key_1;
+                            //  std::string key_2;
+  // Maitain two switched key holder in case that sometime iterator want to peek
+  // back the key and value.
+  // This may not realize the peeking back correctly for the table compaction,
+  // because the block iterator may be discarded when crossing the boundary of
+  // data blocks.
   IterKey key_;
   Slice value_;
-//  int array_index;
-//  Slice value_1;
+  //  int array_index;
+  //  Slice value_1;
   Status status_;
 #ifndef NDEBUG
   std::string last_key;
-  int64_t num_entries=0;
+  int64_t num_entries = 0;
 #endif
-
-
-
 
   // Return the offset in data_ just past the end of the current entry.
   inline uint32_t NextEntryOffset() const {
@@ -141,14 +141,15 @@ class Block::Iter : public Iterator {
         restarts_(restarts),
         num_restarts_(num_restarts),
         current_(restarts_),
-        restart_index_(num_restarts_){
+        restart_index_(num_restarts_) {
     assert(num_restarts_ > 0);
   }
-  ~Iter(){
+  ~Iter() {
 #ifndef NDEBUG
-//    printf("Block iter deallocate char p %p, iterator p %p\n", this->key_.c_str() , this);
+//    printf("Block iter deallocate char p %p, iterator p %p\n",
+//    this->key_.c_str() , this);
 #endif
-//    DEBUG_arg("Block iter deallocate %p", this->key_.c_str());
+    //    DEBUG_arg("Block iter deallocate %p", this->key_.c_str());
   }
   bool Valid() const override { return current_ < restarts_; }
   Status status() const override { return status_; }
@@ -170,11 +171,8 @@ class Block::Iter : public Iterator {
     }
     num_entries++;
     last_key = key_.GetKey().ToString();
-    if (Valid())
-      assert(key().size()!=0);
+    if (Valid()) assert(key().size() != 0);
 #endif
-
-
   }
 
   void Prev() override {
@@ -229,10 +227,13 @@ class Block::Iter : public Iterator {
           DecodeEntry(data_ + region_offset, data_ + restarts_, &shared,
                       &non_shared, &value_length);
       if (key_ptr == nullptr || (shared != 0)) {
-        //We disable the shared string for byte addressable SSTable.
+        // We disable the shared string for byte addressable SSTable.
         CorruptionError();
 #ifndef NDEBUG
-        printf("detect corruption block, when seeking some key, num of entries is %ld, num of restart is %u\n", num_entries, num_restarts_);
+        printf(
+            "detect corruption block, when seeking some key, num of entries is "
+            "%ld, num of restart is %u\n",
+            num_entries, num_restarts_);
 #endif
         return;
       }
@@ -271,7 +272,7 @@ class Block::Iter : public Iterator {
   void SeekToFirst() override {
     SeekToRestartPoint(0);
     ParseNextKey();
-    assert(key().size()!=0);
+    assert(key().size() != 0);
   }
 
   void SeekToLast() override {
@@ -291,16 +292,17 @@ class Block::Iter : public Iterator {
     key_.Clear();
 
     value_.clear();
-
   }
 
   bool ParseNextKey() {
     current_ = NextEntryOffset();
     const char* p = data_ + current_;
-    const char* limit = data_ + restarts_;  // restarts_ is the restart array offset
+    const char* limit =
+        data_ + restarts_;  // restarts_ is the restart array offset
     if (p >= limit) {
       // No more entries to return.  Mark as invalid.
-//      printf("block is full, num of restart: %d, number of entries : %ld\n", num_restarts_, num_entries);
+      //      printf("block is full, num of restart: %d, number of entries :
+      //      %ld\n", num_restarts_, num_entries);
       current_ = restarts_;
       restart_index_ = num_restarts_;
       return false;
@@ -312,35 +314,40 @@ class Block::Iter : public Iterator {
     if (p == nullptr || key_.Size() < shared) {
       CorruptionError();
 #ifndef NDEBUG
-      printf("detect corruption block, when parsing the next, num of entries is %ld, num of restart is %u\n", num_entries, num_restarts_);
+      printf(
+          "detect corruption block, when parsing the next, num of entries is "
+          "%ld, num of restart is %u\n",
+          num_entries, num_restarts_);
 #endif
       return false;
     } else {
-//      int old_array_index = array_index;
-//      array_index = array_index == 0 ? 1:0;
-      //TODO: copy the last shared part to this one, otherwise try not to use two string buffer
-//      auto start = std::chrono::high_resolution_clock::now();
-//      key_[array_index].resize(shared);
-//      key_[array_index].replace(0,shared, key_[old_array_index]);
-//      key_[array_index].append(p, non_shared);
-//      key_[array_index].SetKey(Slice(key_[old_array_index].GetKey().data(), shared));
-//      key_[array_index].AppendToBack(p, non_shared);
-      if (shared == 0){
+      //      int old_array_index = array_index;
+      //      array_index = array_index == 0 ? 1:0;
+      // TODO: copy the last shared part to this one, otherwise try not to use
+      // two string buffer
+      //      auto start = std::chrono::high_resolution_clock::now();
+      //      key_[array_index].resize(shared);
+      //      key_[array_index].replace(0,shared, key_[old_array_index]);
+      //      key_[array_index].append(p, non_shared);
+      //      key_[array_index].SetKey(Slice(key_[old_array_index].GetKey().data(),
+      //      shared)); key_[array_index].AppendToBack(p, non_shared);
+      if (shared == 0) {
         key_.SetKey(Slice(p, non_shared), false /* copy */);
         while (restart_index_ + 1 < num_restarts_ &&
                GetRestartPoint(restart_index_ + 1) < current_) {
           ++restart_index_;
         }
-      }else{
+      } else {
         key_.TrimAppend(shared, p, non_shared);
       }
 
-    //      key_.SetKey(Slice(p, non_shared));
-    //      auto stop = std::chrono::high_resolution_clock::now();
-    //      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-    //      std::printf("string replace time elapse is %zu\n",  duration.count());
+      //      key_.SetKey(Slice(p, non_shared));
+      //      auto stop = std::chrono::high_resolution_clock::now();
+      //      auto duration =
+      //      std::chrono::duration_cast<std::chrono::nanoseconds>(stop -
+      //      start); std::printf("string replace time elapse is %zu\n",
+      //      duration.count());
       value_ = Slice(p + non_shared, value_length);
-
 
       return true;
     }

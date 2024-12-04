@@ -3,11 +3,14 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "db/memtable.h"
+
 #include "db/dbformat.h"
+#include "db/version_edit.h"
+
 #include "dLSM/comparator.h"
 #include "dLSM/env.h"
 #include "dLSM/iterator.h"
-#include "db/version_edit.h"
+
 #include "util/coding.h"
 
 namespace dLSM {
@@ -17,7 +20,7 @@ std::atomic<uint64_t> MemTable::GetNum = 0;
 std::atomic<uint64_t> MemTable::foundNum = 0;
 #endif
 //
-//static Slice GetLengthPrefixedSlice(const char* data) {
+// static Slice GetLengthPrefixedSlice(const char* data) {
 //  uint32_t len;
 //  const char* p = data;
 //  p = GetVarint32Ptr(p, p + 5, &len);  // +5: we assume "p" is not corrupted
@@ -32,7 +35,9 @@ MemTable::~MemTable() {
   assert(refs_ == 0);
 }
 
-size_t MemTable::ApproximateMemoryUsage() { return arena_.ApproximateMemoryUsage(); }
+size_t MemTable::ApproximateMemoryUsage() {
+  return arena_.ApproximateMemoryUsage();
+}
 
 int MemTable::KeyComparator::operator()(const char* aptr,
                                         const char* bptr) const {
@@ -41,15 +46,14 @@ int MemTable::KeyComparator::operator()(const char* aptr,
   Slice b = GetLengthPrefixedSlice(bptr);
   return comparator.Compare(a, b);
 }
-int MemTable::KeyComparator::operator()(const char* prefix_len_key,
-                                        const KeyComparator::DecodedType& key)
-const {
+int MemTable::KeyComparator::operator()(
+    const char* prefix_len_key, const KeyComparator::DecodedType& key) const {
   // Internal keys are encoded as length-prefixed strings.
   Slice a = GetLengthPrefixedSlice(prefix_len_key);
-  //Here used to be CompareKeySeq which will drop the value type only keep sequence
+  // Here used to be CompareKeySeq which will drop the value type only keep
+  // sequence
   return comparator.Compare(a, key);
 }
-
 
 // Encode a suitable internal key target for "target" and return it.
 // Uses *scratch as scratch space, and the returned pointer will point
@@ -91,7 +95,7 @@ class MemTableIterator : public Iterator {
 
 Iterator* MemTable::NewIterator() { return new MemTableIterator(&table_); }
 
-  void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
+void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
                    const Slice& value) {
   // Format of an entry is concatenation of:
   //  key_size     : varint32 of internal_key.size()
@@ -160,8 +164,10 @@ bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
   }
 #ifdef PROCESSANALYSIS
   auto stop = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//  std::printf("Get from memtable (not found) time elapse is %zu\n",  duration.count());
+  auto duration =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+  //  std::printf("Get from memtable (not found) time elapse is %zu\n",
+  //  duration.count());
   GetTimeElapseSum.fetch_add(duration.count());
   GetNum.fetch_add(1);
 #endif

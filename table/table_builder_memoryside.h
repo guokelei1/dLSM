@@ -6,12 +6,12 @@
 #define dLSM_TABLE_BUILDER_MEMORYSIDE_H
 
 #include "include/dLSM/table_builder.h"
-//#include "dumpfile.h"
+// #include "dumpfile.h"
 namespace dLSM {
-//class BlockBuilder;
+// class BlockBuilder;
 class BlockHandle;
-//class WritableFile;
-//enum IO_type {Compact, Flush};
+// class WritableFile;
+// enum IO_type {Compact, Flush};
 class dLSM_EXPORT TableBuilder_Memoryside : public TableBuilder {
  public:
   // Create a builder that will store the contents of the table it is
@@ -32,7 +32,7 @@ class dLSM_EXPORT TableBuilder_Memoryside : public TableBuilder {
   // passed to the constructor is different from its value in the
   // structure passed to this method, this method will return an error
   // without changing any fields.
-//  Status ChangeOptions(const Options& options);
+  //  Status ChangeOptions(const Options& options);
 
   // Add key,value to the table being constructed.
   // REQUIRES: key is after any previously added key according to comparator.
@@ -84,9 +84,10 @@ class dLSM_EXPORT TableBuilder_Memoryside : public TableBuilder {
   void FinishFilterBlock(FullFilterBlockBuilder* block, BlockHandle* handle,
                          CompressionType compressiontype,
                          size_t& block_size) override;
+
  protected:
-  struct Rep;//make it inherit the one in Table builder?
+  struct Rep;  // make it inherit the one in Table builder?
   Rep* rep_;
 };
-}
+}  // namespace dLSM
 #endif  // dLSM_TABLE_BUILDER_MEMORYSIDE_H

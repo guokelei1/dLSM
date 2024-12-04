@@ -34,9 +34,11 @@
 #include "db/table_cache.h"
 #include "db/version_edit.h"
 #include "db/write_batch_internal.h"
+
 #include "dLSM/comparator.h"
 #include "dLSM/db.h"
 #include "dLSM/env.h"
+
 #include "table/table_builder_computeside.h"
 
 namespace dLSM {
@@ -202,11 +204,12 @@ class Repairer {
 
     // Do not record a version edit for this conversion to a Table
     // since ExtractMetaData() will also generate edits.
-    std::shared_ptr<RemoteMemTableMetaData> meta = std::make_shared<RemoteMemTableMetaData>(0, table_cache_, 999);
+    std::shared_ptr<RemoteMemTableMetaData> meta =
+        std::make_shared<RemoteMemTableMetaData>(0, table_cache_, 999);
     meta->number = next_file_number_++;
     Iterator* iter = mem->NewIterator();
-    status =
-        BuildTable(dbname_, env_, options_, table_cache_, iter, meta, IO_type::Flush);
+    status = BuildTable(dbname_, env_, options_, table_cache_, iter, meta,
+                        IO_type::Flush);
     delete iter;
     mem->Unref();
     mem = nullptr;

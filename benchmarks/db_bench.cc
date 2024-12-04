@@ -5,19 +5,19 @@
 #include <numa.h>
 #include <numaif.h>
 #endif
-#include <sys/types.h>
-
+#include "db/table_cache.h"
 #include <atomic>
 #include <cstdio>
 #include <cstdlib>
+#include <sys/types.h>
 
 #include "dLSM/cache.h"
-#include "db/table_cache.h"
 #include "dLSM/comparator.h"
 #include "dLSM/db.h"
 #include "dLSM/env.h"
 #include "dLSM/filter_policy.h"
 #include "dLSM/write_batch.h"
+
 #include "port/port.h"
 #include "util/crc32c.h"
 #include "util/histogram.h"
@@ -121,8 +121,10 @@ static int FLAGS_key_prefix = 0;
 // benchmark will fail.
 static bool FLAGS_use_existing_db = false;
 
-// if larger than 0, the compute node will always have this number of shards no matter how many memory
-//nodes are there. THe shards will be distributed to the memory nodes in a round robin
+// if larger than 0, the compute node will always have this number of shards no
+// matter how many memory
+// nodes are there. THe shards will be distributed to the memory nodes in a
+// round robin
 // manner.
 static int FLAGS_fixed_compute_shards_num = 0;
 // whether the writer threads aware of the NUMA archetecture.
@@ -148,7 +150,7 @@ class Duration {
  public:
   Duration(uint64_t max_seconds, int64_t max_ops, int64_t ops_per_stage = 0) {
     max_seconds_ = max_seconds;
-    max_ops_= max_ops;
+    max_ops_ = max_ops;
     ops_per_stage_ = (ops_per_stage > 0) ? ops_per_stage : max_ops;
     ops_ = 0;
     start_at_ = g_env->NowMicros();
@@ -157,7 +159,7 @@ class Duration {
   int64_t GetStage() { return std::min(ops_, max_ops_ - 1) / ops_per_stage_; }
 
   bool Done(int64_t increment) {
-    if (increment <= 0) increment = 1;    // avoid Done(0) and infinite loops
+    if (increment <= 0) increment = 1;  // avoid Done(0) and infinite loops
     ops_ += increment;
 
     if (max_seconds_) {
@@ -251,7 +253,8 @@ class KeyBuffer {
 
   void Set(int k) {
     std::snprintf(buffer_ + FLAGS_key_prefix,
-                  sizeof(buffer_) - FLAGS_key_prefix, "%020d", k); //%016d means preceeding with 0s
+                  sizeof(buffer_) - FLAGS_key_prefix, "%020d",
+                  k);  //%016d means preceeding with 0s
   }
 
   Slice slice() const { return Slice(buffer_, FLAGS_key_prefix + 20); }
@@ -378,8 +381,11 @@ class Stats {
     }
     AppendWithSpace(&extra, message_);
 
-    std::fprintf(stdout, "\n%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; %ld ops/sec;%s%s\n",
-                 name.ToString().c_str(),done_,elapsed, seconds_ * 1e6 / done_, (long)(done_/elapsed),
+    std::fprintf(stdout,
+                 "\n%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; "
+                 "%ld ops/sec;%s%s\n",
+                 name.ToString().c_str(), done_, elapsed,
+                 seconds_ * 1e6 / done_, (long)(done_ / elapsed),
                  (extra.empty() ? "" : " "), extra.c_str());
 
     if (FLAGS_histogram) {
@@ -412,9 +418,9 @@ struct SharedState {
 
 // Per-thread state for concurrent executions of the same benchmark.
 struct ThreadState {
-  int tid;      // 0..n-1 when running in n threads
+  int tid;        // 0..n-1 when running in n threads
   Random64 rand;  // Has different seeds for different threads
-//  Random rand;
+                  //  Random rand;
   Stats stats;
   SharedState* shared;
 
@@ -560,26 +566,25 @@ class Benchmark {
     return Slice(key_guard->get(), key_size);
   }
   void GenerateKeyFromInt(uint64_t v, Slice* key) {
-
     char* start = const_cast<char*>(key->data());
     char* pos = start;
-//    if (keys_per_prefix_ > 0) {
-//      int64_t num_prefix = num_keys / keys_per_prefix_;
-//      int64_t prefix = v % num_prefix;
-//      int bytes_to_fill = std::min(prefix_size_, 8);
-//      if (port::kLittleEndian) {
-//        for (int i = 0; i < bytes_to_fill; ++i) {
-//          pos[i] = (prefix >> ((bytes_to_fill - i - 1) << 3)) & 0xFF;
-//        }
-//      } else {
-//        memcpy(pos, static_cast<void*>(&prefix), bytes_to_fill);
-//      }
-//      if (prefix_size_ > 8) {
-//        // fill the rest with 0s
-//        memset(pos + 8, '0', prefix_size_ - 8);
-//      }
-//      pos += prefix_size_;
-//    }
+    //    if (keys_per_prefix_ > 0) {
+    //      int64_t num_prefix = num_keys / keys_per_prefix_;
+    //      int64_t prefix = v % num_prefix;
+    //      int bytes_to_fill = std::min(prefix_size_, 8);
+    //      if (port::kLittleEndian) {
+    //        for (int i = 0; i < bytes_to_fill; ++i) {
+    //          pos[i] = (prefix >> ((bytes_to_fill - i - 1) << 3)) & 0xFF;
+    //        }
+    //      } else {
+    //        memcpy(pos, static_cast<void*>(&prefix), bytes_to_fill);
+    //      }
+    //      if (prefix_size_ > 8) {
+    //        // fill the rest with 0s
+    //        memset(pos + 8, '0', prefix_size_ - 8);
+    //      }
+    //      pos += prefix_size_;
+    //    }
 
     int bytes_to_fill = std::min(FLAGS_key_size, 8);
     if (port::kLittleEndian) {
@@ -595,14 +600,12 @@ class Benchmark {
     }
   }
   void Run() {
-
     PrintHeader();
     Open();
 
     const char* benchmarks = FLAGS_benchmarks;
-//    Validation_Write();
+    //    Validation_Write();
     while (benchmarks != nullptr) {
-
       const char* sep = strchr(benchmarks, ',');
       Slice name;
       if (sep == nullptr) {
@@ -719,17 +722,17 @@ class Benchmark {
 
       if (method != nullptr) {
 #ifdef PROCESSANALYSIS
-        if (method == &Benchmark::ReadRandom || method == &Benchmark::ReadWhileWriting){
+        if (method == &Benchmark::ReadRandom ||
+            method == &Benchmark::ReadWhileWriting) {
           TableCache::CleanAll();
         }
 #endif
         DEBUG("The benchmark start.\n");
         RunBenchmark(num_threads, name, method);
         DEBUG("Benchmark finished\n");
-
       }
     }
-//    Validation_Read();
+    //    Validation_Read();
   }
 
  private:
@@ -757,7 +760,7 @@ class Benchmark {
     }
     printf("Threads start to run\n");
     thread->stats.Start();
-    //为什么要脱裤子放屁多此一举，直接线程调用不行吗？这样的好处就是不用传参？
+    // 为什么要脱裤子放屁多此一举，直接线程调用不行吗？这样的好处就是不用传参？
     (arg->bm->*(arg->method))(thread);
     thread->stats.Stop();
 
@@ -772,11 +775,12 @@ class Benchmark {
 
   void RunBenchmark(int n, Slice name,
                     void (Benchmark::*method)(ThreadState*)) {
-//    printf("Bechmark start\n");
-  if (method == &Benchmark::WriteRandom || method == &Benchmark::WriteRandomSharded)
+    //    printf("Bechmark start\n");
+    if (method == &Benchmark::WriteRandom ||
+        method == &Benchmark::WriteRandomSharded)
       Validation_Write();
-//    if (name.ToString() == "readrandom"){
-//    }
+    //    if (name.ToString() == "readrandom"){
+    //    }
     SharedState shared(n);
 
     ThreadArg* arg = new ThreadArg[n];
@@ -815,7 +819,7 @@ class Benchmark {
     while (shared.num_initialized < n) {
       shared.cv.Wait();
     }
-    //sync with all the other compute nodes here
+    // sync with all the other compute nodes here
     rdma_mg->sync_with_computes_Cside();
 
     shared.start = true;
@@ -840,10 +844,12 @@ class Benchmark {
     }
     delete[] arg;
     db_->WaitforAllbgtasks(false);
-    if (method == &Benchmark::WriteRandom || method == &Benchmark::WriteRandomSharded)
-      sleep(3); // wait for the last sstable disgestion.
+    if (method == &Benchmark::WriteRandom ||
+        method == &Benchmark::WriteRandomSharded)
+      sleep(3);  // wait for the last sstable disgestion.
 
-    if (method == &Benchmark::ReadRandom || method == &Benchmark::ReadRandom_Sharded)
+    if (method == &Benchmark::ReadRandom ||
+        method == &Benchmark::ReadRandom_Sharded)
       Validation_Read();
   }
 
@@ -932,55 +938,55 @@ class Benchmark {
     options.reuse_logs = FLAGS_reuse_logs;
     //
     rdma_mg = Env::Default()->rdma_mg.get();
-    number_of_key_total = FLAGS_num*FLAGS_threads; // whole range.
+    number_of_key_total = FLAGS_num * FLAGS_threads;  // whole range.
     number_of_key_per_compute =
-        number_of_key_total /rdma_mg->compute_nodes.size();
-    //只有computenode分片情况才会走下面两个if else，一对一单机不管这个
-    if (FLAGS_fixed_compute_shards_num > 0){
-      options.ShardInfo = new std::vector<std::pair<Slice,Slice>>();
-      number_of_key_per_shard = number_of_key_per_compute
-                                /FLAGS_fixed_compute_shards_num;
+        number_of_key_total / rdma_mg->compute_nodes.size();
+    // 只有computenode分片情况才会走下面两个if else，一对一单机不管这个
+    if (FLAGS_fixed_compute_shards_num > 0) {
+      options.ShardInfo = new std::vector<std::pair<Slice, Slice>>();
+      number_of_key_per_shard =
+          number_of_key_per_compute / FLAGS_fixed_compute_shards_num;
       for (int i = 0; i < FLAGS_fixed_compute_shards_num; ++i) {
         char* data_low = new char[FLAGS_key_size];
         char* data_up = new char[FLAGS_key_size];
-        Slice key_low  = Slice(data_low, FLAGS_key_size);
-        Slice key_up  = Slice(data_up, FLAGS_key_size);
-        uint64_t lower_bound = number_of_key_per_compute*(rdma_mg->node_id -1)/2
-                               + i*number_of_key_per_shard;
-        uint64_t upper_bound = number_of_key_per_compute*(rdma_mg->node_id -1)/2
-                               + (i+1)*number_of_key_per_shard;
-        if (i == FLAGS_fixed_compute_shards_num-1){
-          upper_bound = number_of_key_per_compute*(rdma_mg->node_id + 1)/2;
+        Slice key_low = Slice(data_low, FLAGS_key_size);
+        Slice key_up = Slice(data_up, FLAGS_key_size);
+        uint64_t lower_bound =
+            number_of_key_per_compute * (rdma_mg->node_id - 1) / 2 +
+            i * number_of_key_per_shard;
+        uint64_t upper_bound =
+            number_of_key_per_compute * (rdma_mg->node_id - 1) / 2 +
+            (i + 1) * number_of_key_per_shard;
+        if (i == FLAGS_fixed_compute_shards_num - 1) {
+          upper_bound = number_of_key_per_compute * (rdma_mg->node_id + 1) / 2;
         }
         GenerateKeyFromInt(lower_bound, &key_low);
         GenerateKeyFromInt(upper_bound, &key_up);
-        options.ShardInfo->emplace_back(key_low,key_up);
+        options.ShardInfo->emplace_back(key_low, key_up);
       }
-    }else if (rdma_mg->memory_nodes.size()> 1){
-      options.ShardInfo = new std::vector<std::pair<Slice,Slice>>();
-      number_of_key_per_shard = number_of_key_per_compute
-                                /rdma_mg->memory_nodes.size();
+    } else if (rdma_mg->memory_nodes.size() > 1) {
+      options.ShardInfo = new std::vector<std::pair<Slice, Slice>>();
+      number_of_key_per_shard =
+          number_of_key_per_compute / rdma_mg->memory_nodes.size();
       for (int i = 0; i < rdma_mg->memory_nodes.size(); ++i) {
         char* data_low = new char[FLAGS_key_size];
         char* data_up = new char[FLAGS_key_size];
-        Slice key_low  = Slice(data_low, FLAGS_key_size);
-        Slice key_up  = Slice(data_up, FLAGS_key_size);
-        uint64_t lower_bound = number_of_key_per_compute*(rdma_mg->node_id -1)/2
-                               + i*number_of_key_per_shard;
-        uint64_t upper_bound = number_of_key_per_compute*(rdma_mg->node_id -1)/2
-                               + (i+1)*number_of_key_per_shard;
-        if (i == rdma_mg->memory_nodes.size()-1){
+        Slice key_low = Slice(data_low, FLAGS_key_size);
+        Slice key_up = Slice(data_up, FLAGS_key_size);
+        uint64_t lower_bound =
+            number_of_key_per_compute * (rdma_mg->node_id - 1) / 2 +
+            i * number_of_key_per_shard;
+        uint64_t upper_bound =
+            number_of_key_per_compute * (rdma_mg->node_id - 1) / 2 +
+            (i + 1) * number_of_key_per_shard;
+        if (i == rdma_mg->memory_nodes.size() - 1) {
           // in case that the number_of_key_pershard round down.
-          upper_bound = number_of_key_per_compute*(rdma_mg->node_id + 1)/2;
+          upper_bound = number_of_key_per_compute * (rdma_mg->node_id + 1) / 2;
         }
         GenerateKeyFromInt(lower_bound, &key_low);
         GenerateKeyFromInt(upper_bound, &key_up);
-        options.ShardInfo->emplace_back(key_low,key_up);
+        options.ShardInfo->emplace_back(key_low, key_up);
       }
-
-
-
-
     }
 
     Status s = DB::Open(options, FLAGS_db, &db_);
@@ -1001,26 +1007,30 @@ class Benchmark {
   void WriteSeq(ThreadState* thread) { DoWrite(thread, true); }
 
   void WriteRandom(ThreadState* thread) { DoWrite(thread, false); }
-  void WriteRandomSharded(ThreadState* thread) { DoWrite_Sharded(thread, false); }
+  void WriteRandomSharded(ThreadState* thread) {
+    DoWrite_Sharded(thread, false);
+  }
   void Validation_Write() {
     Random64 rand(123);
     RandomGenerator gen;
     Status s;
     std::unique_ptr<const char[]> key_guard;
     WriteBatch batch;
-    Slice key = AllocateKey(&key_guard, FLAGS_key_size+1);
+    Slice key = AllocateKey(&key_guard, FLAGS_key_size + 1);
     for (int i = 0; i < 1000; i++) {
       batch.Clear();
-//      //The key range should be adjustable.
-////        const int k = seq ? i + j : thread->rand.Uniform(FLAGS_num*FLAGS_threads);
-//      const int k = rand.Next()%(FLAGS_num*FLAGS_threads);
+      //      //The key range should be adjustable.
+      ////        const int k = seq ? i + j :
+      /// thread->rand.Uniform(FLAGS_num*FLAGS_threads);
+      //      const int k = rand.Next()%(FLAGS_num*FLAGS_threads);
       GenerateKeyFromInt(i, &key);
-      key.Reset(key.data(), key.size()-1);
-      char to_be_append = 'v';// add an extra char to make key different from write bench.
+      key.Reset(key.data(), key.size() - 1);
+      char to_be_append =
+          'v';  // add an extra char to make key different from write bench.
       assert(key.size() == FLAGS_key_size);
       key.append(&to_be_append, 1);
-////      batch.Put(key, gen.Generate(value_size_));
-//      batch.Put(key, key);
+      ////      batch.Put(key, gen.Generate(value_size_));
+      //      batch.Put(key, key);
 
       s = db_->Put(write_options_, key, key);
       validation_keys.push_back(key.ToString());
@@ -1029,22 +1039,22 @@ class Benchmark {
   }
   void Validation_Read() {
     ReadOptions options;
-    //TODO(ruihong): specify the table_cache option.
+    // TODO(ruihong): specify the table_cache option.
     std::string value;
     int not_found = 0;
-//    KeyBuffer key;
+    //    KeyBuffer key;
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
     for (int i = 0; i < 1000; i++) {
       key = validation_keys[i];
       if (db_->Get(options, key, &value).ok()) {
-        if (value != validation_keys[i]){
+        if (value != validation_keys[i]) {
           printf("The fetched value is not correct");
         }
-      }else{
-//        printf("Validation failed\n");
+      } else {
+        //        printf("Validation failed\n");
         not_found++;
-//        assert(false);
+        //        assert(false);
       }
     }
     printf("validation read finished, not found num %d\n", not_found);
@@ -1060,21 +1070,23 @@ class Benchmark {
     WriteBatch batch;
     Status s;
     int64_t bytes = 0;
-//    KeyBuffer key;
+    //    KeyBuffer key;
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
     for (int i = 0; i < num_; i += entries_per_batch_) {
       batch.Clear();
       for (int j = 0; j < entries_per_batch_; j++) {
-        //The key range should be adjustable.
-//        const int k = seq ? i + j : thread->rand.Uniform(FLAGS_num*FLAGS_threads);
-        const int k = seq ? i + j : thread->rand.Next()%(FLAGS_num*FLAGS_threads);
+        // The key range should be adjustable.
+        //        const int k = seq ? i + j :
+        //        thread->rand.Uniform(FLAGS_num*FLAGS_threads);
+        const int k =
+            seq ? i + j : thread->rand.Next() % (FLAGS_num * FLAGS_threads);
 
-//        key.Set(k);
+        //        key.Set(k);
         GenerateKeyFromInt(k, &key);
-//        batch.Put(key.slice(), gen.Generate(value_size_));
+        //        batch.Put(key.slice(), gen.Generate(value_size_));
         batch.Put(key, gen.Generate(value_size_));
-//        bytes += value_size_ + key.slice().size();
+        //        bytes += value_size_ + key.slice().size();
         bytes += value_size_ + key.size();
         thread->stats.FinishedSingleOp();
       }
@@ -1100,14 +1112,16 @@ class Benchmark {
     //    KeyBuffer key;
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
-//    int total_number_of_inserted_key = FLAGS_num*FLAGS_threads;
-    uint64_t shard_number_among_computes = (RDMA_Manager::node_id - 1)/2;
+    //    int total_number_of_inserted_key = FLAGS_num*FLAGS_threads;
+    uint64_t shard_number_among_computes = (RDMA_Manager::node_id - 1) / 2;
     for (int i = 0; i < num_; i += entries_per_batch_) {
       batch.Clear();
       for (int j = 0; j < entries_per_batch_; j++) {
-        //The key range should be adjustable.
-        //        const int k = seq ? i + j : thread->rand.Uniform(FLAGS_num*FLAGS_threads);
-        const int k = seq ? i + j : thread->rand.Next()%(number_of_key_per_compute);
+        // The key range should be adjustable.
+        //         const int k = seq ? i + j :
+        //         thread->rand.Uniform(FLAGS_num*FLAGS_threads);
+        const int k =
+            seq ? i + j : thread->rand.Next() % (number_of_key_per_compute);
 
         //        key.Set(k);
         GenerateKeyFromInt(
@@ -1159,21 +1173,22 @@ class Benchmark {
 
   void ReadRandom(ThreadState* thread) {
     ReadOptions options;
-    //TODO(ruihong): specify the table_cache option.
+    // TODO(ruihong): specify the table_cache option.
     std::string value;
     int found = 0;
-//    KeyBuffer key;
+    //    KeyBuffer key;
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
     for (int i = 0; i < reads_; i++) {
-//      const int k = thread->rand.Uniform(FLAGS_num*FLAGS_threads);// make it uniform as write.
-      const int k = thread->rand.Next()%(FLAGS_num*FLAGS_threads);
-//
-//            key.Set(k);
+      //      const int k = thread->rand.Uniform(FLAGS_num*FLAGS_threads);//
+      //      make it uniform as write.
+      const int k = thread->rand.Next() % (FLAGS_num * FLAGS_threads);
+      //
+      //            key.Set(k);
       GenerateKeyFromInt(k, &key);
-//      if (db_->Get(options, key.slice(), &value).ok()) {
-//        found++;
-//      }
+      //      if (db_->Get(options, key.slice(), &value).ok()) {
+      //        found++;
+      //      }
       if (db_->Get(options, key, &value).ok()) {
         found++;
       }
@@ -1185,21 +1200,22 @@ class Benchmark {
   }
   void ReadRandom_Sharded(ThreadState* thread) {
     ReadOptions options;
-    //TODO(ruihong): specify the cache option.
+    // TODO(ruihong): specify the cache option.
     std::string value;
     int found = 0;
     //    KeyBuffer key;
     std::unique_ptr<const char[]> key_guard;
     Slice key = AllocateKey(&key_guard);
-//    int total_number_of_inserted_key = FLAGS_num*FLAGS_threads;
-    uint64_t shard_number_among_computes = (RDMA_Manager::node_id - 1)/2;
+    //    int total_number_of_inserted_key = FLAGS_num*FLAGS_threads;
+    uint64_t shard_number_among_computes = (RDMA_Manager::node_id - 1) / 2;
     for (int i = 0; i < reads_; i++) {
-      //      const int k = thread->rand.Uniform(FLAGS_num*FLAGS_threads);// make it uniform as write.
-      const int k = thread->rand.Next()%(number_of_key_per_compute);
+      //      const int k = thread->rand.Uniform(FLAGS_num*FLAGS_threads);//
+      //      make it uniform as write.
+      const int k = thread->rand.Next() % (number_of_key_per_compute);
       //
       //            key.Set(k);
-      GenerateKeyFromInt(k + shard_number_among_computes * number_of_key_per_compute,
-                         &key);
+      GenerateKeyFromInt(
+          k + shard_number_among_computes * number_of_key_per_compute, &key);
       //      if (db_->Get(options, key.slice(), &value).ok()) {
       //        found++;
       //      }
@@ -1231,8 +1247,9 @@ class Benchmark {
     uint64_t time_elapse;
     // the number of iterations is the larger of read_ or write_
     while (!duration.Done(1)) {
-//      DB* db = SelectDB(thread);
-GenerateKeyFromInt(thread->rand.Next() % (FLAGS_num * FLAGS_threads), &key);
+      //      DB* db = SelectDB(thread);
+      GenerateKeyFromInt(thread->rand.Next() % (FLAGS_num * FLAGS_threads),
+                         &key);
       if (get_weight == 0 && put_weight == 0) {
         // one batch completed, reinitialize for next batch
         get_weight = FLAGS_readwritepercent;
@@ -1240,12 +1257,13 @@ GenerateKeyFromInt(thread->rand.Next() % (FLAGS_num * FLAGS_threads), &key);
       }
       if (get_weight > 0) {
         // do all the gets first
-        //TODO: remove the time print.
-//        auto start = std::chrono::high_resolution_clock::now();
+        // TODO: remove the time print.
+        //        auto start = std::chrono::high_resolution_clock::now();
         Status s = db_->Get(options, key, &value);
-//        auto stop = std::chrono::high_resolution_clock::now();
-//        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//        time_elapse+=duration.count();
+        //        auto stop = std::chrono::high_resolution_clock::now();
+        //        auto duration =
+        //        std::chrono::duration_cast<std::chrono::nanoseconds>(stop -
+        //        start); time_elapse+=duration.count();
 
         if (!s.ok() && !s.IsNotFound()) {
           fprintf(stderr, "get error: %s\n", s.ToString().c_str());
@@ -1257,8 +1275,8 @@ GenerateKeyFromInt(thread->rand.Next() % (FLAGS_num * FLAGS_threads), &key);
         get_weight--;
         reads_done++;
         thread->stats.FinishedSingleOp();
-//        thread->stats.FinishedOps(nullptr, db, 1, kRead);
-      } else  if (put_weight > 0) {
+        //        thread->stats.FinishedOps(nullptr, db, 1, kRead);
+      } else if (put_weight > 0) {
         // then do all the corresponding number of puts
         // for all the gets we have done earlier
         Status s = db_->Put(write_options_, key, gen.Generate(value_size_));
@@ -1269,14 +1287,15 @@ GenerateKeyFromInt(thread->rand.Next() % (FLAGS_num * FLAGS_threads), &key);
         put_weight--;
         writes_done++;
         thread->stats.FinishedSingleOp();
-//        thread->stats.FinishedOps(nullptr, db, 1, kWrite);
+        //        thread->stats.FinishedOps(nullptr, db, 1, kWrite);
       }
     }
     char msg[100];
-    snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
-                               " total:%" PRIu64 " found:%" PRIu64 ")",
+    snprintf(msg, sizeof(msg),
+             "( reads:%" PRIu64 " writes:%" PRIu64 " total:%" PRIu64
+             " found:%" PRIu64 ")",
              reads_done, writes_done, FLAGS_num, found);
-//    printf("Read average latency is %lu\n", time_elapse/reads_done);
+    //    printf("Read average latency is %lu\n", time_elapse/reads_done);
     thread->stats.AddMessage(msg);
   }
   void ReadMissing(ThreadState* thread) {
@@ -1383,7 +1402,7 @@ GenerateKeyFromInt(thread->rand.Next() % (FLAGS_num * FLAGS_threads), &key);
           }
         }
 
-        const int k = thread->rand.Uniform(FLAGS_num*FLAGS_threads);
+        const int k = thread->rand.Uniform(FLAGS_num * FLAGS_threads);
         key.Set(k);
         Status s =
             db_->Put(write_options_, key.slice(), gen.Generate(value_size_));
@@ -1434,7 +1453,6 @@ GenerateKeyFromInt(thread->rand.Next() % (FLAGS_num * FLAGS_threads), &key);
 }  // namespace dLSM
 
 int main(int argc, char** argv) {
-
   for (int i = 1; i < argc; i++) {
     double d;
     int n;
@@ -1444,8 +1462,8 @@ int main(int argc, char** argv) {
     } else if (sscanf(argv[i], "--compression_ratio=%lf%c", &d, &junk) == 1) {
       FLAGS_compression_ratio = d;
     } else if (sscanf(argv[i], "--compute_node_id=%d%c", &n, &junk) == 1) {
-      //Set Node id to RDMA manager's static value directly.
-      dLSM::RDMA_Manager::node_id = 2*n+1;
+      // Set Node id to RDMA manager's static value directly.
+      dLSM::RDMA_Manager::node_id = 2 * n + 1;
     } else if (sscanf(argv[i], "--histogram=%d%c", &n, &junk) == 1 &&
                (n == 0 || n == 1)) {
       FLAGS_histogram = n;
@@ -1455,7 +1473,8 @@ int main(int argc, char** argv) {
     } else if (sscanf(argv[i], "--use_existing_db=%d%c", &n, &junk) == 1 &&
                (n == 0 || n == 1)) {
       FLAGS_use_existing_db = n;
-    } else if (sscanf(argv[i], "--fixed_compute_shards_num=%d%c", &n, &junk) == 1) {
+    } else if (sscanf(argv[i], "--fixed_compute_shards_num=%d%c", &n, &junk) ==
+               1) {
       // if it is zero allocate shard number according to the memory node number
       // if larger than 0 this number should larger than meory node number
       FLAGS_fixed_compute_shards_num = n;
@@ -1488,7 +1507,8 @@ int main(int argc, char** argv) {
       FLAGS_open_files = n;
     } else if (sscanf(argv[i], "--numa_awared=%d%c", &n, &junk) == 1) {
       FLAGS_enable_numa = n;
-    } else if (sscanf(argv[i], "--block_restart_interval=%d%c", &n, &junk) == 1) {
+    } else if (sscanf(argv[i], "--block_restart_interval=%d%c", &n, &junk) ==
+               1) {
       FLAGS_block_restart_interval = n;
     } else if (sscanf(argv[i], "--readwritepercent=%d%c", &n, &junk) == 1) {
       FLAGS_readwritepercent = n;
@@ -1515,32 +1535,42 @@ int main(int argc, char** argv) {
     FLAGS_db = default_db_path.c_str();
   }
 
-  //输出所有flags
-    std::fprintf(stdout, "FLAGS_benchmarks: %s\n", FLAGS_benchmarks);
-    std::fprintf(stdout, "FLAGS_num: %d\n", FLAGS_num);
-    std::fprintf(stdout, "FLAGS_reads: %d\n", FLAGS_reads);
-    std::fprintf(stdout, "FLAGS_threads: %d\n", FLAGS_threads);
-    std::fprintf(stdout, "FLAGS_value_size: %d\n", FLAGS_value_size);
-    std::fprintf(stdout, "FLAGS_key_size: %d\n", FLAGS_key_size);
-    std::fprintf(stdout, "FLAGS_compression_ratio: %f\n", FLAGS_compression_ratio);
-    std::fprintf(stdout, "FLAGS_histogram: %s\n", FLAGS_histogram ? "true" : "false");
-    std::fprintf(stdout, "FLAGS_comparisons: %s\n", FLAGS_comparisons ? "true" : "false");
-    std::fprintf(stdout, "FLAGS_write_buffer_size: %d\n", FLAGS_write_buffer_size);
-    std::fprintf(stdout, "FLAGS_max_file_size: %d\n", FLAGS_max_file_size);
-    std::fprintf(stdout, "FLAGS_block_size: %d\n", FLAGS_block_size);
-    std::fprintf(stdout, "FLAGS_cache_size: %d\n", FLAGS_cache_size);
-    std::fprintf(stdout, "FLAGS_open_files: %d\n", FLAGS_open_files);
-    std::fprintf(stdout, "FLAGS_block_restart_interval: %d\n", FLAGS_block_restart_interval);
-    std::fprintf(stdout, "FLAGS_bloom_bits: %d\n", FLAGS_bloom_bits);
-    std::fprintf(stdout, "FLAGS_key_prefix: %d\n", FLAGS_key_prefix);
-    std::fprintf(stdout, "FLAGS_use_existing_db: %s\n", FLAGS_use_existing_db ? "true" : "false");
-    std::fprintf(stdout, "FLAGS_fixed_compute_shards_num: %d\n", FLAGS_fixed_compute_shards_num);
-    std::fprintf(stdout, "FLAGS_enable_numa: %s\n", FLAGS_enable_numa ? "true" : "false");
-    std::fprintf(stdout, "FLAGS_reuse_logs: %s\n", FLAGS_reuse_logs ? "true" : "false");
-    std::fprintf(stdout, "FLAGS_db: %s\n", FLAGS_db ? FLAGS_db : "nullptr");
-    std::fprintf(stdout, "FLAGS_readwritepercent: %d\n", FLAGS_readwritepercent);
-    std::fprintf(stdout, "FLAGS_ops_between_duration_checks: %d\n", FLAGS_ops_between_duration_checks);
-    std::fprintf(stdout, "FLAGS_duration: %d\n", FLAGS_duration);
+  // 输出所有flags
+  std::fprintf(stdout, "FLAGS_benchmarks: %s\n", FLAGS_benchmarks);
+  std::fprintf(stdout, "FLAGS_num: %d\n", FLAGS_num);
+  std::fprintf(stdout, "FLAGS_reads: %d\n", FLAGS_reads);
+  std::fprintf(stdout, "FLAGS_threads: %d\n", FLAGS_threads);
+  std::fprintf(stdout, "FLAGS_value_size: %d\n", FLAGS_value_size);
+  std::fprintf(stdout, "FLAGS_key_size: %d\n", FLAGS_key_size);
+  std::fprintf(stdout, "FLAGS_compression_ratio: %f\n",
+               FLAGS_compression_ratio);
+  std::fprintf(stdout, "FLAGS_histogram: %s\n",
+               FLAGS_histogram ? "true" : "false");
+  std::fprintf(stdout, "FLAGS_comparisons: %s\n",
+               FLAGS_comparisons ? "true" : "false");
+  std::fprintf(stdout, "FLAGS_write_buffer_size: %d\n",
+               FLAGS_write_buffer_size);
+  std::fprintf(stdout, "FLAGS_max_file_size: %d\n", FLAGS_max_file_size);
+  std::fprintf(stdout, "FLAGS_block_size: %d\n", FLAGS_block_size);
+  std::fprintf(stdout, "FLAGS_cache_size: %d\n", FLAGS_cache_size);
+  std::fprintf(stdout, "FLAGS_open_files: %d\n", FLAGS_open_files);
+  std::fprintf(stdout, "FLAGS_block_restart_interval: %d\n",
+               FLAGS_block_restart_interval);
+  std::fprintf(stdout, "FLAGS_bloom_bits: %d\n", FLAGS_bloom_bits);
+  std::fprintf(stdout, "FLAGS_key_prefix: %d\n", FLAGS_key_prefix);
+  std::fprintf(stdout, "FLAGS_use_existing_db: %s\n",
+               FLAGS_use_existing_db ? "true" : "false");
+  std::fprintf(stdout, "FLAGS_fixed_compute_shards_num: %d\n",
+               FLAGS_fixed_compute_shards_num);
+  std::fprintf(stdout, "FLAGS_enable_numa: %s\n",
+               FLAGS_enable_numa ? "true" : "false");
+  std::fprintf(stdout, "FLAGS_reuse_logs: %s\n",
+               FLAGS_reuse_logs ? "true" : "false");
+  std::fprintf(stdout, "FLAGS_db: %s\n", FLAGS_db ? FLAGS_db : "nullptr");
+  std::fprintf(stdout, "FLAGS_readwritepercent: %d\n", FLAGS_readwritepercent);
+  std::fprintf(stdout, "FLAGS_ops_between_duration_checks: %d\n",
+               FLAGS_ops_between_duration_checks);
+  std::fprintf(stdout, "FLAGS_duration: %d\n", FLAGS_duration);
   dLSM::Benchmark benchmark;
   benchmark.Run();
   return 0;

@@ -40,9 +40,7 @@ static std::string Reverse(const Slice& key) {
 namespace {
 class ReverseKeyComparator : public Comparator {
  public:
-  const char* Name() const override {
-    return "dLSM.ReverseBytewiseComparator";
-  }
+  const char* Name() const override { return "dLSM.ReverseBytewiseComparator"; }
 
   int Compare(const Slice& a, const Slice& b) const override {
     return BytewiseComparator()->Compare(Reverse(a), Reverse(b));

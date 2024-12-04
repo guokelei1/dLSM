@@ -4,17 +4,21 @@
 
 #ifndef dLSM_THREADPOOL_H
 #define dLSM_THREADPOOL_H
+#include <assert.h>
+#include <atomic>
 #include <condition_variable>
 #include <deque>
-#include <mutex>
 #include <functional>
-#include <vector>
-#include <atomic>
+#include <mutex>
 #include <port/port_posix.h>
-#include <assert.h>
+#include <vector>
 namespace dLSM {
 class DBImpl;
-enum ThreadPoolType{FlushThreadPool, CompactionThreadPool, SubcompactionThreadPool};
+enum ThreadPoolType {
+  FlushThreadPool,
+  CompactionThreadPool,
+  SubcompactionThreadPool
+};
 struct BGItem {
   //  void* tag = nullptr;
   std::function<void(void* args)> function;
@@ -26,40 +30,37 @@ struct BGThreadMetadata {
   void* func_args;
 };
 
-class ThreadPool{
+class ThreadPool {
  public:
-//  ThreadPool(std::mutex* mtx, std::condition_variable* signal);
+  //  ThreadPool(std::mutex* mtx, std::condition_variable* signal);
   std::vector<port::Thread> bgthreads_;
   std::deque<BGItem> queue_;
   ThreadPoolType Type_;
   std::mutex mu_;
   std::condition_variable bgsignal_;
-//  std::mutex RDMA_notify_mtx;
-//  std::condition_variable RDMA_signal;
+  //  std::mutex RDMA_notify_mtx;
+  //  std::condition_variable RDMA_signal;
   int total_threads_limit_;
   std::atomic_uint queue_len_ = 0;
   bool exit_all_threads_ = false;
   bool wait_for_jobs_to_complete_;
-  void WakeUpAllThreads() { bgsignal_.notify_all();
-  }
+  void WakeUpAllThreads() { bgsignal_.notify_all(); }
   void BGThread() {
-//    bool low_io_priority = false;
+    //    bool low_io_priority = false;
     while (true) {
       // Wait until there is an item that is ready to run
       std::unique_lock<std::mutex> lock(mu_);
       // Stop waiting if the thread needs to do work or needs to terminate.
-      while (!exit_all_threads_ && queue_.empty() ) {
+      while (!exit_all_threads_ && queue_.empty()) {
         bgsignal_.wait(lock);
       }
 
       if (exit_all_threads_) {  // mechanism to let BG threads exit safely
 
-        if (!wait_for_jobs_to_complete_ ||
-        queue_.empty()) {
+        if (!wait_for_jobs_to_complete_ || queue_.empty()) {
           break;
         }
       }
-
 
       auto func = std::move(queue_.front().function);
       void* args = std::move(queue_.front().args);
@@ -70,25 +71,22 @@ class ThreadPool{
 
       lock.unlock();
 
-
       func(args);
     }
   }
   void StartBGThreads() {
     // Start background thread if necessary
     while ((int)bgthreads_.size() < total_threads_limit_) {
-
       port::Thread p_t(&ThreadPool::BGThread, this);
       bgthreads_.push_back(std::move(p_t));
     }
   }
-  void Schedule(std::function<void(void* args)>&& func, void* args){
-
+  void Schedule(std::function<void(void* args)>&& func, void* args) {
     std::lock_guard<std::mutex> lock(mu_);
     if (exit_all_threads_) {
       return;
     }
-//    printf("schedule a work request!\n");
+    //    printf("schedule a work request!\n");
     StartBGThreads();
     // Add to priority queue
     queue_.push_back(BGItem());
@@ -112,7 +110,6 @@ class ThreadPool{
     WakeUpAllThreads();
   }
   void JoinThreads(bool wait_for_jobs_to_complete) {
-
     std::unique_lock<std::mutex> lock(mu_);
     assert(!exit_all_threads_);
 
@@ -135,12 +132,9 @@ class ThreadPool{
     exit_all_threads_ = false;
     wait_for_jobs_to_complete_ = false;
   }
-  void SetBackgroundThreads(int num){
-    total_threads_limit_ = num;
-  }
+  void SetBackgroundThreads(int num) { total_threads_limit_ = num; }
   //  void Schedule(std::function<void(void* args)>&& schedule, void* args);
-
-};}
-
+};
+}  // namespace dLSM
 
 #endif  // dLSM_THREADPOOL_H

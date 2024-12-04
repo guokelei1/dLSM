@@ -5,9 +5,9 @@
 #ifndef STORAGE_dLSM_DB_LOG_WRITER_H_
 #define STORAGE_dLSM_DB_LOG_WRITER_H_
 
+#include "db/log_format.h"
 #include <cstdint>
 
-#include "db/log_format.h"
 #include "dLSM/slice.h"
 #include "dLSM/status.h"
 

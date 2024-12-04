@@ -27,17 +27,15 @@ namespace dLSM {
 
 class MutexLock {
  public:
-  explicit MutexLock(port::Mutex *mu) : mu_(mu) {
-    this->mu_->Lock();
-  }
+  explicit MutexLock(port::Mutex* mu) : mu_(mu) { this->mu_->Lock(); }
   // No copying allowed
-  MutexLock(const MutexLock &) = delete;
-  void operator=(const MutexLock &) = delete;
+  MutexLock(const MutexLock&) = delete;
+  void operator=(const MutexLock&) = delete;
 
   ~MutexLock() { this->mu_->Unlock(); }
 
  private:
-  port::Mutex *const mu_;
+  port::Mutex* const mu_;
 };
 //
 // SpinMutex has very low overhead for low-contention cases.  Method names
@@ -46,7 +44,8 @@ class MutexLock {
 class SpinMutex {
  public:
   SpinMutex() : locked_(false) {}
-  //TODO this spinmutex have problem, some time 2 thread can walk into the protected code.
+  // TODO this spinmutex have problem, some time 2 thread can walk into the
+  // protected code.
   bool try_lock() {
     auto currently_locked = locked_.load(std::memory_order_relaxed);
     return !currently_locked &&
@@ -79,17 +78,15 @@ class SpinMutex {
 };
 class SpinLock {
  public:
-  explicit SpinLock(SpinMutex *mu) : mu_(mu) {
-    this->mu_->lock();
-  }
+  explicit SpinLock(SpinMutex* mu) : mu_(mu) { this->mu_->lock(); }
   // No copying allowed
-  SpinLock(const SpinLock &) = delete;
-  void operator=(const SpinLock &) = delete;
+  SpinLock(const SpinLock&) = delete;
+  void operator=(const SpinLock&) = delete;
 
   ~SpinLock() { this->mu_->unlock(); }
 
  private:
-  SpinMutex *const mu_;
+  SpinMutex* const mu_;
 };
 
 //
@@ -99,17 +96,15 @@ class SpinLock {
 //
 class ReadLock {
  public:
-  explicit ReadLock(port::RWMutex *mu) : mu_(mu) {
-    this->mu_->ReadLock();
-  }
+  explicit ReadLock(port::RWMutex* mu) : mu_(mu) { this->mu_->ReadLock(); }
   // No copying allowed
-  ReadLock(const ReadLock &) = delete;
-  void operator=(const ReadLock &) = delete;
+  ReadLock(const ReadLock&) = delete;
+  void operator=(const ReadLock&) = delete;
 
   ~ReadLock() { this->mu_->ReadUnlock(); }
 
  private:
-  port::RWMutex *const mu_;
+  port::RWMutex* const mu_;
 };
 
 //
@@ -117,15 +112,15 @@ class ReadLock {
 //
 class ReadUnlock {
  public:
-  explicit ReadUnlock(port::RWMutex *mu) : mu_(mu) { mu->AssertHeld(); }
+  explicit ReadUnlock(port::RWMutex* mu) : mu_(mu) { mu->AssertHeld(); }
   // No copying allowed
-  ReadUnlock(const ReadUnlock &) = delete;
-  ReadUnlock &operator=(const ReadUnlock &) = delete;
+  ReadUnlock(const ReadUnlock&) = delete;
+  ReadUnlock& operator=(const ReadUnlock&) = delete;
 
   ~ReadUnlock() { mu_->ReadUnlock(); }
 
  private:
-  port::RWMutex *const mu_;
+  port::RWMutex* const mu_;
 };
 
 //
@@ -135,23 +130,20 @@ class ReadUnlock {
 //
 class WriteLock {
  public:
-  explicit WriteLock(port::RWMutex *mu) : mu_(mu) {
-    this->mu_->WriteLock();
-  }
+  explicit WriteLock(port::RWMutex* mu) : mu_(mu) { this->mu_->WriteLock(); }
   // No copying allowed
-  WriteLock(const WriteLock &) = delete;
-  void operator=(const WriteLock &) = delete;
+  WriteLock(const WriteLock&) = delete;
+  void operator=(const WriteLock&) = delete;
 
   ~WriteLock() { this->mu_->WriteUnlock(); }
 
  private:
-  port::RWMutex *const mu_;
+  port::RWMutex* const mu_;
 };
 
-
-//TODO: implement a spin read wirte lock to control some short synchronization more
-// efficiently.
-
+// TODO: implement a spin read wirte lock to control some short synchronization
+// more
+//  efficiently.
 
 // We want to prevent false sharing
 template <class T>
@@ -171,15 +163,13 @@ struct ALIGN_AS(CACHE_LINE_SIZE) LockData {
 template <class T, class P>
 class Striped {
  public:
-  Striped(size_t stripes, std::function<uint64_t(const P &)> hash)
+  Striped(size_t stripes, std::function<uint64_t(const P&)> hash)
       : stripes_(stripes), hash_(hash) {
-
-    locks_ = reinterpret_cast<LockData<T> *>(
+    locks_ = reinterpret_cast<LockData<T>*>(
         port::cacheline_aligned_alloc(sizeof(LockData<T>) * stripes));
     for (size_t i = 0; i < stripes; i++) {
       new (&locks_[i]) LockData<T>();
     }
-
   }
 
   virtual ~Striped() {
@@ -192,16 +182,16 @@ class Striped {
     }
   }
 
-  T *get(const P &key) {
+  T* get(const P& key) {
     uint64_t h = hash_(key);
     size_t index = h % stripes_;
-    return &reinterpret_cast<LockData<T> *>(&locks_[index])->lock_;
+    return &reinterpret_cast<LockData<T>*>(&locks_[index])->lock_;
   }
 
  private:
   size_t stripes_;
-  LockData<T> *locks_;
-  std::function<uint64_t(const P &)> hash_;
+  LockData<T>* locks_;
+  std::function<uint64_t(const P&)> hash_;
 };
 
 }  // namespace dLSM

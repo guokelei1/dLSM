@@ -6,6 +6,7 @@
 #define STORAGE_dLSM_DB_SNAPSHOT_H_
 
 #include "db/dbformat.h"
+
 #include "dLSM/db.h"
 
 namespace dLSM {
@@ -20,7 +21,7 @@ class SnapshotImpl : public Snapshot {
       : sequence_number_(sequence_number) {}
 
   SequenceNumber sequence_number() const { return sequence_number_; }
-  //TODO: include the superversion within the snapshot.
+  // TODO: include the superversion within the snapshot.
 
  private:
   friend class SnapshotList;
@@ -89,7 +90,6 @@ class SnapshotList {
  private:
   // Dummy head of doubly-linked list of snapshots
   SnapshotImpl head_;
-
 };
 
 }  // namespace dLSM

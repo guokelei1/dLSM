@@ -20,7 +20,8 @@ class IteratorWrapper {
   explicit IteratorWrapper(Iterator* iter) : iter_(nullptr) { Set(iter); }
   ~IteratorWrapper() {
 #ifndef NDEBUG
-//    printf("Delete iter_ when iterator wrapper deallocation, deleted iter_ is %p \n", iter_);
+//    printf("Delete iter_ when iterator wrapper deallocation, deleted iter_ is
+//    %p \n", iter_);
 #endif
     delete iter_;
   }
@@ -30,7 +31,8 @@ class IteratorWrapper {
   // when Set() is invoked again.
   void Set(Iterator* iter) {
 #ifndef NDEBUG
-//    printf("Delete iter_ when replacing the iterator, deleted iter_ is %p, new iterator is %p\n", iter_, iter);
+//    printf("Delete iter_ when replacing the iterator, deleted iter_ is %p, new
+//    iterator is %p\n", iter_, iter);
 #endif
     delete iter_;
 
@@ -95,7 +97,6 @@ class IteratorWrapper {
   bool valid_;
   Slice key_;
 };
-
 
 }  // namespace dLSM
 

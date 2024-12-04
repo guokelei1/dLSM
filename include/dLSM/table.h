@@ -5,15 +5,16 @@
 #ifndef STORAGE_dLSM_INCLUDE_TABLE_H_
 #define STORAGE_dLSM_INCLUDE_TABLE_H_
 
+#include "db/version_edit.h"
 #include <cstdint>
 #include <memory>
 
 #include "dLSM/export.h"
 #include "dLSM/iterator.h"
-#include "db/version_edit.h"
-#include "table/full_filter_block.h"
-#include "table/format.h"
+
 #include "table/block.h"
+#include "table/format.h"
+#include "table/full_filter_block.h"
 namespace dLSM {
 
 class Block;
@@ -30,9 +31,7 @@ class TableCache;
 class dLSM_EXPORT Table {
  public:
   struct Rep {
-    Rep(const Options& options) : options(options) {
-
-    }
+    Rep(const Options& options) : options(options) {}
     ~Rep() {
       delete filter;
       //    delete[] filter_data;
@@ -41,14 +40,15 @@ class dLSM_EXPORT Table {
 
     Options options;
     Status status;
-    // weak_ptr because if there is cached value in the table table_cache then the obsoleted SST
-    // will never be garbage collected.
+    // weak_ptr because if there is cached value in the table table_cache then
+    // the obsoleted SST will never be garbage collected.
     std::weak_ptr<RemoteMemTableMetaData> remote_table;
     uint64_t cache_id;
     FullFilterBlockReader* filter;
     //  const char* filter_data;
 
-    BlockHandle metaindex_handle;  // Handle to metaindex_block: saved from footer
+    BlockHandle
+        metaindex_handle;  // Handle to metaindex_block: saved from footer
     Block* index_block;
 #ifdef BYTEADDRESSABLE
 //    Iterator* index_iter;
@@ -67,8 +67,9 @@ class dLSM_EXPORT Table {
   // for the duration of the returned table's lifetime.
   //
   // *file must remain live while this Table is in use.
-  static Status Open(const Options& options, Table** table,
-                     const std::shared_ptr<RemoteMemTableMetaData>& Remote_table_meta);
+  static Status Open(
+      const Options& options, Table** table,
+      const std::shared_ptr<RemoteMemTableMetaData>& Remote_table_meta);
 
   Table(const Table&) = delete;
   Table& operator=(const Table&) = delete;
@@ -96,7 +97,7 @@ class dLSM_EXPORT Table {
 
  private:
   friend class TableCache;
-//  struct Rep;
+  //  struct Rep;
 
   static Iterator* BlockReader(void*, const ReadOptions&, const Slice&);
   explicit Table(Rep* rep) : rep(rep) {}
@@ -110,7 +111,6 @@ class dLSM_EXPORT Table {
 
   void ReadMeta(const Footer& footer);
   void ReadFilter();
-
 };
 
 }  // namespace dLSM

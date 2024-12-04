@@ -12,24 +12,23 @@
 #include "dLSM/filter_policy.h"
 #include "dLSM/options.h"
 
-
 #include "table/filter_block.h"
 #include "table/format.h"
 #include "table/two_level_iterator.h"
 #include "util/coding.h"
 
-#include "full_filter_block.h"
 #include "byte_addressable_RA_iterator.h"
 #include "byte_addressable_SEQ_iterrator.h"
+#include "full_filter_block.h"
 
 namespace dLSM {
 
-//thread_local ibv_mr*  Table::Rep::mr_addr = nullptr;
-//TODO: Make it compatible with multi-node setup.
-Status Table::Open(const Options& options, Table** table,
-                   const std::shared_ptr<RemoteMemTableMetaData>& Remote_table_meta) {
+// thread_local ibv_mr*  Table::Rep::mr_addr = nullptr;
+// TODO: Make it compatible with multi-node setup.
+Status Table::Open(
+    const Options& options, Table** table,
+    const std::shared_ptr<RemoteMemTableMetaData>& Remote_table_meta) {
   *table = nullptr;
-
 
   // Read the index block
   Status s = Status::OK();
@@ -47,23 +46,23 @@ Status Table::Open(const Options& options, Table** table,
     // ready to serve requests.
     Block* index_block = new Block(index_block_contents, IndexBlock);
     Rep* rep = new Table::Rep(options);
-//    rep->options = options;
-//    rep->file = file;
+    //    rep->options = options;
+    //    rep->file = file;
     rep->remote_table = Remote_table_meta;
-//    rep->metaindex_handle = footer.metaindex_handle();
+    //    rep->metaindex_handle = footer.metaindex_handle();
     rep->index_block = index_block;
 #ifdef BYTEADDRESSABLE
 //    rep->index_iter = rep->index_block->NewIterator(rep->options.comparator);
 #endif
     assert(rep->index_block->size() > 0);
     rep->cache_id = (options.block_cache ? options.block_cache->NewId() : 0);
-//    rep->filter_data = nullptr;
+    //    rep->filter_data = nullptr;
     rep->filter = nullptr;
 
     *table = new Table(rep);
     (*table)->ReadFilter();
-//    (*table)->ReadMeta(footer);
-  }else{
+    //    (*table)->ReadMeta(footer);
+  } else {
     assert(false);
   }
 
@@ -82,24 +81,22 @@ void Table::ReadFilter() {
   }
   BlockContents block;
   auto table_meta_data = rep->remote_table.lock();
-  if (!ReadFilterBlock(
-           table_meta_data->remote_filter_mrs.begin()->second, opt,
-           &block, table_meta_data->shard_target_node_id)
+  if (!ReadFilterBlock(table_meta_data->remote_filter_mrs.begin()->second, opt,
+                       &block, table_meta_data->shard_target_node_id)
            .ok()) {
     return;
   }
-//  if (block.heap_allocated) {
-//    rep_->filter_data = block.data.data();  // Will need to delete later
-//  }
+  //  if (block.heap_allocated) {
+  //    rep_->filter_data = block.data.data();  // Will need to delete later
+  //  }
   rep->filter = new FullFilterBlockReader(
       block.data, rep->remote_table.lock()->rdma_mg, Compute);
 }
 
 Table::~Table() {
-//  printf("garbage collect the local cache of table %lu", rep->cache_id);
+  //  printf("garbage collect the local cache of table %lu", rep->cache_id);
   delete rep;
 }
-
 
 static void DeleteBlock(void* arg, void* ignored) {
   delete reinterpret_cast<Block*>(arg);
@@ -134,7 +131,7 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
   if (s.ok()) {
     BlockContents contents;
     if (block_cache != nullptr) {
-//      printf("There is a table_cache!!\n");
+      //      printf("There is a table_cache!!\n");
       char cache_key_buffer[16];
       EncodeFixed64(cache_key_buffer, table->rep->cache_id);
       EncodeFixed64(cache_key_buffer + 8, handle.offset());
@@ -145,7 +142,8 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
       cache_handle = block_cache->Lookup(key);
 #ifdef PROCESSANALYSIS
       auto stop = std::chrono::high_resolution_clock::now();
-      auto lookup_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+      auto lookup_duration =
+          std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
 #endif
       if (cache_handle != nullptr) {
         block = reinterpret_cast<Block*>(block_cache->Value(cache_handle));
@@ -157,17 +155,20 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
       } else {
 #ifdef PROCESSANALYSIS
         TableCache::cache_miss.fetch_add(1);
-//        if(TableCache::cache_miss < TableCache::not_filtered){
-//          printf("warning\n");
-//        };
+        //        if(TableCache::cache_miss < TableCache::not_filtered){
+        //          printf("warning\n");
+        //        };
         start = std::chrono::high_resolution_clock::now();
 
 #endif
-        s = ReadDataBlock(&table->rep->remote_table.lock()->remote_data_mrs, options, handle, &contents);
+        s = ReadDataBlock(&table->rep->remote_table.lock()->remote_data_mrs,
+                          options, handle, &contents);
 #ifdef PROCESSANALYSIS
         stop = std::chrono::high_resolution_clock::now();
-        auto blockfetch_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-        TableCache::cache_miss_block_fetch_time.fetch_add(blockfetch_duration.count());
+        auto blockfetch_duration =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+        TableCache::cache_miss_block_fetch_time.fetch_add(
+            blockfetch_duration.count());
 #endif
 
         if (s.ok()) {
@@ -179,8 +180,9 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
         }
       }
     } else {
-//      printf("NO table_cache found!!\n");
-      s = ReadDataBlock(&table->rep->remote_table.lock()->remote_data_mrs, options, handle, &contents);
+      //      printf("NO table_cache found!!\n");
+      s = ReadDataBlock(&table->rep->remote_table.lock()->remote_data_mrs,
+                        options, handle, &contents);
       if (s.ok()) {
         block = new Block(contents, DataBlock);
       }
@@ -200,13 +202,14 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
     iter = NewErrorIterator(s);
   }
   iter->SeekToFirst();
-//  DEBUG_arg("First key after the block create %s", iter->key().ToString().c_str());
+  //  DEBUG_arg("First key after the block create %s",
+  //  iter->key().ToString().c_str());
   return iter;
 }
 // Convert an index iterator value (i.e., an encoded BlockHandle)
 // into an iterator over the contents of the corresponding block.
 Slice Table::KVReader(void* arg, const ReadOptions& options,
-                             const Slice& index_value) {
+                      const Slice& index_value) {
   Table* table = reinterpret_cast<Table*>(arg);
   Cache* block_cache = table->rep->options.block_cache;
   Block* block = nullptr;
@@ -233,18 +236,15 @@ Iterator* Table::NewIterator(const ReadOptions& options) const {
 #endif
 #ifdef BYTEADDRESSABLE
   return new ByteAddressableRAIterator(
-      rep->index_block->NewIterator(rep->options.comparator),
-      &Table::KVReader, const_cast<Table*>(this), options, true);
+      rep->index_block->NewIterator(rep->options.comparator), &Table::KVReader,
+      const_cast<Table*>(this), options, true);
 #endif
 }
 #ifdef BYTEADDRESSABLE
 Iterator* Table::NewSEQIterator(const ReadOptions& options) const {
-
-
   return new ByteAddressableSEQIterator(
       rep->index_block->NewIterator(rep->options.comparator),
       const_cast<Table*>(this), options, true);
-
 }
 #endif
 Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
@@ -259,10 +259,10 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
     TableCache::filtered.fetch_add(1);
 #endif
 #ifdef BLOOMANALYSIS
-    //assert that bloom filter is correct
+    // assert that bloom filter is correct
     Iterator* iiter = rep_->index_block->NewIterator(rep_->options.comparator);
 
-    iiter->Seek(k);//binary search for block index
+    iiter->Seek(k);  // binary search for block index
     if (iiter->Valid()) {
       Slice handle_value = iiter->value();
       BlockHandle handle;
@@ -273,14 +273,14 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
         (*handle_result)(arg, block_iter->key(), block_iter->value());
       }
       Saver* saver = reinterpret_cast<Saver*>(arg);
-//      assert(saver->state == kNotFound);
-      if(saver->state == kNotFound){
-//        printf("filtered key not found\n");
+      //      assert(saver->state == kNotFound);
+      if (saver->state == kNotFound) {
+        //        printf("filtered key not found\n");
         int dummy = 0;
-      }else{
+      } else {
         assert(false);
         exit(1);
-//        printf("filtered key found\n");
+        //        printf("filtered key found\n");
         int dummy = 0;
       }
       delete block_iter;
@@ -292,15 +292,15 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
 #ifdef PROCESSANALYSIS
     auto start = std::chrono::high_resolution_clock::now();
 #endif
-    iiter->Seek(k);//binary search for block index
+    iiter->Seek(k);  // binary search for block index
 #ifdef PROCESSANALYSIS
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//    std::printf("Block Reader time elapse is %zu\n",  duration.count());
+    auto duration =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    //    std::printf("Block Reader time elapse is %zu\n",  duration.count());
     TableCache::IndexBinarySearchTimeElapseSum.fetch_add(duration.count());
 #endif
     if (iiter->Valid()) {
-
       Slice handle_value = iiter->value();
 
       BlockHandle handle;
@@ -312,9 +312,11 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
       Iterator* block_iter = BlockReader(this, options, iiter->value());
 #ifdef PROCESSANALYSIS
       stop = std::chrono::high_resolution_clock::now();
-      duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//    std::printf("Block Reader time elapse is %zu\n",  duration.count());
-      TableCache::DataBlockFetchBeforeCacheElapseSum.fetch_add(duration.count());
+      duration =
+          std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+      //    std::printf("Block Reader time elapse is %zu\n",  duration.count());
+      TableCache::DataBlockFetchBeforeCacheElapseSum.fetch_add(
+          duration.count());
 #endif
 #ifdef PROCESSANALYSIS
       start = std::chrono::high_resolution_clock::now();
@@ -322,8 +324,9 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
       block_iter->Seek(k);
 #ifdef PROCESSANALYSIS
       stop = std::chrono::high_resolution_clock::now();
-      duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-//    std::printf("Block Reader time elapse is %zu\n",  duration.count());
+      duration =
+          std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+      //    std::printf("Block Reader time elapse is %zu\n",  duration.count());
       TableCache::DataBinarySearchTimeElapseSum.fetch_add(duration.count());
 #endif
       if (block_iter->Valid()) {
@@ -334,12 +337,12 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
 
 #ifdef PROCESSANALYSIS
       Saver* saver = reinterpret_cast<Saver*>(arg);
-      if(saver->state == kFound){
+      if (saver->state == kFound) {
         TableCache::foundNum.fetch_add(1);
       }
 #endif
 
-    }else{
+    } else {
       printf("block iterator invalid\n");
       exit(1);
     }
@@ -351,31 +354,33 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
     TableCache::not_filtered.fetch_add(1);
 #endif
 
-//    Iterator* iter = NewIterator(options);
-//    iter->Seek(k);
-    // todo: Can we directly search by the index block without create a iterator?
+    //    Iterator* iter = NewIterator(options);
+    //    iter->Seek(k);
+    // todo: Can we directly search by the index block without create a
+    // iterator?
     Iterator* iiter = rep->index_block->NewIterator(rep->options.comparator);
     iiter->Seek(k);
 #ifdef PROCESSANALYSIS
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    auto duration =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
     //    std::printf("Block Reader time elapse is %zu\n",  duration.count());
     TableCache::IndexBinarySearchTimeElapseSum.fetch_add(duration.count());
 #endif
-    if (iiter->Valid()){
+    if (iiter->Valid()) {
       Slice handle = iiter->value();
       BlockHandle bhandle;
       bhandle.DecodeFrom(&handle);
 
-//      rdma_mg->Deallocate_Local_RDMA_Slot(mr_addr, DataChunk);
+      //      rdma_mg->Deallocate_Local_RDMA_Slot(mr_addr, DataChunk);
 
       auto rdma_mg = Env::Default()->rdma_mg;
       Slice KV;
       Slice key;
       Slice value;
       auto table_meta = rep->remote_table.lock();
-      s = ReadKVPair(&table_meta->remote_data_mrs, options,
-                     bhandle, &KV, table_meta->shard_target_node_id);
+      s = ReadKVPair(&table_meta->remote_data_mrs, options, bhandle, &KV,
+                     table_meta->shard_target_node_id);
 
       char* mr_addr = (char*)KV.data();
       uint32_t key_size, value_size;
@@ -383,13 +388,12 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
       GetFixed32(&KV, &value_size);
       assert(key_size + value_size == KV.size());
 
-
       key = Slice(KV.data(), key_size);
       KV.remove_prefix(key_size);
       assert(KV.size() == value_size);
       value = KV;
       (*handle_result)(arg, key, value);
-//      rdma_mg->Deallocate_Local_RDMA_Slot(mr_addr, DataChunk);
+      //      rdma_mg->Deallocate_Local_RDMA_Slot(mr_addr, DataChunk);
     }
 
 //    if (iter->Valid()) {
@@ -402,9 +406,9 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
 
   return s;
 }
-//void Table::GetKV(Iterator* iiter) {
+// void Table::GetKV(Iterator* iiter) {
 //
-//}
+// }
 uint64_t Table::ApproximateOffsetOf(const Slice& key) const {
   Iterator* index_iter = rep->index_block->NewIterator(rep->options.comparator);
   index_iter->Seek(key);
@@ -430,6 +434,5 @@ uint64_t Table::ApproximateOffsetOf(const Slice& key) const {
   delete index_iter;
   return result;
 }
-
 
 }  // namespace dLSM

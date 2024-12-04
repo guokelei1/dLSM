@@ -19,9 +19,7 @@ int setenv(const char* name, const char* value, int overwrite) {
   return _putenv_s(name, value);
 }
 
-int unsetenv(const char* name) {
-  return _putenv_s(name, "");
-}
+int unsetenv(const char* name) { return _putenv_s(name, ""); }
 
 #endif  // BENCHMARK_OS_WINDOWS
 

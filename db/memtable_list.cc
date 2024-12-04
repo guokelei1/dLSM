@@ -5,21 +5,23 @@
 //
 #include "db/memtable_list.h"
 
+#include "db/db_impl.h"
+#include "db/memtable.h"
+#include "db/table_cache.h"
+#include "db/version_set.h"
 #include <cinttypes>
 #include <limits>
 #include <queue>
 #include <string>
-#include "db/db_impl.h"
-#include "db/memtable.h"
-#include "db/version_set.h"
+
 #include "dLSM/db.h"
 #include "dLSM/env.h"
 #include "dLSM/iterator.h"
-#include "util/coding.h"
+
 #include "table/merger.h"
-#include "db/table_cache.h"
-#include "table/table_builder_computeside.h"
 #include "table/table_builder_bacs.h"
+#include "table/table_builder_computeside.h"
+#include "util/coding.h"
 namespace dLSM {
 
 std::mutex MemTableList::imm_mtx;
@@ -29,23 +31,25 @@ class Mutex;
 class VersionSet;
 
 void MemTableListVersion::AddMemTable(MemTable* m) {
-//  std::cout <<"AddMemTable called thread ID is" <<std::this_thread::get_id() << std::endl;
+  //  std::cout <<"AddMemTable called thread ID is" <<std::this_thread::get_id()
+  //  << std::endl;
   assert(std::find(memlist_.begin(), memlist_.end(), m) == memlist_.end());
-  if (std::find(memlist_.begin(), memlist_.end(), m) != memlist_.end()){
+  if (std::find(memlist_.begin(), memlist_.end(), m) != memlist_.end()) {
     printf("Error: insert duplicated table to the memtable list");
   }
   memlist_.push_front(m);
   *parent_memtable_list_memory_usage_ += m->ApproximateMemoryUsage();
 }
 
-//void MemTableListVersion::UnrefMemTable(autovector<MemTable*>* to_delete,
-//                                        MemTable* m) {
-//  if (m->Unref()) {
-//    to_delete->push_back(m);
-//    assert(*parent_memtable_list_memory_usage_ >= m->ApproximateMemoryUsage());
-//    *parent_memtable_list_memory_usage_ -= m->ApproximateMemoryUsage();
-//  }
-//}
+// void MemTableListVersion::UnrefMemTable(autovector<MemTable*>* to_delete,
+//                                         MemTable* m) {
+//   if (m->Unref()) {
+//     to_delete->push_back(m);
+//     assert(*parent_memtable_list_memory_usage_ >=
+//     m->ApproximateMemoryUsage()); *parent_memtable_list_memory_usage_ -=
+//     m->ApproximateMemoryUsage();
+//   }
+// }
 
 MemTableListVersion::MemTableListVersion(
     size_t* parent_memtable_list_memory_usage, const MemTableListVersion& old)
@@ -72,9 +76,9 @@ MemTableListVersion::MemTableListVersion(
     : max_write_buffer_number_to_maintain_(max_write_buffer_number_to_maintain),
       max_write_buffer_size_to_maintain_(max_write_buffer_size_to_maintain),
       parent_memtable_list_memory_usage_(parent_memtable_list_memory_usage) {}
-//TODO: make refs_ a atomic pointer, all the refs_ should be atomic pointer in
-// this project.  If we can make sure the reference counter can not be 0 then, we can
-// avoid using lock for the reference and dereference
+// TODO: make refs_ a atomic pointer, all the refs_ should be atomic pointer in
+//  this project.  If we can make sure the reference counter can not be 0 then,
+//  we can avoid using lock for the reference and dereference
 void MemTableListVersion::Ref() { ++refs_; }
 
 // called by superversion::clean()
@@ -82,7 +86,7 @@ void MemTableListVersion::Unref(autovector<MemTable*>* to_delete) {
   assert(refs_ >= 1);
   --refs_;
   if (refs_ == 0) {
-    //Unref all the memtable in the memtable list.
+    // Unref all the memtable in the memtable list.
     for (const auto& m : memlist_) {
       m->Unref();
     }
@@ -92,13 +96,14 @@ void MemTableListVersion::Unref(autovector<MemTable*>* to_delete) {
     delete this;
   }
 }
-MemTableList::~MemTableList(){
+MemTableList::~MemTableList() {
 #ifdef PROCESSANALYSIS
-  if (MemTable::GetNum.load() >0)
-    printf("Memtable GET time statics is %zu, %zu, %zu, Memtable found Num %zu\n",
-           MemTable::GetTimeElapseSum.load(), MemTable::GetNum.load(),
-           MemTable::GetTimeElapseSum.load()/MemTable::GetNum.load(),
-           MemTable::foundNum.load());
+  if (MemTable::GetNum.load() > 0)
+    printf(
+        "Memtable GET time statics is %zu, %zu, %zu, Memtable found Num %zu\n",
+        MemTable::GetTimeElapseSum.load(), MemTable::GetNum.load(),
+        MemTable::GetTimeElapseSum.load() / MemTable::GetNum.load(),
+        MemTable::foundNum.load());
 #endif
 }
 int MemTableList::NumNotFlushed() const {
@@ -119,46 +124,50 @@ bool MemTableListVersion::Get(const LookupKey& key, std::string* value,
   return GetFromList(&memlist_, key, value, s);
 }
 
-//void MemTableListVersion::MultiGet(const ReadOptions& read_options,
-//                                   MultiGetRange* range, ReadCallback* callback,
-//                                   bool* is_blob) {
-//  for (auto memtable : memlist_) {
-//    memtable->MultiGet(read_options, range, callback, is_blob);
-//    if (range->empty()) {
-//      return;
-//    }
-//  }
-//}
+// void MemTableListVersion::MultiGet(const ReadOptions& read_options,
+//                                    MultiGetRange* range, ReadCallback*
+//                                    callback, bool* is_blob) {
+//   for (auto memtable : memlist_) {
+//     memtable->MultiGet(read_options, range, callback, is_blob);
+//     if (range->empty()) {
+//       return;
+//     }
+//   }
+// }
 
-//bool MemTableListVersion::GetMergeOperands(
-//    const LookupKey& key, Status* s, MergeContext* merge_context,
-//    SequenceNumber* max_covering_tombstone_seq, const ReadOptions& read_opts) {
-//  for (MemTable* memtable : memlist_) {
-//    bool done = memtable->Get(key, /*value*/ nullptr, /*timestamp*/ nullptr, s,
-//                              merge_context, max_covering_tombstone_seq,
-//                              read_opts, nullptr, nullptr, false);
-//    if (done) {
-//      return true;
-//    }
-//  }
-//  return false;
-//}
+// bool MemTableListVersion::GetMergeOperands(
+//     const LookupKey& key, Status* s, MergeContext* merge_context,
+//     SequenceNumber* max_covering_tombstone_seq, const ReadOptions& read_opts)
+//     {
+//   for (MemTable* memtable : memlist_) {
+//     bool done = memtable->Get(key, /*value*/ nullptr, /*timestamp*/ nullptr,
+//     s,
+//                               merge_context, max_covering_tombstone_seq,
+//                               read_opts, nullptr, nullptr, false);
+//     if (done) {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
 
-//bool MemTableListVersion::GetFromHistory(
-//    const LookupKey& key, std::string* value, std::string* timestamp, Status* s,
-//    MergeContext* merge_context, SequenceNumber* max_covering_tombstone_seq,
-//    SequenceNumber* seq, const ReadOptions& read_opts, bool* is_blob_index) {
-//  return GetFromList(&memlist_history_, key, value, timestamp, s, merge_context,
-//                     max_covering_tombstone_seq, seq, read_opts,
-//                     nullptr /*read_callback*/, is_blob_index);
-//}
+// bool MemTableListVersion::GetFromHistory(
+//     const LookupKey& key, std::string* value, std::string* timestamp, Status*
+//     s, MergeContext* merge_context, SequenceNumber*
+//     max_covering_tombstone_seq, SequenceNumber* seq, const ReadOptions&
+//     read_opts, bool* is_blob_index) {
+//   return GetFromList(&memlist_history_, key, value, timestamp, s,
+//   merge_context,
+//                      max_covering_tombstone_seq, seq, read_opts,
+//                      nullptr /*read_callback*/, is_blob_index);
+// }
 
 bool MemTableListVersion::GetFromList(std::list<MemTable*>* list,
                                       const LookupKey& key, std::string* value,
                                       Status* s) {
-//#ifdef GETANALYSIS
-//  auto start = std::chrono::high_resolution_clock::now();
-//#endif
+  // #ifdef GETANALYSIS
+  //   auto start = std::chrono::high_resolution_clock::now();
+  // #endif
   for (auto& memtable : *list) {
     SequenceNumber current_seq = kMaxSequenceNumber;
 
@@ -174,22 +183,22 @@ bool MemTableListVersion::GetFromList(std::list<MemTable*>* list,
   return false;
 }
 
-//Status MemTableListVersion::AddRangeTombstoneIterators(
-//    const ReadOptions& read_opts, Arena* /*arena*/,
-//    RangeDelAggregator* range_del_agg) {
-//  assert(range_del_agg != nullptr);
-//  // Except for snapshot read, using kMaxSequenceNumber is OK because these
-//  // are immutable memtables.
-//  SequenceNumber read_seq = read_opts.snapshot != nullptr
-//                                ? read_opts.snapshot->GetSequenceNumber()
-//                                : kMaxSequenceNumber;
-//  for (auto& m : memlist_) {
-//    std::unique_ptr<FragmentedRangeTombstoneIterator> range_del_iter(
-//        m->NewRangeTombstoneIterator(read_opts, read_seq));
-//    range_del_agg->AddTombstones(std::move(range_del_iter));
-//  }
-//  return Status::OK();
-//}
+// Status MemTableListVersion::AddRangeTombstoneIterators(
+//     const ReadOptions& read_opts, Arena* /*arena*/,
+//     RangeDelAggregator* range_del_agg) {
+//   assert(range_del_agg != nullptr);
+//   // Except for snapshot read, using kMaxSequenceNumber is OK because these
+//   // are immutable memtables.
+//   SequenceNumber read_seq = read_opts.snapshot != nullptr
+//                                 ? read_opts.snapshot->GetSequenceNumber()
+//                                 : kMaxSequenceNumber;
+//   for (auto& m : memlist_) {
+//     std::unique_ptr<FragmentedRangeTombstoneIterator> range_del_iter(
+//         m->NewRangeTombstoneIterator(read_opts, read_seq));
+//     range_del_agg->AddTombstones(std::move(range_del_iter));
+//   }
+//   return Status::OK();
+// }
 
 void MemTableListVersion::AddIteratorsToVector(
     const ReadOptions& options, std::vector<Iterator*>* iterator_list,
@@ -199,21 +208,21 @@ void MemTableListVersion::AddIteratorsToVector(
   }
 }
 MemTable* MemTableListVersion::PickMemtablesSeqBelong(size_t seq) {
-  for(auto iter : memlist_){
+  for (auto iter : memlist_) {
     if (seq >= iter->GetFirstseq() && seq <= iter->Getlargest_seq_supposed()) {
       return iter;
     }
   }
   return nullptr;
 }
-//void MemTableListVersion::AddIterators(
-//    const ReadOptions& options, MergeIteratorBuilder* merge_iter_builder) {
-//  for (auto& m : memlist_) {
-//    merge_iter_builder->AddIterator(
-//        m->NewIterator(options, merge_iter_builder->GetArena()));
-//  }
-//}
-// The number of sequential number
+// void MemTableListVersion::AddIterators(
+//     const ReadOptions& options, MergeIteratorBuilder* merge_iter_builder) {
+//   for (auto& m : memlist_) {
+//     merge_iter_builder->AddIterator(
+//         m->NewIterator(options, merge_iter_builder->GetArena()));
+//   }
+// }
+//  The number of sequential number
 uint64_t MemTableListVersion::GetTotalNumEntries() const {
   uint64_t total_num = 0;
   for (auto& m : memlist_) {
@@ -221,44 +230,43 @@ uint64_t MemTableListVersion::GetTotalNumEntries() const {
   }
   return total_num;
 }
-void MemTableListVersion::AddIteratorsToList(
-    std::vector<Iterator*>* list) {
-//  int iter_num = memlist_.size();
+void MemTableListVersion::AddIteratorsToList(std::vector<Iterator*>* list) {
+  //  int iter_num = memlist_.size();
   for (auto iter : memlist_) {
     this->Ref();
     list->push_back(iter->NewIterator());
   }
 }
 
-//MemTable::MemTableStats MemTableListVersion::ApproximateStats(
-//    const Slice& start_ikey, const Slice& end_ikey) {
-//  MemTable::MemTableStats total_stats = {0, 0};
-//  for (auto& m : memlist_) {
-//    auto mStats = m->ApproximateStats(start_ikey, end_ikey);
-//    total_stats.size += mStats.size;
-//    total_stats.count += mStats.count;
-//  }
-//  return total_stats;
-//}
+// MemTable::MemTableStats MemTableListVersion::ApproximateStats(
+//     const Slice& start_ikey, const Slice& end_ikey) {
+//   MemTable::MemTableStats total_stats = {0, 0};
+//   for (auto& m : memlist_) {
+//     auto mStats = m->ApproximateStats(start_ikey, end_ikey);
+//     total_stats.size += mStats.size;
+//     total_stats.count += mStats.count;
+//   }
+//   return total_stats;
+// }
 
-//uint64_t MemTableListVersion::GetTotalNumDeletes() const {
-//  uint64_t total_num = 0;
-//  for (auto& m : memlist_) {
-//    total_num += m->num_deletes();
-//  }
-//  return total_num;
-//}
+// uint64_t MemTableListVersion::GetTotalNumDeletes() const {
+//   uint64_t total_num = 0;
+//   for (auto& m : memlist_) {
+//     total_num += m->num_deletes();
+//   }
+//   return total_num;
+// }
 
-//SequenceNumber MemTableListVersion::GetEarliestSequenceNumber(
-//    bool include_history) const {
-//  if (include_history && !memlist_history_.empty()) {
-//    return memlist_history_.back()->GetEarliestSequenceNumber();
-//  } else if (!memlist_.empty()) {
-//    return memlist_.back()->GetEarliestSequenceNumber();
-//  } else {
-//    return kMaxSequenceNumber;
-//  }
-//}
+// SequenceNumber MemTableListVersion::GetEarliestSequenceNumber(
+//     bool include_history) const {
+//   if (include_history && !memlist_history_.empty()) {
+//     return memlist_history_.back()->GetEarliestSequenceNumber();
+//   } else if (!memlist_.empty()) {
+//     return memlist_.back()->GetEarliestSequenceNumber();
+//   } else {
+//     return kMaxSequenceNumber;
+//   }
+// }
 
 // caller is responsible for referencing m
 void MemTableListVersion::Add(MemTable* m) {
@@ -275,7 +283,7 @@ void MemTableListVersion::Remove(MemTable* m) {
   assert(refs_ == 1);  // only when refs_ == 1 is MemTableListVersion mutable
   memlist_.remove(m);
 
-//  m->MarkFlushed();
+  //  m->MarkFlushed();
   if (max_write_buffer_size_to_maintain_ > 0 ||
       max_write_buffer_number_to_maintain_ > 0) {
     memlist_history_.push_front(m);
@@ -283,14 +291,15 @@ void MemTableListVersion::Remove(MemTable* m) {
     // TrimHistory as a best effort.
     TrimHistory(0);
   } else {
-    //TOFIX: this unreference will trigger memtable garbage collection, if there
-    // is a reader refering the tables, there could be problem. The solution could be
-    // we do not unrefer the table here, we unref it outside
-    // Answer: The statement above is incorrect, because the Unref here will not trigger the
-    // contention. The reader will pin another memtable list version which will prohibit
-    // the memtable from being deallocated.
+    // TOFIX: this unreference will trigger memtable garbage collection, if
+    // there
+    //  is a reader refering the tables, there could be problem. The solution
+    //  could be we do not unrefer the table here, we unref it outside Answer:
+    //  The statement above is incorrect, because the Unref here will not
+    //  trigger the contention. The reader will pin another memtable list
+    //  version which will prohibit the memtable from being deallocated.
     m->Unref();
-    //TOThink: what is the parent_memtable_list_memory_usage used for?
+    // TOThink: what is the parent_memtable_list_memory_usage used for?
     *parent_memtable_list_memory_usage_ -= m->ApproximateMemoryUsage();
   }
 }
@@ -332,7 +341,6 @@ bool MemTableListVersion::TrimHistory(size_t usage) {
     MemTable* x = memlist_history_.back();
     memlist_history_.pop_back();
 
-
     *parent_memtable_list_memory_usage_ -= x->ApproximateMemoryUsage();
     ret = true;
     x->Unref();
@@ -354,11 +362,12 @@ bool MemTableList::AllFlushNotFinished() const {
   return this->current_memtable_num_.load() >= config::Immutable_FlushTrigger;
 }
 // Returns the memtables that need to be flushed.
-//Pick up a configurable number of memtable, not too much and not too less.2~4 could be better
+// Pick up a configurable number of memtable, not too much and not too less.2~4
+// could be better
 void MemTableList::PickMemtablesToFlush(autovector<MemTable*>* mems) {
-//  AutoThreadOperationStageUpdater stage_updater(
-//      ThreadStatus::STAGE_PICK_MEMTABLES_TO_FLUSH);
-  auto current = current_.load();// get a snapshot
+  //  AutoThreadOperationStageUpdater stage_updater(
+  //      ThreadStatus::STAGE_PICK_MEMTABLES_TO_FLUSH);
+  auto current = current_.load();  // get a snapshot
   const auto& memlist = current->memlist_;
   bool atomic_flush = false;
   int table_counter = 0;
@@ -366,18 +375,17 @@ void MemTableList::PickMemtablesToFlush(autovector<MemTable*>* mems) {
     MemTable* m = *it;
 
     if (m->CheckFlush_Requested()) {
-      //The pickmemtable should never see the flush finished table.
-//      assert(!m->CheckFlushFinished());
+      // The pickmemtable should never see the flush finished table.
+      //      assert(!m->CheckFlushFinished());
       num_flush_not_started_.fetch_sub(1);
       m->SetFlushState(MemTable::FLUSH_PROCESSING);
-//      if (num_flush_not_started_ == 0) {
-//        imm_flush_needed.store(false, std::memory_order_release);
-//      }
-//      m->flush_in_progress_ = true;  // flushing will start very soon
+      //      if (num_flush_not_started_ == 0) {
+      //        imm_flush_needed.store(false, std::memory_order_release);
+      //      }
+      //      m->flush_in_progress_ = true;  // flushing will start very soon
       mems->push_back(m);
       // at most pick 2 table and do the merge
-      if(++table_counter >= dLSM::config::MaxImmuNumPerFlush)
-        break;
+      if (++table_counter >= dLSM::config::MaxImmuNumPerFlush) break;
     }
   }
   DEBUG_arg("table picked is %d", table_counter);
@@ -387,14 +395,13 @@ void MemTableList::PickMemtablesToFlush(autovector<MemTable*>* mems) {
 }
 
 MemTable* MemTableList::PickMemtablesSeqBelong(size_t seq) {
-    return current_.load()->PickMemtablesSeqBelong(seq);
+  return current_.load()->PickMemtablesSeqBelong(seq);
 }
-
 
 Iterator* MemTableList::MakeInputIterator(FlushJob* job) {
   int iter_num = job->mem_vec.size();
   auto** list = new Iterator*[iter_num];
-  for (int i = 0; i<job->mem_vec.size(); i++) {
+  for (int i = 0; i < job->mem_vec.size(); i++) {
     list[i] = job->mem_vec[i]->NewIterator();
   }
 
@@ -405,8 +412,8 @@ Iterator* MemTableList::MakeInputIterator(FlushJob* job) {
 
 void MemTableList::RollbackMemtableFlush(const autovector<MemTable*>& mems,
                                          uint64_t /*file_number*/) {
-//  AutoThreadOperationStageUpdater stage_updater(
-//      ThreadStatus::STAGE_MEMTABLE_ROLLBACK);
+  //  AutoThreadOperationStageUpdater stage_updater(
+  //      ThreadStatus::STAGE_MEMTABLE_ROLLBACK);
   assert(!mems.empty());
 
   // If the flush was not successful, then just reset state.
@@ -422,7 +429,7 @@ void MemTableList::RollbackMemtableFlush(const autovector<MemTable*>& mems,
 
 // Try record a successful flush in the manifest file. It might just return
 // Status::OK letting a concurrent flush to do actual the recording..
-//Status MemTableList::TryInstallMemtableFlushResults(
+// Status MemTableList::TryInstallMemtableFlushResults(
 //    FlushJob* job, VersionSet* vset,
 //    std::shared_ptr<RemoteMemTableMetaData>& sstable, VersionEdit* edit) {
 ////  AutoThreadOperationStageUpdater stage_updater(
@@ -506,7 +513,8 @@ void MemTableList::RollbackMemtableFlush(const autovector<MemTable*>& mems,
 //    ResetTrimHistoryNeeded();
 //  }
 //  current_memtable_num_.fetch_sub(batch_count_for_fetch_sub);
-//  DEBUG_arg("Install flushing result, current immutable number is %lu\n", current_memtable_num_.load());
+//  DEBUG_arg("Install flushing result, current immutable number is %lu\n",
+//  current_memtable_num_.load());
 //
 //
 //
@@ -523,7 +531,8 @@ void MemTableList::RollbackMemtableFlush(const autovector<MemTable*>& mems,
 // New memtables are inserted at the front of the list.
 // This should be guarded by imm_mtx
 void MemTableList::Add(MemTable* m) {
-  assert(static_cast<int>(current_.load()->memlist_.size()) >= num_flush_not_started_);
+  assert(static_cast<int>(current_.load()->memlist_.size()) >=
+         num_flush_not_started_);
   InstallNewVersion();
   // this method is used to move mutable memtable into an immutable list.
   // since mutable memtable is already refcounted by the DBImpl,
@@ -533,7 +542,8 @@ void MemTableList::Add(MemTable* m) {
   current_.load()->Add(m);
   // Add memtable number atomically.
   current_memtable_num_.fetch_add(1);
-  DEBUG_arg("Add a new file, current immtable number is %lu", current_memtable_num_.load());
+  DEBUG_arg("Add a new file, current immtable number is %lu",
+            current_memtable_num_.load());
   m->SetFlushState(MemTable::FLUSH_REQUESTED);
   num_flush_not_started_.fetch_add(1);
   if (num_flush_not_started_ == 1) {
@@ -583,12 +593,12 @@ void MemTableList::UpdateCachedValuesFromMemTableListVersion() {
   current_has_history_.store(has_history, std::memory_order_relaxed);
 }
 
-//uint64_t MemTableList::ApproximateOldestKeyTime() const {
-//  if (!current_->memlist_.empty()) {
-//    return current_->memlist_.back()->ApproximateOldestKeyTime();
-//  }
-//  return std::numeric_limits<uint64_t>::max();
-//}
+// uint64_t MemTableList::ApproximateOldestKeyTime() const {
+//   if (!current_->memlist_.empty()) {
+//     return current_->memlist_.back()->ApproximateOldestKeyTime();
+//   }
+//   return std::numeric_limits<uint64_t>::max();
+// }
 
 void MemTableList::InstallNewVersion() {
   if (current_.load()->refs_ == 1) {
@@ -602,37 +612,37 @@ void MemTableList::InstallNewVersion() {
   }
 }
 
-
-//uint64_t MemTableList::PrecomputeMinLogContainingPrepSection(
-//    const autovector<MemTable*>& memtables_to_flush) {
-//  uint64_t min_log = 0;
+// uint64_t MemTableList::PrecomputeMinLogContainingPrepSection(
+//     const autovector<MemTable*>& memtables_to_flush) {
+//   uint64_t min_log = 0;
 //
-//  for (auto& m : current_->memlist_) {
-//    // Assume the list is very short, we can live with O(m*n). We can optimize
-//    // if the performance has some problem.
-//    bool should_skip = false;
-//    for (MemTable* m_to_flush : memtables_to_flush) {
-//      if (m == m_to_flush) {
-//        should_skip = true;
-//        break;
-//      }
-//    }
-//    if (should_skip) {
-//      continue;
-//    }
+//   for (auto& m : current_->memlist_) {
+//     // Assume the list is very short, we can live with O(m*n). We can
+//     optimize
+//     // if the performance has some problem.
+//     bool should_skip = false;
+//     for (MemTable* m_to_flush : memtables_to_flush) {
+//       if (m == m_to_flush) {
+//         should_skip = true;
+//         break;
+//       }
+//     }
+//     if (should_skip) {
+//       continue;
+//     }
 //
-//    auto log = m->GetMinLogContainingPrepSection();
+//     auto log = m->GetMinLogContainingPrepSection();
 //
-//    if (log > 0 && (min_log == 0 || log < min_log)) {
-//      min_log = log;
-//    }
-//  }
+//     if (log > 0 && (min_log == 0 || log < min_log)) {
+//       min_log = log;
+//     }
+//   }
 //
-//  return min_log;
-//}
+//   return min_log;
+// }
 
 // Commit a successful atomic flush in the manifest file.
-//Status InstallMemtableAtomicFlushResults(
+// Status InstallMemtableAtomicFlushResults(
 //    const autovector<MemTableList*>* imm_lists,
 //    const autovector<MemTable*>*& mems_list, VersionSet* vset,
 //    port::Mutex* mu, const autovector<RemoteMemTableMetaData*>& file_metas,
@@ -648,13 +658,13 @@ void MemTableList::InstallNewVersion() {
 //    assert(imm_lists->size() == num);
 //  }
 //  for (size_t k = 0; k != num; ++k) {
-//#ifndef NDEBUG
+// #ifndef NDEBUG
 //    const auto* imm =
 //        (imm_lists == nullptr) ? cfds[k]->imm() : imm_lists->at(k);
 //    if (!mems_list[k]->empty()) {
 //      assert((*mems_list[k])[0]->GetID() == imm->GetEarliestMemTableID());
 //    }
-//#endif
+// #endif
 //    assert(nullptr != file_metas[k]);
 //    for (size_t i = 0; i != mems_list[k]->size(); ++i) {
 //      assert(i == 0 || (*mems_list[k])[i]->GetEdits()->NumEntries() == 0);
@@ -764,41 +774,41 @@ void MemTableList::InstallNewVersion() {
 //  return s;
 //}
 
-//void MemTableList::RemoveOldMemTables(uint64_t log_number,
-//                                      autovector<MemTable*>* to_delete) {
-//  assert(to_delete != nullptr);
-//  InstallNewVersion();
-//  auto& memlist = current_->memlist_;
-//  autovector<MemTable*> old_memtables;
-//  for (auto it = memlist.rbegin(); it != memlist.rend(); ++it) {
-//    MemTable* mem = *it;
-//    if (mem->GetNextLogNumber() > log_number) {
-//      break;
-//    }
-//    old_memtables.push_back(mem);
-//  }
+// void MemTableList::RemoveOldMemTables(uint64_t log_number,
+//                                       autovector<MemTable*>* to_delete) {
+//   assert(to_delete != nullptr);
+//   InstallNewVersion();
+//   auto& memlist = current_->memlist_;
+//   autovector<MemTable*> old_memtables;
+//   for (auto it = memlist.rbegin(); it != memlist.rend(); ++it) {
+//     MemTable* mem = *it;
+//     if (mem->GetNextLogNumber() > log_number) {
+//       break;
+//     }
+//     old_memtables.push_back(mem);
+//   }
 //
-//  for (auto it = old_memtables.begin(); it != old_memtables.end(); ++it) {
-//    MemTable* mem = *it;
-//    current_->Remove(mem, to_delete);
-//    --num_flush_not_started_;
-//    if (0 == num_flush_not_started_) {
-//      imm_flush_needed.store(false, std::memory_order_release);
-//    }
-//  }
+//   for (auto it = old_memtables.begin(); it != old_memtables.end(); ++it) {
+//     MemTable* mem = *it;
+//     current_->Remove(mem, to_delete);
+//     --num_flush_not_started_;
+//     if (0 == num_flush_not_started_) {
+//       imm_flush_needed.store(false, std::memory_order_release);
+//     }
+//   }
 //
-//  UpdateCachedValuesFromMemTableListVersion();
-//  ResetTrimHistoryNeeded();
-//}
+//   UpdateCachedValuesFromMemTableListVersion();
+//   ResetTrimHistoryNeeded();
+// }
 
 void FlushJob::Waitforpendingwriter() {
   size_t counter = 0;
-  for (auto iter: mem_vec) {
+  for (auto iter : mem_vec) {
     // why not manually set able_to_flush when we want a non full_table_flush
     while (iter->full_table_flush && !iter->able_to_flush.load()) {
       counter++;
       if (counter == 500) {
-//        printf("signal all the wait threads\n");
+        //        printf("signal all the wait threads\n");
         usleep(10);
         // wake up all front-end threads in case of false wait thread.
         write_stall_cv_->notify_all();
@@ -806,25 +816,22 @@ void FlushJob::Waitforpendingwriter() {
       }
     }
   }
-
 }
 void FlushJob::SetAllMemStateProcessing() {
-  for (auto iter: mem_vec) {
+  for (auto iter : mem_vec) {
     iter->SetFlushState(MemTable::FLUSH_PROCESSING);
-
   }
 }
 FlushJob::FlushJob(std::condition_variable* write_stall_cv,
                    const InternalKeyComparator* cmp)
-    : write_stall_cv_(write_stall_cv),
-      user_cmp(cmp){}
+    : write_stall_cv_(write_stall_cv), user_cmp(cmp) {}
 Status FlushJob::BuildTable(const std::string& dbname, Env* env,
                             const Options& options, TableCache* table_cache,
                             Iterator* iter,
                             const std::shared_ptr<RemoteMemTableMetaData>& meta,
                             IO_type type, uint8_t target_node_id) {
   Status s;
-//  meta->file_size = 0;
+  //  meta->file_size = 0;
   iter->SeekToFirst();
 #ifndef NDEBUG
   int Not_drop_counter = 0;
@@ -844,7 +851,7 @@ Status FlushJob::BuildTable(const std::string& dbname, Env* env,
     Slice key;
     for (; iter->Valid(); iter->Next()) {
       key = iter->key();
-//      assert(key.data()[0] == '0');
+      //      assert(key.data()[0] == '0');
       bool drop = false;
       if (!ParseInternalKey(key, &ikey)) {
         // Do not hide error keys
@@ -859,33 +866,33 @@ Status FlushJob::BuildTable(const std::string& dbname, Env* env,
           // First occurrence of this user key
           current_user_key.assign(ikey.user_key.data(), ikey.user_key.size());
           has_current_user_key = true;
-          // this will result in the key not drop, next if will always be false because of the last_sequence_for_key.
-        }else{
+          // this will result in the key not drop, next if will always be false
+          // because of the last_sequence_for_key.
+        } else {
           drop = true;
         }
       }
 #ifndef NDEBUG
       number_of_key++;
 #endif
-      if (!drop){
+      if (!drop) {
 #ifndef NDEBUG
         Not_drop_counter++;
 #endif
         builder->Add(key, iter->value());
       }
-
     }
 
     if (s.ok()) {
-//      assert(key.data()[0] == '0');
+      //      assert(key.data()[0] == '0');
       meta->largest.DecodeFrom(key);
-    } else{
+    } else {
       delete builder;
       return s;
     }
 #ifndef NDEBUG
-    printf("For flush, Total number of key touched is %d, KV left is %d\n", number_of_key,
-           Not_drop_counter);
+    printf("For flush, Total number of key touched is %d, KV left is %d\n",
+           number_of_key, Not_drop_counter);
 #endif
     // Finish and check for builder errors
 
@@ -894,37 +901,36 @@ Status FlushJob::BuildTable(const std::string& dbname, Env* env,
     builder->get_dataindexblocks_map(meta->remote_dataindex_mrs);
     builder->get_filter_map(meta->remote_filter_mrs);
 
-
     meta->file_size = 0;
 
-    for(auto iter : meta->remote_data_mrs){
+    for (auto iter : meta->remote_data_mrs) {
       meta->file_size += iter.second->length;
     }
     meta->num_entries = builder->get_numentries();
     DEBUG_arg("SSTable size is %lu \n", meta->file_size);
     assert(builder->FileSize() == meta->file_size);
     delete builder;
-//TOFIX: temporarily disable the verification of index block.
-//#ifndef NDEBUG
-//    sleep(10);
-//#endif
+    // TOFIX: temporarily disable the verification of index block.
+    // #ifndef NDEBUG
+    //     sleep(10);
+    // #endif
 
     // The index checking below is supposed to be deleted.
-//    if (s.ok()) {
-//      // Verify that the table is usable
-//      Iterator* it = table_cache->NewIterator(ReadOptions(), meta);
-//      s = it->status();
-////#ifndef NDEBUG
-////      it->SeekToFirst();
-////      size_t counter = 0;
-////      while(it->Valid()){
-////        counter++;
-////        it->Next();
-////      }
-////      assert(counter = Not_drop_counter);
-////#endif
-//      delete it;
-//    }
+    //    if (s.ok()) {
+    //      // Verify that the table is usable
+    //      Iterator* it = table_cache->NewIterator(ReadOptions(), meta);
+    //      s = it->status();
+    ////#ifndef NDEBUG
+    ////      it->SeekToFirst();
+    ////      size_t counter = 0;
+    ////      while(it->Valid()){
+    ////        counter++;
+    ////        it->Next();
+    ////      }
+    ////      assert(counter = Not_drop_counter);
+    ////#endif
+    //      delete it;
+    //    }
   }
 
   // Check for input iterator errors
@@ -932,11 +938,11 @@ Status FlushJob::BuildTable(const std::string& dbname, Env* env,
     s = iter->status();
   }
 
-//  if (s.ok() && !meta->remote_data_mrs.empty()) {
-//    // Keep it
-//  } else {
-//    env->RemoveFile(fname);
-//  }
+  //  if (s.ok() && !meta->remote_data_mrs.empty()) {
+  //    // Keep it
+  //  } else {
+  //    env->RemoveFile(fname);
+  //  }
   return s;
 }
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

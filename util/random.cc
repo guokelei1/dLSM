@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "port/likely.h"
-//#include "util/thread_local.h"
+// #include "util/thread_local.h"
 
 #ifdef ROCKSDB_SUPPORT_THREAD_LOCAL
 #define STORAGE_DECL static __thread
@@ -53,4 +53,4 @@ std::string Random::RandomString(int len) {
   return ret;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

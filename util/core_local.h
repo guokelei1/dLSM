@@ -16,8 +16,8 @@
 
 namespace dLSM {
 
-// An array of core-local values. Ideally the value type, T, is table_cache aligned to
-// prevent false sharing.
+// An array of core-local values. Ideally the value type, T, is table_cache
+// aligned to prevent false sharing.
 template <typename T>
 class CoreLocalArray {
  public:
@@ -27,9 +27,10 @@ class CoreLocalArray {
   // returns pointer to the element corresponding to the core that the thread
   // currently runs on.
   T* Access() const;
-  // same as above, but also returns the core index, which the client can table_cache
-  // to reduce how often core ID needs to be retrieved. Only do this if some
-  // inaccuracy is tolerable, as the thread may migrate to a different core.
+  // same as above, but also returns the core index, which the client can
+  // table_cache to reduce how often core ID needs to be retrieved. Only do this
+  // if some inaccuracy is tolerable, as the thread may migrate to a different
+  // core.
   std::pair<T*, size_t> AccessElementAndIndex() const;
   // returns pointer to element for the specified core index. This can be used,
   // e.g., for aggregation, or if the client caches core index.
@@ -80,4 +81,4 @@ T* CoreLocalArray<T>::AccessAtCore(size_t core_idx) const {
   return &data_[core_idx];
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

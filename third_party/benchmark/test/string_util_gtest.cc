@@ -2,8 +2,8 @@
 // statistics_test - Unit tests for src/statistics.cc
 //===---------------------------------------------------------------------===//
 
-#include "../src/string_util.h"
 #include "../src/internal_macros.h"
+#include "../src/string_util.h"
 #include "gtest/gtest.h"
 
 namespace {
@@ -32,7 +32,8 @@ TEST(StringUtilTest, stoul) {
 #elif ULONG_MAX == 0xFFFFFFFFFFFFFFFFul
   {
     size_t pos = 0;
-    EXPECT_EQ(0xFFFFFFFFFFFFFFFFul, benchmark::stoul("18446744073709551615", &pos));
+    EXPECT_EQ(0xFFFFFFFFFFFFFFFFul,
+              benchmark::stoul("18446744073709551615", &pos));
     EXPECT_EQ(20ul, pos);
   }
 #endif
@@ -62,9 +63,7 @@ TEST(StringUtilTest, stoul) {
     EXPECT_EQ(4ul, pos);
   }
 #ifndef BENCHMARK_HAS_NO_EXCEPTIONS
-  {
-    ASSERT_THROW(benchmark::stoul("this is a test"), std::invalid_argument);
-  }
+  { ASSERT_THROW(benchmark::stoul("this is a test"), std::invalid_argument); }
 #endif
 }
 
@@ -110,9 +109,7 @@ TEST(StringUtilTest, stoi) {
     EXPECT_EQ(4ul, pos);
   }
 #ifndef BENCHMARK_HAS_NO_EXCEPTIONS
-  {
-    ASSERT_THROW(benchmark::stoi("this is a test"), std::invalid_argument);
-  }
+  { ASSERT_THROW(benchmark::stoi("this is a test"), std::invalid_argument); }
 #endif
 }
 
@@ -144,9 +141,7 @@ TEST(StringUtilTest, stod) {
     EXPECT_EQ(8ul, pos);
   }
 #ifndef BENCHMARK_HAS_NO_EXCEPTIONS
-  {
-    ASSERT_THROW(benchmark::stod("this is a test"), std::invalid_argument);
-  }
+  { ASSERT_THROW(benchmark::stod("this is a test"), std::invalid_argument); }
 #endif
 }
 

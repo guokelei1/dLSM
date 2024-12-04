@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include "gtest/gtest.h"
 #include "db/db_impl.h"
+
 #include "dLSM/cache.h"
 #include "dLSM/db.h"
+
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 namespace dLSM {
 

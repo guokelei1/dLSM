@@ -32,8 +32,8 @@ class Version;
 class VersionEdit;
 class VersionSet;
 class MemTableList;
-//TODO: make memtableversionlist and LSM versionset 's function integrated into
-// Superversion.
+// TODO: make memtableversionlist and LSM versionset 's function integrated into
+//  Superversion.
 struct SuperVersion {
   // Accessing members of this class is not thread-safe and requires external
   // synchronization (ie db mutex held or on write thread).
@@ -42,7 +42,7 @@ struct SuperVersion {
   Version* current;
   // Version number of the current SuperVersion
   uint64_t version_number;
-//  std::mutex* versionset_mutex;
+  //  std::mutex* versionset_mutex;
 
   // should be called outside the mutex
   SuperVersion(MemTable* new_mem, MemTableListVersion* new_imm,
@@ -79,7 +79,6 @@ struct SuperVersion {
 // The structure for storing argument for thread pool.
 
 class DBImpl : public DB {
-
  public:
   DBImpl(const Options& options, const std::string& dbname);
   DBImpl(const Options& raw_options, const std::string& dbname,
@@ -112,7 +111,7 @@ class DBImpl : public DB {
   void TEST_CompactRange(int level, const Slice* begin, const Slice* end);
 
   // Force current memtable contents to be compacted.
-//  Status TEST_CompactMemTable();
+  //  Status TEST_CompactMemTable();
 
   // Return an internal iterator over the current state of the database.
   // The keys of this iterator are internal keys (see format.h).
@@ -134,22 +133,22 @@ class DBImpl : public DB {
   void ResetThreadLocalSuperVersions();
   void InstallSuperVersion();
   void WaitforAllbgtasks(bool clear_mem) override;
-  void SetTargetnodeid(uint8_t id){
+  void SetTargetnodeid(uint8_t id) {
     shard_target_node_id = id;
-//    imm_.SetTargetnodeid(id);
+    //    imm_.SetTargetnodeid(id);
   }
-  // TODO: If there are two shards connected to the same memory node, what shall we
-  // we do?
+  // TODO: If there are two shards connected to the same memory node, what shall
+  // we we do?
   void client_message_polling_and_handling_thread(std::string q_id);
   void WaitForComputeMessageHandlingThread(uint8_t target_memory_id,
-                                              uint8_t shard_id_);
+                                           uint8_t shard_id_);
   std::string upper_bound;
   std::string lower_bound;
-//  void Wait_for_client_message_hanlding_setup();
+  //  void Wait_for_client_message_hanlding_setup();
  private:
   friend class DB;
-//  struct CompactionState;
-//  struct SubcompactionState;
+  //  struct CompactionState;
+  //  struct SubcompactionState;
   struct Writer;
 
   // Information for a manual compaction
@@ -161,15 +160,13 @@ class DBImpl : public DB {
     InternalKey tmp_storage;   // Used to keep track of compaction progress
   };
 
-
-
   Iterator* NewInternalIterator(const ReadOptions&,
                                 SequenceNumber* latest_snapshot,
                                 uint32_t* seed);
 #ifdef BYTEADDRESSABLE
   Iterator* NewInternalSEQIterator(const ReadOptions&,
-                                SequenceNumber* latest_snapshot,
-                                uint32_t* seed);
+                                   SequenceNumber* latest_snapshot,
+                                   uint32_t* seed);
 #endif
   Status NewDB();
 
@@ -196,7 +193,7 @@ class DBImpl : public DB {
   Status WriteLevel0Table(FlushJob* job, VersionEdit* edit)
       EXCLUSIVE_LOCKS_REQUIRED(undefine_mutex);
   Status WriteLevel0Table(MemTable* job, VersionEdit* edit, Version* base)
-  EXCLUSIVE_LOCKS_REQUIRED(undefine_mutex);
+      EXCLUSIVE_LOCKS_REQUIRED(undefine_mutex);
   Status PickupTableToWrite(bool force, uint64_t seq_num, MemTable*& mem_r)
       EXCLUSIVE_LOCKS_REQUIRED(undefine_mutex);
   WriteBatch* BuildBatchGroup(Writer** last_writer)
@@ -204,7 +201,8 @@ class DBImpl : public DB {
 
   void RecordBackgroundError(const Status& s);
 
-  void MaybeScheduleFlushOrCompaction() EXCLUSIVE_LOCKS_REQUIRED(undefine_mutex);
+  void MaybeScheduleFlushOrCompaction()
+      EXCLUSIVE_LOCKS_REQUIRED(undefine_mutex);
   static void BGWork_Flush(void* thread_args);
   static void BGWork_Compaction(void* thread_args);
   void BackgroundCall();
@@ -227,10 +225,10 @@ class DBImpl : public DB {
   Status TryInstallMemtableFlushResults(
       FlushJob* job, VersionSet* vset,
       std::shared_ptr<RemoteMemTableMetaData>& sstable, VersionEdit* edit);
-//  SuperVersion* GetReferencedSuperVersion(DBImpl* db);
+  //  SuperVersion* GetReferencedSuperVersion(DBImpl* db);
 
   void NearDataCompaction(Compaction* c);
-//  void Communication_To_Home_Node();
+  //  void Communication_To_Home_Node();
   void Edit_sync_to_remote(VersionEdit* edit,
                            std::unique_lock<std::mutex>* version_mtx);
   const Comparator* user_comparator() const {
@@ -238,22 +236,24 @@ class DBImpl : public DB {
   }
   void sync_option_to_remote(uint8_t target_node_id);
   void remote_qp_reset(std::string& qp_type, uint8_t target_node_id);
-  void install_version_edit_handler(RDMA_Request* request, std::string client_ip);
+  void install_version_edit_handler(RDMA_Request* request,
+                                    std::string client_ip);
 #ifdef WITHPERSISTENCE
   static void SSTable_Unpin_Dispatch(void* thread_args);
   void persistence_unpin_handler(void* arg);
 #endif
   // Constant after construction
   Env* const env_;
-  std::unordered_map<unsigned int, std::pair<std::mutex, std::condition_variable>> imm_notifier_pool;
-//  unsigned int imm_temp = 1;
+  std::unordered_map<unsigned int,
+                     std::pair<std::mutex, std::condition_variable>>
+      imm_notifier_pool;
+  //  unsigned int imm_temp = 1;
   // THose vairbale could be shared pointers from the out side.
   std::mutex* mtx_imme;
   std::atomic<uint32_t>* imm_gen;
   uint32_t* imme_data;
   uint32_t* byte_len;
   std::condition_variable* cv_imme;
-
 
   const InternalKeyComparator internal_comparator_;
   const InternalFilterPolicy internal_filter_policy_;
@@ -273,8 +273,8 @@ class DBImpl : public DB {
   // we could rename it as superversion mutex
   port::Mutex undefine_mutex;
 
-//  port::Mutex write_stall_mutex_;
-//  SpinMutex spin_memtable_switch_mutex;
+  //  port::Mutex write_stall_mutex_;
+  //  SpinMutex spin_memtable_switch_mutex;
   std::atomic<bool> shutting_down_;
   std::condition_variable write_stall_cv;
   int main_comm_thread_ready_num = 0;
@@ -282,14 +282,14 @@ class DBImpl : public DB {
   // THE Mutex will protect both memlist and the superversion pointer.
   std::mutex superversion_memlist_mtx;
   // TODO: use read write lock to control the version set mtx.
-//  std::mutex versionset_mtx;
+  //  std::mutex versionset_mtx;
   bool locked = false;
-//  bool check_and_clear_pending_recvWR = false;
-//  SpinMutex LSMv_mtx;
+  //  bool check_and_clear_pending_recvWR = false;
+  //  SpinMutex LSMv_mtx;
   std::atomic<MemTable*> mem_;
-//  std::atomic<MemTable*> imm_;  // Memtable being compacted
+  //  std::atomic<MemTable*> imm_;  // Memtable being compacted
   MemTableList imm_;
-  std::atomic<bool> has_imm_;         // So bg thread can detect non-null imm_
+  std::atomic<bool> has_imm_;  // So bg thread can detect non-null imm_
   WritableFile* logfile_;
   uint64_t logfile_number_;
   log::Writer* log_;
@@ -303,7 +303,7 @@ class DBImpl : public DB {
   ThreadPool Unpin_bg_pool_;
   // Set of table files to protect from deletion because they are
   // part of ongoing compactions.
-//  std::set<uint64_t> pending_outputs_;
+  //  std::set<uint64_t> pending_outputs_;
 
   // Has a background compaction been scheduled or is running?
   bool background_compaction_scheduled_;
@@ -311,17 +311,17 @@ class DBImpl : public DB {
   ManualCompaction* manual_compaction_;
 
   VersionSet* const versions_;
-//  std::map<Slice, VersionSet*, cmpBySlice> const versions_pool;
+  //  std::map<Slice, VersionSet*, cmpBySlice> const versions_pool;
   // Have we encountered a background error in paranoid mode?
   Status bg_error_;
 
   CompactionStats stats_[config::kNumLevels];
-//  std::atomic<size_t> memtable_counter = 0;
-//  std::atomic<size_t> kv_counter0 = 0;
-//  std::atomic<size_t> kv_counter1 = 0;
+  //  std::atomic<size_t> memtable_counter = 0;
+  //  std::atomic<size_t> kv_counter0 = 0;
+  //  std::atomic<size_t> kv_counter1 = 0;
   std::atomic<uint64_t> super_version_number_;
   SuperVersion* super_version;
-//  std::unique_ptr<ThreadLocalPtr> local_sv_;
+  //  std::unique_ptr<ThreadLocalPtr> local_sv_;
   ThreadLocalPtr* local_sv_;
   std::vector<std::thread> main_comm_threads;
   uint8_t shard_target_node_id = 0;
@@ -330,7 +330,6 @@ class DBImpl : public DB {
   std::atomic<size_t> Total_time_elapse;
   std::atomic<size_t> flush_times;
 #endif
-
 };
 
 // Sanitize db options.  The caller should delete result.info_log if

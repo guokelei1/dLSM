@@ -712,7 +712,7 @@ ADD_CASES(
 // ========================================================================= //
 // ------------------------- Testing StrEscape JSON ------------------------ //
 // ========================================================================= //
-#if 0 // enable when csv testing code correctly handles multi-line fields
+#if 0  // enable when csv testing code correctly handles multi-line fields
 void BM_JSON_Format(benchmark::State& state) {
   state.SkipWithError("val\b\f\n\r\t\\\"with\"es,capes");
   for (auto _ : state) {

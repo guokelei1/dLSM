@@ -14,8 +14,9 @@
 #include <string>
 #include <vector>
 
-#include "dLSM/slice.h"
 #include "dLSM/options.h"
+#include "dLSM/slice.h"
+
 #include "util/hash.h"
 
 #include "block_builder.h"
@@ -49,7 +50,7 @@ class FilterBlockBuilder {
   void Reset();
   void Flush();
   void Move_buffer(const char* p);
-  Slice result;           // Filter data computed so far
+  Slice result;  // Filter data computed so far
  private:
   void GenerateFilter();
 
@@ -57,14 +58,14 @@ class FilterBlockBuilder {
   std::shared_ptr<RDMA_Manager> rdma_mg_;
   std::vector<ibv_mr*>* local_mrs;
   std::map<int, ibv_mr*>* remote_mrs_;
-  std::string keys_;             // Flattened key contents
-  std::vector<size_t> start_;    // Starting index in keys_ of each key
-  //todo Make result Slice; make Policy->CreateFilter accept Slice rather than string
+  std::string keys_;           // Flattened key contents
+  std::vector<size_t> start_;  // Starting index in keys_ of each key
+  // todo Make result Slice; make Policy->CreateFilter accept Slice rather than
+  // string
   std::vector<Slice> tmp_keys_;  // policy_->CreateFilter() argument
-  std::vector<uint32_t> filter_offsets_; // The filters' offset within the filter block.
+  std::vector<uint32_t>
+      filter_offsets_;  // The filters' offset within the filter block.
   std::string type_string_;
-
-
 };
 
 class FilterBlockReader {
@@ -74,7 +75,7 @@ class FilterBlockReader {
                     std::shared_ptr<RDMA_Manager> rdma_mg);
   ~FilterBlockReader();
   bool KeyMayMatch(uint64_t block_offset, const Slice& key);
-  bool KeyMayMatch(const Slice& key); // full filter.
+  bool KeyMayMatch(const Slice& key);  // full filter.
  private:
   const FilterPolicy* policy_;
   const char* data_;    // Pointer to filter data (at block-start)

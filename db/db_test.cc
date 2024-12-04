@@ -4,26 +4,28 @@
 
 #include "dLSM/db.h"
 
-#include <atomic>
-#include <cinttypes>
-#include <string>
-
-#include "gtest/gtest.h"
-#include "benchmark/benchmark.h"
 #include "db/db_impl.h"
 #include "db/filename.h"
 #include "db/version_set.h"
 #include "db/write_batch_internal.h"
+#include <atomic>
+#include <cinttypes>
+#include <string>
+
 #include "dLSM/cache.h"
 #include "dLSM/env.h"
 #include "dLSM/filter_policy.h"
 #include "dLSM/table.h"
+
 #include "port/port.h"
 #include "port/thread_annotations.h"
 #include "util/hash.h"
 #include "util/logging.h"
 #include "util/mutexlock.h"
 #include "util/testutil.h"
+
+#include "benchmark/benchmark.h"
+#include "gtest/gtest.h"
 
 namespace dLSM {
 
@@ -1030,11 +1032,9 @@ TEST_F(DBTest, RecoverDuringMemtableCompaction) {
 
     // Trigger a long memtable compaction and reopen the database during it
     ASSERT_dLSM_OK(Put("foo", "v1"));  // Goes to 1st log file
-    ASSERT_dLSM_OK(
-        Put("big1", std::string(10000000, 'x')));  // Fills memtable
-    ASSERT_dLSM_OK(
-        Put("big2", std::string(1000, 'y')));  // Triggers compaction
-    ASSERT_dLSM_OK(Put("bar", "v2"));       // Goes to new log file
+    ASSERT_dLSM_OK(Put("big1", std::string(10000000, 'x')));  // Fills memtable
+    ASSERT_dLSM_OK(Put("big2", std::string(1000, 'y')));  // Triggers compaction
+    ASSERT_dLSM_OK(Put("bar", "v2"));  // Goes to new log file
 
     Reopen(&options);
     ASSERT_EQ("v1", Get("foo"));

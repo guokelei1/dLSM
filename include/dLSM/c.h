@@ -71,62 +71,57 @@ typedef struct dLSM_writeoptions_t dLSM_writeoptions_t;
 
 /* DB operations */
 
-dLSM_EXPORT dLSM_t* dLSM_open(const dLSM_options_t* options,
-                                       const char* name, char** errptr);
+dLSM_EXPORT dLSM_t* dLSM_open(const dLSM_options_t* options, const char* name,
+                              char** errptr);
 
 dLSM_EXPORT void dLSM_close(dLSM_t* db);
 
-dLSM_EXPORT void dLSM_put(dLSM_t* db,
-                                const dLSM_writeoptions_t* options,
-                                const char* key, size_t keylen, const char* val,
-                                size_t vallen, char** errptr);
+dLSM_EXPORT void dLSM_put(dLSM_t* db, const dLSM_writeoptions_t* options,
+                          const char* key, size_t keylen, const char* val,
+                          size_t vallen, char** errptr);
 
-dLSM_EXPORT void dLSM_delete(dLSM_t* db,
-                                   const dLSM_writeoptions_t* options,
-                                   const char* key, size_t keylen,
-                                   char** errptr);
+dLSM_EXPORT void dLSM_delete(dLSM_t* db, const dLSM_writeoptions_t* options,
+                             const char* key, size_t keylen, char** errptr);
 
-dLSM_EXPORT void dLSM_write(dLSM_t* db,
-                                  const dLSM_writeoptions_t* options,
-                                  dLSM_writebatch_t* batch, char** errptr);
+dLSM_EXPORT void dLSM_write(dLSM_t* db, const dLSM_writeoptions_t* options,
+                            dLSM_writebatch_t* batch, char** errptr);
 
 /* Returns NULL if not found.  A malloc()ed array otherwise.
    Stores the length of the array in *vallen. */
-dLSM_EXPORT char* dLSM_get(dLSM_t* db,
-                                 const dLSM_readoptions_t* options,
-                                 const char* key, size_t keylen, size_t* vallen,
-                                 char** errptr);
+dLSM_EXPORT char* dLSM_get(dLSM_t* db, const dLSM_readoptions_t* options,
+                           const char* key, size_t keylen, size_t* vallen,
+                           char** errptr);
 
 dLSM_EXPORT dLSM_iterator_t* dLSM_create_iterator(
     dLSM_t* db, const dLSM_readoptions_t* options);
 
 dLSM_EXPORT const dLSM_snapshot_t* dLSM_create_snapshot(dLSM_t* db);
 
-dLSM_EXPORT void dLSM_release_snapshot(
-    dLSM_t* db, const dLSM_snapshot_t* snapshot);
+dLSM_EXPORT void dLSM_release_snapshot(dLSM_t* db,
+                                       const dLSM_snapshot_t* snapshot);
 
 /* Returns NULL if property name is unknown.
    Else returns a pointer to a malloc()-ed null-terminated value. */
-dLSM_EXPORT char* dLSM_property_value(dLSM_t* db,
-                                            const char* propname);
+dLSM_EXPORT char* dLSM_property_value(dLSM_t* db, const char* propname);
 
-dLSM_EXPORT void dLSM_approximate_sizes(
-    dLSM_t* db, int num_ranges, const char* const* range_start_key,
-    const size_t* range_start_key_len, const char* const* range_limit_key,
-    const size_t* range_limit_key_len, uint64_t* sizes);
+dLSM_EXPORT void dLSM_approximate_sizes(dLSM_t* db, int num_ranges,
+                                        const char* const* range_start_key,
+                                        const size_t* range_start_key_len,
+                                        const char* const* range_limit_key,
+                                        const size_t* range_limit_key_len,
+                                        uint64_t* sizes);
 
 dLSM_EXPORT void dLSM_compact_range(dLSM_t* db, const char* start_key,
-                                          size_t start_key_len,
-                                          const char* limit_key,
-                                          size_t limit_key_len);
+                                    size_t start_key_len, const char* limit_key,
+                                    size_t limit_key_len);
 
 /* Management operations */
 
 dLSM_EXPORT void dLSM_destroy_db(const dLSM_options_t* options,
-                                       const char* name, char** errptr);
+                                 const char* name, char** errptr);
 
-dLSM_EXPORT void dLSM_repair_db(const dLSM_options_t* options,
-                                      const char* name, char** errptr);
+dLSM_EXPORT void dLSM_repair_db(const dLSM_options_t* options, const char* name,
+                                char** errptr);
 
 /* Iterator */
 
@@ -134,61 +129,48 @@ dLSM_EXPORT void dLSM_iter_destroy(dLSM_iterator_t*);
 dLSM_EXPORT uint8_t dLSM_iter_valid(const dLSM_iterator_t*);
 dLSM_EXPORT void dLSM_iter_seek_to_first(dLSM_iterator_t*);
 dLSM_EXPORT void dLSM_iter_seek_to_last(dLSM_iterator_t*);
-dLSM_EXPORT void dLSM_iter_seek(dLSM_iterator_t*, const char* k,
-                                      size_t klen);
+dLSM_EXPORT void dLSM_iter_seek(dLSM_iterator_t*, const char* k, size_t klen);
 dLSM_EXPORT void dLSM_iter_next(dLSM_iterator_t*);
 dLSM_EXPORT void dLSM_iter_prev(dLSM_iterator_t*);
-dLSM_EXPORT const char* dLSM_iter_key(const dLSM_iterator_t*,
-                                            size_t* klen);
-dLSM_EXPORT const char* dLSM_iter_value(const dLSM_iterator_t*,
-                                              size_t* vlen);
-dLSM_EXPORT void dLSM_iter_get_error(const dLSM_iterator_t*,
-                                           char** errptr);
+dLSM_EXPORT const char* dLSM_iter_key(const dLSM_iterator_t*, size_t* klen);
+dLSM_EXPORT const char* dLSM_iter_value(const dLSM_iterator_t*, size_t* vlen);
+dLSM_EXPORT void dLSM_iter_get_error(const dLSM_iterator_t*, char** errptr);
 
 /* Write batch */
 
 dLSM_EXPORT dLSM_writebatch_t* dLSM_writebatch_create(void);
 dLSM_EXPORT void dLSM_writebatch_destroy(dLSM_writebatch_t*);
 dLSM_EXPORT void dLSM_writebatch_clear(dLSM_writebatch_t*);
-dLSM_EXPORT void dLSM_writebatch_put(dLSM_writebatch_t*,
-                                           const char* key, size_t klen,
-                                           const char* val, size_t vlen);
-dLSM_EXPORT void dLSM_writebatch_delete(dLSM_writebatch_t*,
-                                              const char* key, size_t klen);
+dLSM_EXPORT void dLSM_writebatch_put(dLSM_writebatch_t*, const char* key,
+                                     size_t klen, const char* val, size_t vlen);
+dLSM_EXPORT void dLSM_writebatch_delete(dLSM_writebatch_t*, const char* key,
+                                        size_t klen);
 dLSM_EXPORT void dLSM_writebatch_iterate(
     const dLSM_writebatch_t*, void* state,
     void (*put)(void*, const char* k, size_t klen, const char* v, size_t vlen),
     void (*deleted)(void*, const char* k, size_t klen));
-dLSM_EXPORT void dLSM_writebatch_append(
-    dLSM_writebatch_t* destination, const dLSM_writebatch_t* source);
+dLSM_EXPORT void dLSM_writebatch_append(dLSM_writebatch_t* destination,
+                                        const dLSM_writebatch_t* source);
 
 /* Options */
 
 dLSM_EXPORT dLSM_options_t* dLSM_options_create(void);
 dLSM_EXPORT void dLSM_options_destroy(dLSM_options_t*);
 dLSM_EXPORT void dLSM_options_set_comparator(dLSM_options_t*,
-                                                   dLSM_comparator_t*);
+                                             dLSM_comparator_t*);
 dLSM_EXPORT void dLSM_options_set_filter_policy(dLSM_options_t*,
-                                                      dLSM_filterpolicy_t*);
-dLSM_EXPORT void dLSM_options_set_create_if_missing(dLSM_options_t*,
-                                                          uint8_t);
-dLSM_EXPORT void dLSM_options_set_error_if_exists(dLSM_options_t*,
-                                                        uint8_t);
-dLSM_EXPORT void dLSM_options_set_paranoid_checks(dLSM_options_t*,
-                                                        uint8_t);
+                                                dLSM_filterpolicy_t*);
+dLSM_EXPORT void dLSM_options_set_create_if_missing(dLSM_options_t*, uint8_t);
+dLSM_EXPORT void dLSM_options_set_error_if_exists(dLSM_options_t*, uint8_t);
+dLSM_EXPORT void dLSM_options_set_paranoid_checks(dLSM_options_t*, uint8_t);
 dLSM_EXPORT void dLSM_options_set_env(dLSM_options_t*, dLSM_env_t*);
-dLSM_EXPORT void dLSM_options_set_info_log(dLSM_options_t*,
-                                                 dLSM_logger_t*);
-dLSM_EXPORT void dLSM_options_set_write_buffer_size(dLSM_options_t*,
-                                                          size_t);
+dLSM_EXPORT void dLSM_options_set_info_log(dLSM_options_t*, dLSM_logger_t*);
+dLSM_EXPORT void dLSM_options_set_write_buffer_size(dLSM_options_t*, size_t);
 dLSM_EXPORT void dLSM_options_set_max_open_files(dLSM_options_t*, int);
-dLSM_EXPORT void dLSM_options_set_cache(dLSM_options_t*,
-                                              dLSM_cache_t*);
+dLSM_EXPORT void dLSM_options_set_cache(dLSM_options_t*, dLSM_cache_t*);
 dLSM_EXPORT void dLSM_options_set_block_size(dLSM_options_t*, size_t);
-dLSM_EXPORT void dLSM_options_set_block_restart_interval(
-    dLSM_options_t*, int);
-dLSM_EXPORT void dLSM_options_set_max_file_size(dLSM_options_t*,
-                                                      size_t);
+dLSM_EXPORT void dLSM_options_set_block_restart_interval(dLSM_options_t*, int);
+dLSM_EXPORT void dLSM_options_set_max_file_size(dLSM_options_t*, size_t);
 
 enum { dLSM_no_compression = 0, dLSM_snappy_compression = 1 };
 dLSM_EXPORT void dLSM_options_set_compression(dLSM_options_t*, int);
@@ -221,19 +203,17 @@ dLSM_EXPORT dLSM_filterpolicy_t* dLSM_filterpolicy_create_bloom(
 
 dLSM_EXPORT dLSM_readoptions_t* dLSM_readoptions_create(void);
 dLSM_EXPORT void dLSM_readoptions_destroy(dLSM_readoptions_t*);
-dLSM_EXPORT void dLSM_readoptions_set_verify_checksums(
-    dLSM_readoptions_t*, uint8_t);
-dLSM_EXPORT void dLSM_readoptions_set_fill_cache(dLSM_readoptions_t*,
+dLSM_EXPORT void dLSM_readoptions_set_verify_checksums(dLSM_readoptions_t*,
                                                        uint8_t);
+dLSM_EXPORT void dLSM_readoptions_set_fill_cache(dLSM_readoptions_t*, uint8_t);
 dLSM_EXPORT void dLSM_readoptions_set_snapshot(dLSM_readoptions_t*,
-                                                     const dLSM_snapshot_t*);
+                                               const dLSM_snapshot_t*);
 
 /* Write options */
 
 dLSM_EXPORT dLSM_writeoptions_t* dLSM_writeoptions_create(void);
 dLSM_EXPORT void dLSM_writeoptions_destroy(dLSM_writeoptions_t*);
-dLSM_EXPORT void dLSM_writeoptions_set_sync(dLSM_writeoptions_t*,
-                                                  uint8_t);
+dLSM_EXPORT void dLSM_writeoptions_set_sync(dLSM_writeoptions_t*, uint8_t);
 
 /* Cache */
 

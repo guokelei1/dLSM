@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include <sys/resource.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <sys/resource.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <unordered_set>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "dLSM/env.h"
+
 #include "port/port.h"
 #include "util/env_posix_test_helper.h"
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 #if HAVE_O_CLOEXEC
 
@@ -345,8 +346,7 @@ int main(int argc, char** argv) {
 #endif  // HAVE_O_CLOEXEC
 
   // All tests currently run with the same read-only file limits.
-  dLSM::EnvPosixTest::SetFileLimits(dLSM::kReadOnlyFileLimit,
-                                         dLSM::kMMapLimit);
+  dLSM::EnvPosixTest::SetFileLimits(dLSM::kReadOnlyFileLimit, dLSM::kMMapLimit);
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

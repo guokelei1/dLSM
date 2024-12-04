@@ -21,14 +21,16 @@ namespace {
 
 // LRU table_cache implementation
 //
-// Cache entries have an "in_cache" boolean indicating whether the table_cache has a
-// reference on the entry.  The only ways that this can become false without the
-// entry being passed to its "deleter" are via Erase(), via Insert() when
-// an element with a duplicate key is inserted, or on destruction of the table_cache.
+// Cache entries have an "in_cache" boolean indicating whether the table_cache
+// has a reference on the entry.  The only ways that this can become false
+// without the entry being passed to its "deleter" are via Erase(), via Insert()
+// when an element with a duplicate key is inserted, or on destruction of the
+// table_cache.
 //
-// The table_cache keeps two linked lists of items in the table_cache.  All items in the
-// table_cache are in one list or the other, and never both.  Items still referenced
-// by clients but erased from the table_cache are in neither list.  The lists are:
+// The table_cache keeps two linked lists of items in the table_cache.  All
+// items in the table_cache are in one list or the other, and never both.  Items
+// still referenced by clients but erased from the table_cache are in neither
+// list.  The lists are:
 // - in-use:  contains the items currently referenced by clients, in no
 //   particular order.  (This list is used for invariant checking.  If we
 //   removed the check, elements that would otherwise be on this list could be
@@ -43,7 +45,7 @@ namespace {
 struct LRUHandle {
   void* value;
   void (*deleter)(const Slice&, void* value);
-  LRUHandle* next_hash;// Next LRUhandle in the hash
+  LRUHandle* next_hash;  // Next LRUhandle in the hash
   LRUHandle* next;
   LRUHandle* prev;
   size_t charge;  // TODO(opt): Only allow uint32_t?
@@ -167,7 +169,7 @@ class LRUCache {
   void Erase(const Slice& key, uint32_t hash);
   void Prune();
   size_t TotalCharge() const {
-//    MutexLock l(&mutex_);
+    //    MutexLock l(&mutex_);
     SpinLock l(&mutex_);
     return usage_;
   }
@@ -254,11 +256,11 @@ void LRUCache::LRU_Append(LRUHandle* list, LRUHandle* e) {
 }
 
 Cache::Handle* LRUCache::Lookup(const Slice& key, uint32_t hash) {
-//  MutexLock l(&mutex_);
+  //  MutexLock l(&mutex_);
   SpinLock l(&mutex_);
-  //TOTHINK(ruihong): shoul we update the lru list after look up a key?
-  //  Answer: Ref will refer this key and later, the outer function has to call
-  // Unref or release which will update the lRU list.
+  // TOTHINK(ruihong): shoul we update the lru list after look up a key?
+  //   Answer: Ref will refer this key and later, the outer function has to call
+  //  Unref or release which will update the lRU list.
   LRUHandle* e = table_.Lookup(key, hash);
   if (e != nullptr) {
     Ref(e);
@@ -267,7 +269,7 @@ Cache::Handle* LRUCache::Lookup(const Slice& key, uint32_t hash) {
 }
 
 void LRUCache::Release(Cache::Handle* handle) {
-//  MutexLock l(&
+  //  MutexLock l(&
   SpinLock l(&mutex_);
   Unref(reinterpret_cast<LRUHandle*>(handle));
 }
@@ -276,7 +278,7 @@ Cache::Handle* LRUCache::Insert(const Slice& key, uint32_t hash, void* value,
                                 size_t charge,
                                 void (*deleter)(const Slice& key,
                                                 void* value)) {
-//  MutexLock l(&mutex_);
+  //  MutexLock l(&mutex_);
   SpinLock l(&mutex_);
   LRUHandle* e =
       reinterpret_cast<LRUHandle*>(malloc(sizeof(LRUHandle) - 1 + key.size()));
@@ -290,21 +292,25 @@ Cache::Handle* LRUCache::Insert(const Slice& key, uint32_t hash, void* value,
   std::memcpy(e->key_data, key.data(), key.size());
 
   if (capacity_ > 0) {
-    e->refs++;  // for the table_cache's reference. refer here and unrefer outside
+    e->refs++;  // for the table_cache's reference. refer here and unrefer
+                // outside
     e->in_cache = true;
-    LRU_Append(&in_use_, e);// Finally it will be pushed into LRU list
+    LRU_Append(&in_use_, e);  // Finally it will be pushed into LRU list
     usage_ += charge;
-    FinishErase(table_.Insert(e));//table_.Insert(e) will return LRUhandle with duplicate key as e, and then delete it by FinishErase
-  } else {  // don't table_cache. (capacity_==0 is supported and turns off caching.)
+    FinishErase(table_.Insert(
+        e));  // table_.Insert(e) will return LRUhandle with duplicate key as e,
+              // and then delete it by FinishErase
+  } else {  // don't table_cache. (capacity_==0 is supported and turns off
+            // caching.)
     // next is read by key() in an assert, so it must be initialized
     e->next = nullptr;
   }
-//  printf("Cache capacity is %zu, usage is %zu", capacity_, usage_);
+  //  printf("Cache capacity is %zu, usage is %zu", capacity_, usage_);
   // This will remove some entry from LRU if the table_cache over size.
   while (usage_ > capacity_ && lru_.next != &lru_) {
     LRUHandle* old = lru_.next;
     assert(old->refs == 1);
-//    printf("Remove entry whose key is %s", old->key().data());
+    //    printf("Remove entry whose key is %s", old->key().data());
     bool erased = FinishErase(table_.Remove(old->key(), old->hash));
     if (!erased) {  // to avoid unused variable when compiled NDEBUG
       assert(erased);
@@ -329,13 +335,13 @@ bool LRUCache::FinishErase(LRUHandle* e) {
 }
 
 void LRUCache::Erase(const Slice& key, uint32_t hash) {
-//  MutexLock l(&mutex_);
+  //  MutexLock l(&mutex_);
   SpinLock l(&mutex_);
   FinishErase(table_.Remove(key, hash));
 }
 
 void LRUCache::Prune() {
-//  MutexLock l(&mutex_);
+  //  MutexLock l(&mutex_);
   SpinLock l(&mutex_);
   while (lru_.next != &lru_) {
     LRUHandle* e = lru_.next;
@@ -372,9 +378,7 @@ class ShardedLRUCache : public Cache {
     }
   }
   ~ShardedLRUCache() override {}
-  size_t GetCapacity() override{
-      return capacity_;
-  }
+  size_t GetCapacity() override { return capacity_; }
   Handle* Insert(const Slice& key, void* value, size_t charge,
                  void (*deleter)(const Slice& key, void* value)) override {
     const uint32_t hash = HashSlice(key);

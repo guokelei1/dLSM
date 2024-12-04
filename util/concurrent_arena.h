@@ -17,11 +17,11 @@
 #include "util/arena.h"
 
 #include "allocator.h"
-//#include "port/lang.h"
+// #include "port/lang.h"
 #include "port/likely.h"
 #include "util/core_local.h"
 #include "util/mutexlock.h"
-//#include "util/thread_local.h"
+// #include "util/thread_local.h"
 
 // Only generate field unused warning for padding array, or build under
 // GCC 4.8.1 will fail.
@@ -99,6 +99,7 @@ class ConcurrentArena : public Allocator {
 
     Shard() : free_begin_(nullptr), allocated_and_unused_(0) {}
   };
+
  private:
 #ifdef ROCKSDB_SUPPORT_THREAD_LOCAL
 //  static __thread size_t tls_cpuid;
@@ -110,12 +111,12 @@ class ConcurrentArena : public Allocator {
 
   size_t shard_block_size_;
 
-//  CoreLocalArray<Shard> shards_;
-//  static __thread Shard* thread_local_shard;
+  //  CoreLocalArray<Shard> shards_;
+  //  static __thread Shard* thread_local_shard;
   port::RWMutex shr_mutex;
-  // Here we use a string pointer rather that a real string, actually, here can be
-  // a unique pointer pointing to any location in the memory, as long as it is
-  // unique in the life of the thread
+  // Here we use a string pointer rather that a real string, actually, here can
+  // be a unique pointer pointing to any location in the memory, as long as it
+  // is unique in the life of the thread
   std::map<std::string*, Shard*> Threadlocal_Shardmap;
   static __thread std::string* thread_id;
   Arena arena_;
@@ -126,17 +127,16 @@ class ConcurrentArena : public Allocator {
 
   char padding1[56] ROCKSDB_FIELD_UNUSED;
 
-//  Shard* Repick();
+  //  Shard* Repick();
 
   size_t ShardAllocatedAndUnused() {
     size_t total = 0;
-    // Note: here we don't need the lock to control the access to map, because iterator
-    // will not be invalidated by insert. BEsides, there is no delete at all in our design,
-    // we should be safe.
+    // Note: here we don't need the lock to control the access to map, because
+    // iterator will not be invalidated by insert. BEsides, there is no delete
+    // at all in our design, we should be safe.
     shr_mutex.ReadLock();
-    for (auto e :Threadlocal_Shardmap) {
-      total += e.second->allocated_and_unused_.load(
-          std::memory_order_relaxed);
+    for (auto e : Threadlocal_Shardmap) {
+      total += e.second->allocated_and_unused_.load(std::memory_order_relaxed);
     }
     shr_mutex.ReadUnlock();
     return total;
@@ -151,12 +151,12 @@ class ConcurrentArena : public Allocator {
     // with no waiting.  This keeps the fragmentation penalty of
     // concurrency zero unless it might actually confer an advantage.
     std::unique_lock<SpinMutex> arena_lock(arena_mutex_, std::defer_lock);
-    if (bytes > shard_block_size_ / 4 || force_arena //||
-//        ((cpu = tls_cpuid) == 0 &&
-//         !shards_.AccessAtCore(0)->allocated_and_unused_.load(
-//             std::memory_order_relaxed) &&
-//         arena_lock.try_lock())
-                 ) {
+    if (bytes > shard_block_size_ / 4 || force_arena  //||
+        //        ((cpu = tls_cpuid) == 0 &&
+        //         !shards_.AccessAtCore(0)->allocated_and_unused_.load(
+        //             std::memory_order_relaxed) &&
+        //         arena_lock.try_lock())
+    ) {
       if (!arena_lock.owns_lock()) {
         arena_lock.lock();
       }
@@ -166,9 +166,9 @@ class ConcurrentArena : public Allocator {
     }
 
     // pick a shard from which to allocate
-//    Shard* s = shards_.AccessAtCore(cpu & (shards_.Size() - 1));
+    //    Shard* s = shards_.AccessAtCore(cpu & (shards_.Size() - 1));
 
-    if(thread_id == nullptr){
+    if (thread_id == nullptr) {
       std::thread::id myid = std::this_thread::get_id();
       std::stringstream ss;
       ss << myid;
@@ -176,7 +176,7 @@ class ConcurrentArena : public Allocator {
     }
 
     auto check_result = Threadlocal_Shardmap.find(thread_id);
-    if (check_result == Threadlocal_Shardmap.end()){
+    if (check_result == Threadlocal_Shardmap.end()) {
       shr_mutex.WriteLock();
       auto this_shard = new Shard();
       Threadlocal_Shardmap.insert({thread_id, this_shard});
@@ -184,13 +184,13 @@ class ConcurrentArena : public Allocator {
     }
 
     shr_mutex.ReadLock();
-    Shard* s = (Shard*) Threadlocal_Shardmap.at(thread_id);
+    Shard* s = (Shard*)Threadlocal_Shardmap.at(thread_id);
     shr_mutex.ReadUnlock();
-//    if (!s->mutex.try_lock()) {
-//      s = Repick();
-//      s->mutex.lock();
-//    }
-//    std::unique_lock<SpinMutex> lock(s->mutex, std::adopt_lock);
+    //    if (!s->mutex.try_lock()) {
+    //      s = Repick();
+    //      s->mutex.lock();
+    //    }
+    //    std::unique_lock<SpinMutex> lock(s->mutex, std::adopt_lock);
 
     size_t avail = s->allocated_and_unused_.load(std::memory_order_relaxed);
     if (avail < bytes) {
@@ -249,4 +249,4 @@ class ConcurrentArena : public Allocator {
   ConcurrentArena& operator=(const ConcurrentArena&) = delete;
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

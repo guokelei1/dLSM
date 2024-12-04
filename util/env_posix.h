@@ -4,20 +4,6 @@
 
 #ifndef dLSM_ENV_POSIX_H
 #define dLSM_ENV_POSIX_H
-#include <dirent.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <sys/mman.h>
-#include <sys/resource.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include "dLSM/env.h"
-#include "dLSM/slice.h"
-#include "dLSM/status.h"
-#include "dLSM/options.h"
-#include "util/posix_logger.h"
 #include <atomic>
 #include <cerrno>
 #include <cstddef>
@@ -25,17 +11,31 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <dirent.h>
+#include <fcntl.h>
 #include <limits>
+#include <pthread.h>
 #include <queue>
 #include <set>
 #include <string>
+#include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <thread>
 #include <type_traits>
+#include <unistd.h>
 #include <utility>
 
+#include "dLSM/env.h"
+#include "dLSM/options.h"
+#include "dLSM/slice.h"
+#include "dLSM/status.h"
+
+#include "util/posix_logger.h"
+
 namespace dLSM {
-
-
 
 // Set by EnvPosixTestHelper::SetReadOnlyMMapLimit() and MaxOpenFiles().
 static int g_open_read_only_file_limit = -1;
@@ -99,8 +99,6 @@ class Limiter {
   std::atomic<int> acquires_allowed_;
 };
 
-
-
 static int LockOrUnlock(int fd, bool lock) {
   errno = 0;
   struct ::flock file_lock_info;
@@ -151,7 +149,6 @@ class PosixLockTable {
   port::Mutex mu_;
   std::set<std::string> locked_files_ GUARDED_BY(mu_);
 };
-
 
 // Implements sequential read access in a file using read().
 //
@@ -488,13 +485,14 @@ class PosixWritableFile final : public WritableFile {
   const std::string dirname_;  // The directory of filename_.
 };
 
-//template<typename ReturnType, typename ArgsType>
+// template<typename ReturnType, typename ArgsType>
 
 class PosixEnv : public Env {
  public:
   PosixEnv();
   ~PosixEnv() override {
-    // By default the threadpool will not wait for all the task in the queue finished.
+    // By default the threadpool will not wait for all the task in the queue
+    // finished.
     //    flushing.JoinThreads(false);
     //    compaction.JoinThreads(false);
     //    subcompaction.JoinThreads(false);
@@ -502,7 +500,7 @@ class PosixEnv : public Env {
         "PosixEnv singleton destroyed. Unsupported behavior!\n";
     std::fwrite(msg, 1, sizeof(msg), stderr);
     std::abort();
-//    delete rdma_mg;
+    //    delete rdma_mg;
   }
 
   Status NewSequentialFile(const std::string& filename,
@@ -670,9 +668,8 @@ class PosixEnv : public Env {
 
   void Schedule(void (*background_work_function)(void* background_work_arg),
                 void* background_work_arg) override;
-  void Schedule(
-      void (*background_work_function)(void* background_work_arg),
-      void* background_work_arg, ThreadPoolType type) override;
+  void Schedule(void (*background_work_function)(void* background_work_arg),
+                void* background_work_arg, ThreadPoolType type) override;
   unsigned int Queue_Length_Quiry(ThreadPoolType type) override;
   void JoinAllThreads(bool wait_for_jobs_to_complete) override;
   void StartThread(void (*thread_main)(void* thread_main_arg),
@@ -727,7 +724,7 @@ class PosixEnv : public Env {
   void SleepForMicroseconds(int micros) override {
     std::this_thread::sleep_for(std::chrono::microseconds(micros));
   }
-  void SetBackgroundThreads(int num,  ThreadPoolType type) override{
+  void SetBackgroundThreads(int num, ThreadPoolType type) override {
     switch (type) {
       case FlushThreadPool:
         flushing.SetBackgroundThreads(num);
@@ -797,6 +794,5 @@ static int MaxOpenFiles() {
   return g_open_read_only_file_limit;
 }
 
-
-}
+}  // namespace dLSM
 #endif  // dLSM_ENV_POSIX_H

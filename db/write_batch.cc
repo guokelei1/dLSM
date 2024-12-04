@@ -18,7 +18,9 @@
 #include "db/dbformat.h"
 #include "db/memtable.h"
 #include "db/write_batch_internal.h"
+
 #include "dLSM/db.h"
+
 #include "util/coding.h"
 
 namespace dLSM {
@@ -54,8 +56,8 @@ Status WriteBatch::Iterate(Handler* handler) const {
     input.remove_prefix(1);
     switch (tag) {
       case kTypeValue:
-        //TODO: the inlineskiplist will decode the slice, so may be we may not
-        // decode it here
+        // TODO: the inlineskiplist will decode the slice, so may be we may not
+        //  decode it here
         if (GetLengthPrefixedSlice(&input, &key) &&
             GetLengthPrefixedSlice(&input, &value)) {
           handler->Put(key, value);
@@ -110,16 +112,15 @@ void WriteBatch::Delete(const Slice& key) {
   PutLengthPrefixedSlice(&rep_, key);
 }
 Slice WriteBatch::ParseFirst() {
-  Slice input = Slice(rep_.c_str()+1+kHeader, rep_.size());
+  Slice input = Slice(rep_.c_str() + 1 + kHeader, rep_.size());
   Slice output;
-  GetLengthPrefixedSlice(&input,&output);
+  GetLengthPrefixedSlice(&input, &output);
   return output;
 }
 
 void WriteBatch::Append(const WriteBatch& source) {
   WriteBatchInternal::Append(this, &source);
 }
-
 
 namespace {
 class MemTableInserter : public WriteBatch::Handler {

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "dLSM/slice.h"
+
 #include "util/rdma.h"
 namespace dLSM {
 
@@ -40,7 +41,7 @@ class BlockBuilder {
 
   // Return true iff no entries have been added since the last Reset()
   bool empty() const { return buffer.empty(); }
-  Slice buffer;              // Destination buffer
+  Slice buffer;  // Destination buffer
  private:
   const Options* options_;
   ibv_mr* local_mr;

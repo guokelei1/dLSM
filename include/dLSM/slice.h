@@ -23,7 +23,7 @@
 #include "dLSM/export.h"
 
 namespace dLSM {
-//TODO: make the size of slice extensible from outside.
+// TODO: make the size of slice extensible from outside.
 class dLSM_EXPORT Slice {
  public:
   // Create an empty slice.
@@ -65,7 +65,7 @@ class dLSM_EXPORT Slice {
   }
   // Move the data pointer to the end of this slice
   void ResetNext() {
-    data_ = data_+size_;
+    data_ = data_ + size_;
     size_ = 0;
   }
   void Reset(const char* data, size_t size) {
@@ -92,11 +92,12 @@ class dLSM_EXPORT Slice {
   bool starts_with(const Slice& x) const {
     return ((size_ >= x.size_) && (memcmp(data_, x.data_, x.size_) == 0));
   }
-  void append(const char* p, size_t size){
-//    assert(size_+size <= buffer_limit);
-    memcpy((void*)(data_ + size_), (void*)p , size);
-    size_+= size;
+  void append(const char* p, size_t size) {
+    //    assert(size_+size <= buffer_limit);
+    memcpy((void*)(data_ + size_), (void*)p, size);
+    size_ += size;
   }
+
  private:
   const char* data_;
   size_t size_;

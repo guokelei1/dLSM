@@ -6,11 +6,12 @@
 
 #include "dLSM/comparator.h"
 #include "dLSM/iterator.h"
+
 #include "table/iterator_wrapper.h"
 
 namespace dLSM {
 
-//namespace {
+// namespace {
 class MergingIterator : public Iterator {
  public:
   MergingIterator(const Comparator* comparator, Iterator** children, int n)
@@ -67,7 +68,8 @@ class MergingIterator : public Iterator {
       for (int i = 0; i < n_; i++) {
         IteratorWrapper* child = &children_[i];
         if (child != current_) {
-          //TODO(ruihong): Make the iterator not seek again, it should suppose to stay at the old position.
+          // TODO(ruihong): Make the iterator not seek again, it should suppose
+          // to stay at the old position.
           child->Seek(key());
           if (child->Valid() &&
               comparator_->Compare(key(), child->key()) == 0) {
@@ -81,11 +83,11 @@ class MergingIterator : public Iterator {
     current_->Next();
     FindSmallest();
 #ifndef NDEBUG
-    if (Valid()){
+    if (Valid()) {
       if (num_entries > 0) {
-//        printf("key is %.*s look at here\n", 29, key().data());
-//        printf("key length is %zu" , key().size());
-//        printf("key char pointer is %p", key().data());
+        //        printf("key is %.*s look at here\n", 29, key().data());
+        //        printf("key length is %zu" , key().size());
+        //        printf("key char pointer is %p", key().data());
         assert(comparator_->Compare(key(), Slice(last_key)) > 0);
       }
       num_entries++;
@@ -160,7 +162,7 @@ class MergingIterator : public Iterator {
   IteratorWrapper* current_;
   Direction direction_;
   std::string last_key;
-  int64_t num_entries=0;
+  int64_t num_entries = 0;
 };
 
 void MergingIterator::FindSmallest() {
@@ -177,11 +179,10 @@ void MergingIterator::FindSmallest() {
   }
   current_ = smallest;
 #ifndef NDEBUG
-  if (current_ == nullptr){
+  if (current_ == nullptr) {
     printf("current invalid\n");
-  }else{
-    assert(current_->key().size()>0);
-
+  } else {
+    assert(current_->key().size() > 0);
   }
 #endif
 }
@@ -199,7 +200,7 @@ void MergingIterator::FindLargest() {
     }
   }
   current_ = largest;
-//}
+  //}
 }  // namespace
 
 Iterator* NewMergingIterator(const Comparator* comparator, Iterator** children,

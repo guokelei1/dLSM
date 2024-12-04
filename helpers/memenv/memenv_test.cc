@@ -4,14 +4,16 @@
 
 #include "helpers/memenv/memenv.h"
 
+#include "db/db_impl.h"
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
-#include "db/db_impl.h"
 #include "dLSM/db.h"
 #include "dLSM/env.h"
+
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 namespace dLSM {
 

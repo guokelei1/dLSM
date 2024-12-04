@@ -3,11 +3,10 @@
 
 #include "util/rdma.h"
 
-//namespace dLSM{
-int main(int argc,char* argv[])
-{
+// namespace dLSM{
+int main(int argc, char* argv[]) {
   dLSM::Memory_Node_Keeper* mn_keeper;
-  if (argc == 4){
+  if (argc == 4) {
     uint32_t tcp_port;
     int pr_size;
     int Memory_server_id;
@@ -25,14 +24,15 @@ int main(int argc,char* argv[])
     //  strValue.str("");
     strValue3 << value;
     strValue3 >> Memory_server_id;
-     mn_keeper = new dLSM::Memory_Node_Keeper(true, tcp_port, pr_size);
-     dLSM::RDMA_Manager::node_id = 2* Memory_server_id;
-  }else{
+    mn_keeper = new dLSM::Memory_Node_Keeper(true, tcp_port, pr_size);
+    dLSM::RDMA_Manager::node_id = 2 * Memory_server_id;
+  } else {
     mn_keeper = new dLSM::Memory_Node_Keeper(true, 19843, 32);
     dLSM::RDMA_Manager::node_id = 0;
   }
 
-  mn_keeper->SetBackgroundThreads(12, dLSM::ThreadPoolType::CompactionThreadPool);
+  mn_keeper->SetBackgroundThreads(12,
+                                  dLSM::ThreadPoolType::CompactionThreadPool);
   mn_keeper->Server_to_Client_Communication();
   delete mn_keeper;
 

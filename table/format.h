@@ -6,22 +6,23 @@
 #define STORAGE_dLSM_TABLE_FORMAT_H_
 
 #include <cstdint>
+#include <map>
 #include <string>
 
 #include "dLSM/slice.h"
 #include "dLSM/status.h"
-#include <map>
+
 #include "util/rdma.h"
-//#include "dLSM/table_builder.h"
+// #include "dLSM/table_builder.h"
 
 namespace dLSM {
 
 class Block;
 class RandomAccessFile;
 struct ReadOptions;
-//struct ibv_mr;
-// BlockHandle is a pointer to the extent of a file that stores a data
-// block or a meta block.
+// struct ibv_mr;
+//  BlockHandle is a pointer to the extent of a file that stores a data
+//  block or a meta block.
 class BlockHandle {
  public:
   // Maximum encoding length of a BlockHandle
@@ -41,7 +42,7 @@ class BlockHandle {
   Status DecodeFrom(Slice* input);
 
  private:
-  uint64_t offset_;// count in the blocktrailer.
+  uint64_t offset_;  // count in the blocktrailer.
   uint64_t size_;
 };
 
@@ -81,21 +82,22 @@ static const uint64_t kTableMagicNumber = 0xdb4775248b80fb57ull;
 static const size_t kBlockTrailerSize = 5;
 
 struct BlockContents {
-  Slice data;           // Actual contents of data
-//  bool cachable;        // True iff data can be cached
-//  bool heap_allocated;  // True iff caller should delete[] data.data()
+  Slice data;  // Actual contents of data
+  //  bool cachable;        // True iff data can be cached
+  //  bool heap_allocated;  // True iff caller should delete[] data.data()
 };
 void Find_Local_MR(std::map<uint32_t, ibv_mr*>* remote_data_blocks,
-                    const BlockHandle& handle, Slice& data);
+                   const BlockHandle& handle, Slice& data);
 void Find_Remote_MR(std::map<uint32_t, ibv_mr*>* remote_data_blocks,
-                         const BlockHandle& handle, ibv_mr* remote_mr);
+                    const BlockHandle& handle, ibv_mr* remote_mr);
 bool Find_prefetch_MR(std::map<uint32_t, ibv_mr*>* remote_data_blocks,
-                       const size_t& offset, ibv_mr* remote_mr);
+                      const size_t& offset, ibv_mr* remote_mr);
 
 // Read the block identified by "handle" from "file".  On failure
 // return non-OK.  On success fill *result and return OK.
-Status ReadDataBlock(std::map<uint32_t, ibv_mr*>* remote_data_blocks, const ReadOptions& options,
-                 const BlockHandle& handle, BlockContents* result);
+Status ReadDataBlock(std::map<uint32_t, ibv_mr*>* remote_data_blocks,
+                     const ReadOptions& options, const BlockHandle& handle,
+                     BlockContents* result);
 Status ReadKVPair(std::map<uint32_t, ibv_mr*>* remote_data_blocks,
                   const ReadOptions& options, const BlockHandle& handle,
                   Slice* result, uint8_t target_node_id);

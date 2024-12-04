@@ -57,12 +57,12 @@
 #include "util/random.h"
 
 namespace dLSM {
-//static Slice GetLengthPrefixedSlice(const char* data) {
-//  uint32_t len;
-//  const char* p = data;
-//  p = GetVarint32Ptr(p, p + 5, &len);  // +5: we assume "p" is not corrupted
-//  return Slice(p, len);
-//}
+// static Slice GetLengthPrefixedSlice(const char* data) {
+//   uint32_t len;
+//   const char* p = data;
+//   p = GetVarint32Ptr(p, p + 5, &len);  // +5: we assume "p" is not corrupted
+//   return Slice(p, len);
+// }
 template <class Comparator>
 class InlineSkipList {
  private:
@@ -84,9 +84,7 @@ class InlineSkipList {
   // No copying allowed
   InlineSkipList(const InlineSkipList&) = delete;
   InlineSkipList& operator=(const InlineSkipList&) = delete;
-  Node* GetHeadNode(){
-    return head_;
-  }
+  Node* GetHeadNode() { return head_; }
   // Allocates a key and a skip-list node, returning a pointer to the key
   // portion of the node.  This method is thread-safe if the allocator
   // is thread-safe.
@@ -267,9 +265,9 @@ class InlineSkipList {
   // point to a node that is before the key, and after should point to
   // a node that is after the key.  after should be nullptr if a good after
   // node isn't conveniently available.
-  template<bool prefetch_before>
-  void FindSpliceForLevel(const DecodedKey& key, Node* before, Node* after, int level,
-                          Node** out_prev, Node** out_next);
+  template <bool prefetch_before>
+  void FindSpliceForLevel(const DecodedKey& key, Node* before, Node* after,
+                          int level, Node** out_prev, Node** out_next);
 
   // Recomputes Splice levels from highest_level (inclusive) down to
   // lowest_level (inclusive).
@@ -360,7 +358,7 @@ struct InlineSkipList<Comparator>::Node {
  private:
   // next_[0] is the lowest level link (level 0).  Higher levels are
   // stored _earlier_, so level 1 is at next_[-1].
-    std::atomic<Node*> next_[1];
+  std::atomic<Node*> next_[1];
 };
 
 template <class Comparator>
@@ -616,7 +614,7 @@ InlineSkipList<Comparator>::InlineSkipList(const Comparator cmp,
   for (int i = 0; i < kMaxHeight_; ++i) {
     head_->SetNext(i, nullptr);
   }
-//  printf("head_address is %p", head_);
+  //  printf("head_address is %p", head_);
 }
 
 template <class Comparator>
@@ -723,8 +721,8 @@ void InlineSkipList<Comparator>::FindSpliceForLevel(const DecodedKey& key,
       PREFETCH(next->Next(level), 0, 1);
     }
     if (prefetch_before == true) {
-      if (next != nullptr && level>0) {
-        PREFETCH(next->Next(level-1), 0, 1);
+      if (next != nullptr && level > 0) {
+        PREFETCH(next->Next(level - 1), 0, 1);
       }
     }
     assert(before == head_ || next == nullptr ||
@@ -748,7 +746,7 @@ void InlineSkipList<Comparator>::RecomputeSpliceLevels(const DecodedKey& key,
   assert(recompute_level <= splice->height_);
   for (int i = recompute_level - 1; i >= 0; --i) {
     FindSpliceForLevel<true>(key, splice->prev_[i + 1], splice->next_[i + 1], i,
-                       &splice->prev_[i], &splice->next_[i]);
+                             &splice->prev_[i], &splice->next_[i]);
   }
 }
 
@@ -756,7 +754,7 @@ template <class Comparator>
 template <bool UseCAS>
 bool InlineSkipList<Comparator>::Insert(const char* key, Splice* splice,
                                         bool allow_partial_splice_fix) {
-  //TOTHINK Does key contain both key and value?
+  // TOTHINK Does key contain both key and value?
   Node* x = reinterpret_cast<Node*>(const_cast<char*>(key)) - 1;
   const DecodedKey key_decoded = compare_.decode_key(key);
   std::string key_snapshot = key_decoded.ToString();
@@ -764,7 +762,7 @@ bool InlineSkipList<Comparator>::Insert(const char* key, Splice* splice,
   assert(height >= 1 && height <= kMaxHeight_);
 
   int max_height = max_height_.load(std::memory_order_relaxed);
-  //Update the max height
+  // Update the max height
   while (height > max_height) {
     if (max_height_.compare_exchange_weak(max_height, height)) {
       // successfully updated it
@@ -817,12 +815,13 @@ bool InlineSkipList<Comparator>::Insert(const char* key, Splice* splice,
 
     // Ruihong NOte: All the steps below is to accelerate the search when a
     // cas is failed. The splice can remeber the place that the inserter find in
-    // the last iteration. However, during this new iteration, the place your remember
-    // could be incorrect. As a result, we check from the bottom to top to see whether
-    // the next[i] is still connected to prev[i]. If it is then it means there is no
-    // key inserted between. Generally, the first level should be changed. (That's why CAS failed)
-    // the above layer of the splice should be unchanged, which means we should just search in
-    // the very bottom level and then we can find it very quick.
+    // the last iteration. However, during this new iteration, the place your
+    // remember could be incorrect. As a result, we check from the bottom to top
+    // to see whether the next[i] is still connected to prev[i]. If it is then
+    // it means there is no key inserted between. Generally, the first level
+    // should be changed. (That's why CAS failed) the above layer of the splice
+    // should be unchanged, which means we should just search in the very bottom
+    // level and then we can find it very quick.
     while (recompute_height < max_height) {
       if (splice->prev_[recompute_height]->Next(recompute_height) !=
           splice->next_[recompute_height]) {
@@ -850,8 +849,7 @@ bool InlineSkipList<Comparator>::Insert(const char* key, Splice* splice,
           // we're pessimistic, recompute everything
           recompute_height = max_height;
         }
-      } else if (KeyIsAfterNode(key_decoded,
-                                splice->next_[recompute_height])) {
+      } else if (KeyIsAfterNode(key_decoded, splice->next_[recompute_height])) {
         // key is from after splice
         if (allow_partial_splice_fix) {
           Node* bad = splice->next_[recompute_height];
@@ -869,12 +867,12 @@ bool InlineSkipList<Comparator>::Insert(const char* key, Splice* splice,
   }
   assert(recompute_height <= max_height);
   if (recompute_height > 0) {
-//    printf("recompute_height is %d", recompute_height);
-//    printf("head_ Next(0) address is %p", head_->Next(0));
-//    printf("head_ Next(recompute) address is %p", head_->Next(recompute_height));
-//    printf("splice print %p", splice->prev_[recompute_height]->Next(recompute_height));
+    //    printf("recompute_height is %d", recompute_height);
+    //    printf("head_ Next(0) address is %p", head_->Next(0));
+    //    printf("head_ Next(recompute) address is %p",
+    //    head_->Next(recompute_height)); printf("splice print %p",
+    //    splice->prev_[recompute_height]->Next(recompute_height));
     RecomputeSpliceLevels(key_decoded, splice, recompute_height);
-
   }
 
   bool splice_is_valid = true;
@@ -1022,4 +1020,4 @@ void InlineSkipList<Comparator>::TEST_Validate() const {
   }
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace dLSM

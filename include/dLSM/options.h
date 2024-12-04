@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "dLSM/export.h"
+
 #include "table/format.h"
 
 namespace dLSM {
@@ -19,16 +20,16 @@ class FilterPolicy;
 class Logger;
 class Snapshot;
 // The size for one SStable chunk
-//static size_t RDMA_WRITE_BLOCK = 2*1024*1024;
+// static size_t RDMA_WRITE_BLOCK = 2*1024*1024;
 // default 8 8  1
-#define RDMA_WRITE_BLOCK  (8*1024*1024)
-#define INDEX_BLOCK  (8*1024*1024)
-#define FILTER_BLOCK  (2*1024*1024)
-//static size_t RDMA_WRITE_BLOCK = 1*1024*1024;
-// DB contents are stored in a set of blocks, each of which holds a
-// sequence of key,value pairs.  Each block may be compressed before
-// being stored in a file.  The following enum describes which
-// compression method (if any) is used to compress a block.
+#define RDMA_WRITE_BLOCK (8 * 1024 * 1024)
+#define INDEX_BLOCK (8 * 1024 * 1024)
+#define FILTER_BLOCK (2 * 1024 * 1024)
+// static size_t RDMA_WRITE_BLOCK = 1*1024*1024;
+//  DB contents are stored in a set of blocks, each of which holds a
+//  sequence of key,value pairs.  Each block may be compressed before
+//  being stored in a file.  The following enum describes which
+//  compression method (if any) is used to compress a block.
 const int kNumNonTableCacheFiles = 10;
 // Fix user-supplied options to be reasonable
 template <class T, class V>
@@ -67,12 +68,11 @@ struct dLSM_EXPORT Options {
   // comparator provided to previous open calls on the same DB.
   const Comparator* comparator;
 
-  int max_background_flushes = 4;// 1-1 setup is 8 M-M setup is 8, fixed shard is also 8
+  int max_background_flushes =
+      4;  // 1-1 setup is 8 M-M setup is 8, fixed shard is also 8
 
-
-
-  int max_background_compactions = 12;//
-  int MaxSubcompaction = 12; // 1-1 setup is 12; M-M  12 as well
+  int max_background_compactions = 12;  //
+  int MaxSubcompaction = 12;            // 1-1 setup is 12; M-M  12 as well
   bool usesubcompaction = true;
   // If true, the database will be created if it is missing.
   bool create_if_missing = true;
@@ -121,14 +121,15 @@ struct dLSM_EXPORT Options {
   // a block is the unit of reading from disk).
 
   // If non-null, use the specified table_cache for blocks.
-  // If null, dLSM will automatically create and use an 64MB internal table_cache.
+  // If null, dLSM will automatically create and use an 64MB internal
+  // table_cache.
   Cache* block_cache = nullptr;
 
   // Approximate size of user data packed per block.  Note that the
   // block size specified here corresponds to uncompressed data.  The
   // actual size of the unit read from disk may be smaller if
   // compression is enabled.  This parameter can be changed dynamically.
-  //This value have to be hardcoded for 8k, because the RDMA mempool will
+  // This value have to be hardcoded for 8k, because the RDMA mempool will
   // be initialized by this value
   size_t block_size = 8 * 1024;
 
@@ -145,7 +146,7 @@ struct dLSM_EXPORT Options {
   // compactions and hence longer latency/performance hiccups.
   // Another reason to increase this parameter might be when you are
   // initially populating a large database.
-  //default 64MB
+  // default 64MB
   size_t max_file_size = 64 * 1024 * 1024;
 
   // Compress blocks using the specified compression algorithm.  This
@@ -178,7 +179,8 @@ struct dLSM_EXPORT Options {
   // default : 10
   int bloom_bits = 10;
 
-  std::vector<std::pair<Slice,Slice>>* ShardInfo = nullptr;// [Lower bound, upper bound)
+  std::vector<std::pair<Slice, Slice>>* ShardInfo =
+      nullptr;  // [Lower bound, upper bound)
 };
 
 // Options that control read operations
@@ -199,7 +201,6 @@ struct dLSM_EXPORT ReadOptions {
   // snapshot of the state at the beginning of this read operation.
   const Snapshot* snapshot = nullptr;
 };
-
 
 // Options that control write operations
 struct dLSM_EXPORT WriteOptions {

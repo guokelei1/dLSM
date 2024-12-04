@@ -5,8 +5,9 @@
 #include "util/coding_old.h"
 
 namespace dLSM {
-//TODO accellerate the Encoding process, avoid the data copy, put the encoded data directly onto Slice
-// Pull the last 8 bits and cast it to a character
+// TODO accellerate the Encoding process, avoid the data copy, put the encoded
+// data directly onto Slice
+//  Pull the last 8 bits and cast it to a character
 inline void PutFixed16(std::string* dst, uint16_t value) {
   if (port::kLittleEndian) {
     dst->append(const_cast<const char*>(reinterpret_cast<char*>(&value)),
@@ -40,7 +41,8 @@ inline void PutFixed64(std::string* dst, uint64_t value) {
   }
 }
 
-//TODO make overwrite versions of those function so that the code is compactible with the old versions.
+// TODO make overwrite versions of those function so that the code is
+// compactible with the old versions.
 void PutFixed64(Slice* dst, uint64_t value) {
   char buf[sizeof(value)];
   EncodeFixed64(buf, value);
@@ -206,12 +208,12 @@ bool GetLengthPrefixedSlice(Slice* input, Slice* result) {
     return false;
   }
 }
-//inline Slice GetLengthPrefixedSlice(const char* data) {
-//  uint32_t len = 0;
-//  // +5: we assume "data" is not corrupted
-//  // unsigned char is 7 bits, uint32_t is 32 bits, need 5 unsigned char
-//  auto p = GetVarint32Ptr(data, data + 5 /* limit */, &len);
-//  return Slice(p, len);
-//}
+// inline Slice GetLengthPrefixedSlice(const char* data) {
+//   uint32_t len = 0;
+//   // +5: we assume "data" is not corrupted
+//   // unsigned char is 7 bits, uint32_t is 32 bits, need 5 unsigned char
+//   auto p = GetVarint32Ptr(data, data + 5 /* limit */, &len);
+//   return Slice(p, len);
+// }
 
 }  // namespace dLSM

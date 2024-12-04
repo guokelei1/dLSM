@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include "gtest/gtest.h"
 #include "db/db_impl.h"
 #include "db/filename.h"
 #include "db/version_set.h"
 #include "db/write_batch_internal.h"
+
 #include "dLSM/db.h"
 #include "dLSM/env.h"
 #include "dLSM/write_batch.h"
+
 #include "util/logging.h"
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 namespace dLSM {
 
@@ -84,8 +87,7 @@ class RecoveryTest : public testing::Test {
 
   std::string ManifestFileName() {
     std::string current;
-    EXPECT_dLSM_OK(
-        ReadFileToString(env_, CurrentFileName(dbname_), &current));
+    EXPECT_dLSM_OK(ReadFileToString(env_, CurrentFileName(dbname_), &current));
     size_t len = current.size();
     if (len > 0 && current[len - 1] == '\n') {
       current.resize(len - 1);

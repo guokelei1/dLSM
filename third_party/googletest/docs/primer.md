@@ -68,9 +68,9 @@ deprecated and refactored away.
 So please be aware of the different definitions of the terms:
 
 
-Meaning                                                                              | googletest Term         | [ISTQB](http://www.istqb.org/) Term
-:----------------------------------------------------------------------------------- | :---------------------- | :----------------------------------
-Exercise a particular program path with specific input values and verify the results | [TEST()](#simple-tests) | [Test Case][istqb test case]
+| Meaning                                                                              | googletest Term         | [ISTQB](http://www.istqb.org/) Term |
+| :----------------------------------------------------------------------------------- | :---------------------- | :---------------------------------- |
+| Exercise a particular program path with specific input values and verify the results | [TEST()](#simple-tests) | [Test Case][istqb test case]        |
 
 
 [istqb test case]: http://glossary.istqb.org/en/search/test%20case
@@ -137,10 +137,10 @@ streamed to an assertion, it will be translated to UTF-8 when printed.
 
 These assertions do basic true/false condition testing.
 
-Fatal assertion            | Nonfatal assertion         | Verifies
--------------------------- | -------------------------- | --------------------
-`ASSERT_TRUE(condition);`  | `EXPECT_TRUE(condition);`  | `condition` is true
-`ASSERT_FALSE(condition);` | `EXPECT_FALSE(condition);` | `condition` is false
+| Fatal assertion            | Nonfatal assertion         | Verifies             |
+| -------------------------- | -------------------------- | -------------------- |
+| `ASSERT_TRUE(condition);`  | `EXPECT_TRUE(condition);`  | `condition` is true  |
+| `ASSERT_FALSE(condition);` | `EXPECT_FALSE(condition);` | `condition` is false |
 
 Remember, when they fail, `ASSERT_*` yields a fatal failure and returns from the
 current function, while `EXPECT_*` yields a nonfatal failure, allowing the
@@ -153,14 +153,14 @@ containing test fails.
 
 This section describes assertions that compare two values.
 
-Fatal assertion          | Nonfatal assertion       | Verifies
------------------------- | ------------------------ | --------------
-`ASSERT_EQ(val1, val2);` | `EXPECT_EQ(val1, val2);` | `val1 == val2`
-`ASSERT_NE(val1, val2);` | `EXPECT_NE(val1, val2);` | `val1 != val2`
-`ASSERT_LT(val1, val2);` | `EXPECT_LT(val1, val2);` | `val1 < val2`
-`ASSERT_LE(val1, val2);` | `EXPECT_LE(val1, val2);` | `val1 <= val2`
-`ASSERT_GT(val1, val2);` | `EXPECT_GT(val1, val2);` | `val1 > val2`
-`ASSERT_GE(val1, val2);` | `EXPECT_GE(val1, val2);` | `val1 >= val2`
+| Fatal assertion          | Nonfatal assertion       | Verifies       |
+| ------------------------ | ------------------------ | -------------- |
+| `ASSERT_EQ(val1, val2);` | `EXPECT_EQ(val1, val2);` | `val1 == val2` |
+| `ASSERT_NE(val1, val2);` | `EXPECT_NE(val1, val2);` | `val1 != val2` |
+| `ASSERT_LT(val1, val2);` | `EXPECT_LT(val1, val2);` | `val1 < val2`  |
+| `ASSERT_LE(val1, val2);` | `EXPECT_LE(val1, val2);` | `val1 <= val2` |
+| `ASSERT_GT(val1, val2);` | `EXPECT_GT(val1, val2);` | `val1 > val2`  |
+| `ASSERT_GE(val1, val2);` | `EXPECT_GE(val1, val2);` | `val1 >= val2` |
 
 Value arguments must be comparable by the assertion's comparison operator or
 you'll get a compiler error. We used to require the arguments to support the
@@ -219,9 +219,9 @@ two `string` objects, use `EXPECT_EQ`, `EXPECT_NE`, and etc instead.
 
 
 | Fatal assertion                | Nonfatal assertion             | Verifies                                                 |
-| --------------------------     | ------------------------------ | -------------------------------------------------------- |
-| `ASSERT_STREQ(str1,str2);`     | `EXPECT_STREQ(str1,str2);`     | the two C strings have the same content   		     |
-| `ASSERT_STRNE(str1,str2);`     | `EXPECT_STRNE(str1,str2);`     | the two C strings have different contents 		     |
+| ------------------------------ | ------------------------------ | -------------------------------------------------------- |
+| `ASSERT_STREQ(str1,str2);`     | `EXPECT_STREQ(str1,str2);`     | the two C strings have the same content                  |
+| `ASSERT_STRNE(str1,str2);`     | `EXPECT_STRNE(str1,str2);`     | the two C strings have different contents                |
 | `ASSERT_STRCASEEQ(str1,str2);` | `EXPECT_STRCASEEQ(str1,str2);` | the two C strings have the same content, ignoring case   |
 | `ASSERT_STRCASENE(str1,str2);` | `EXPECT_STRCASENE(str1,str2);` | the two C strings have different contents, ignoring case |
 

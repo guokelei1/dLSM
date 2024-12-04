@@ -9,10 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "dLSM/db.h"
 #include "dLSM/write_batch.h"
+
 #include "util/testutil.h"
+
+#include "gtest/gtest.h"
 
 namespace dLSM {
 
@@ -77,8 +79,7 @@ TEST(Issue320, Test) {
           CreateRandomString(index), CreateRandomString(index)));
       batch.Put(test_map[index]->first, test_map[index]->second);
     } else {
-      ASSERT_dLSM_OK(
-          db->Get(readOptions, test_map[index]->first, &old_value));
+      ASSERT_dLSM_OK(db->Get(readOptions, test_map[index]->first, &old_value));
       if (old_value != test_map[index]->second) {
         std::cout << "ERROR incorrect value returned by Get" << std::endl;
         std::cout << "  count=" << count << std::endl;

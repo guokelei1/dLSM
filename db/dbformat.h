@@ -13,7 +13,7 @@
 #include "dLSM/db.h"
 #include "dLSM/filter_policy.h"
 #include "dLSM/slice.h"
-//#include "dLSM/table_builder_computeside.h"
+// #include "dLSM/table_builder_computeside.h"
 
 #include "util/coding.h"
 #include "util/logging.h"
@@ -30,7 +30,8 @@ static const int Immutable_FlushTrigger = 1;
 // Maximum number of unflushed immutable files 10 in 1-1,
 // 16 totally across shards in M-M (including memtable)
 // with 8 fixed shard per compute node this equals 2 or 1
-static const int Immutable_StopWritesTrigger = 15; // should be 15, add memtable should be totally 16
+static const int Immutable_StopWritesTrigger =
+    15;  // should be 15, add memtable should be totally 16
 // Level-0 compaction is started when we hit this many files.
 static const int kL0_CompactionTrigger = 1;
 
@@ -47,11 +48,10 @@ static const int kL0_SlowdownWritesTrigger = 16;
 static const int kL0_StopWritesTrigger = 32;
 // We  can set it as 48*64 Mega byte for the first level, then there will
 // be two levels after the random file benchmark. 1-1 256.0
-// M-M still 256. ahigher number of this value can result in low write performance
-// decrease with the number of shards.
-// with 8 fixed shard per compute node this equals 256.0, 3200.0
+// M-M still 256. ahigher number of this value can result in low write
+// performance decrease with the number of shards. with 8 fixed shard per
+// compute node this equals 256.0, 3200.0
 static const double max_mega_bytes_for_level_base = 256.0;
-
 
 // Maximum level to which a new compacted memtable is pushed if it
 // does not create overlap.  We try to push to level 2 to avoid the
@@ -169,7 +169,7 @@ class IterKey {
 
   void Clear() { key_size_ = 0; }
 
-  void AppendToBack(const char* data, size_t appended_size){
+  void AppendToBack(const char* data, size_t appended_size) {
     size_t total_size = key_size_ + appended_size;
     if (IsKeyPinned() /* key is not in buf_ */) {
       // Copy the key from external memory to buf_ (copy shared_len bytes)
@@ -265,7 +265,9 @@ class IterKey {
     EncodeFixed64(&buf_[key_size_ - 8], newval);
   }
 
-  bool IsKeyPinned() const { return (key_ != buf_); }// Pinned key means the key is located outside buffer,
+  bool IsKeyPinned() const {
+    return (key_ != buf_);
+  }  // Pinned key means the key is located outside buffer,
   // whihc means you can not modify this pinned key.
 
   void SetInternalKey(const Slice& key_prefix, const Slice& user_key,
@@ -419,9 +421,7 @@ class InternalKey {
   InternalKey(const Slice& user_key, SequenceNumber s, ValueType t) {
     AppendInternalKey(&rep_, ParsedInternalKey(user_key, s, t));
   }
-  InternalKey(ParsedInternalKey& key) {
-    AppendInternalKey(&rep_, key);
-  }
+  InternalKey(ParsedInternalKey& key) { AppendInternalKey(&rep_, key); }
   bool DecodeFrom(const Slice& s) {
     rep_.assign(s.data(), s.size());
     return !rep_.empty();
@@ -498,13 +498,12 @@ class LookupKey {
 inline LookupKey::~LookupKey() {
   if (start_ != space_) delete[] start_;
 }
-//void FindNextInternalKeySuccessor(Slice* key) {
-//  ParsedInternalKey ikey;
-//  ParseInternalKey(*key, &ikey);
-//  ikey.sequence +=1;
+// void FindNextInternalKeySuccessor(Slice* key) {
+//   ParsedInternalKey ikey;
+//   ParseInternalKey(*key, &ikey);
+//   ikey.sequence +=1;
 //
-//}
+// }
 }  // namespace dLSM
-
 
 #endif  // STORAGE_dLSM_DB_DBFORMAT_H_

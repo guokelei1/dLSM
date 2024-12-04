@@ -13,36 +13,37 @@
 #ifndef STORAGE_dLSM_TABLE_BUILDER_COMPUTESIDE_H
 #define STORAGE_dLSM_TABLE_BUILDER_COMPUTESIDE_H
 
-//#include <cstdint>
-#include "dLSM/export.h"
-#include "dLSM/options.h"
-#include "dLSM/status.h"
+// #include <cstdint>
 #include "dLSM/comparator.h"
 #include "dLSM/env.h"
+#include "dLSM/export.h"
 #include "dLSM/filter_policy.h"
 #include "dLSM/options.h"
+#include "dLSM/status.h"
+
 #include "table/block_builder.h"
 #include "table/filter_block.h"
-#include "table/full_filter_block.h"
 #include "table/format.h"
+#include "table/full_filter_block.h"
 #include "util/coding.h"
 #include "util/crc32c.h"
+
 #include "include/dLSM/table_builder.h"
 namespace dLSM {
 
-//class BlockBuilder;
+// class BlockBuilder;
 class BlockHandle;
-//class WritableFile;
+// class WritableFile;
 
-//enum IO_type {Compact, Flush};
-class dLSM_EXPORT TableBuilder_ComputeSide : public TableBuilder{
+// enum IO_type {Compact, Flush};
+class dLSM_EXPORT TableBuilder_ComputeSide : public TableBuilder {
  public:
   // Create a builder that will store the contents of the table it is
   // building in *file.  Does not close the file.  It is up to the
   // caller to close the file after calling Finish().
   TableBuilder_ComputeSide(const Options& options, IO_type type,
                            uint8_t target_node_id);
-//  TableBuilder_ComputeSide() = default;
+  //  TableBuilder_ComputeSide() = default;
   TableBuilder_ComputeSide(const TableBuilder_ComputeSide&) = delete;
   TableBuilder_ComputeSide& operator=(const TableBuilder_ComputeSide&) = delete;
 
@@ -55,7 +56,7 @@ class dLSM_EXPORT TableBuilder_ComputeSide : public TableBuilder{
   // passed to the constructor is different from its value in the
   // structure passed to this method, this method will return an error
   // without changing any fields.
-//  Status ChangeOptions(const Options& options);
+  //  Status ChangeOptions(const Options& options);
 
   // Add key,value to the table being constructed.
   // REQUIRES: key is after any previously added key according to comparator.
@@ -106,14 +107,12 @@ class dLSM_EXPORT TableBuilder_ComputeSide : public TableBuilder{
   void get_dataindexblocks_map(std::map<uint32_t, ibv_mr*>& map) override;
   void get_filter_map(std::map<uint32_t, ibv_mr*>& map) override;
   size_t get_numentries() override;
+
  protected:
-
-
   struct Rep;
 
   Rep* rep_;
 };
-
 
 }  // namespace dLSM
 

@@ -5,11 +5,12 @@
 #ifndef STORAGE_dLSM_TABLE_TWO_LEVEL_ITERATOR_H_
 #define STORAGE_dLSM_TABLE_TWO_LEVEL_ITERATOR_H_
 
+#include "db/version_set.h"
 #include <db/version_edit.h>
 
 #include "dLSM/iterator.h"
-#include "db/version_set.h"
 #include "dLSM/table.h"
+
 #include "table/block.h"
 #include "table/format.h"
 #include "table/iterator_wrapper.h"
@@ -19,7 +20,10 @@ struct ReadOptions;
 class FileIteratorWrapper {
  public:
   FileIteratorWrapper() : iter_(nullptr), valid_(false) {}
-  explicit FileIteratorWrapper(Version::LevelFileNumIterator* iter) : iter_(nullptr) { Set(iter); }
+  explicit FileIteratorWrapper(Version::LevelFileNumIterator* iter)
+      : iter_(nullptr) {
+    Set(iter);
+  }
   ~FileIteratorWrapper() { delete iter_; }
   Version::LevelFileNumIterator* iter() const { return iter_; }
 
@@ -98,7 +102,9 @@ class FileIteratorWrapper {
 // Uses a supplied function to convert an index_iter value into
 // an iterator over the contents of the corresponding block.
 typedef Iterator* (*BlockFunction)(void*, const ReadOptions&, const Slice&);
-typedef Iterator* (*FileFunction)(void*, const ReadOptions&, std::shared_ptr<RemoteMemTableMetaData> remote_table);
+typedef Iterator* (*FileFunction)(
+    void*, const ReadOptions&,
+    std::shared_ptr<RemoteMemTableMetaData> remote_table);
 class TwoLevelIterator : public Iterator {
  public:
   TwoLevelIterator(Iterator* index_iter, BlockFunction block_function,
@@ -124,7 +130,8 @@ class TwoLevelIterator : public Iterator {
   Status status() const override {
     // It'd be nice if status() returned a const Status& instead of a Status
     if (!index_iter_.status().ok()) {
-      printf("index invalid error: %s\n", index_iter_.status().ToString().c_str());
+      printf("index invalid error: %s\n",
+             index_iter_.status().ToString().c_str());
       return index_iter_.status();
     } else if (data_iter_.iter() != nullptr && !data_iter_.status().ok()) {
       printf("data invalid\n");
@@ -154,15 +161,16 @@ class TwoLevelIterator : public Iterator {
   std::string data_block_handle_;
 #ifndef NDEBUG
   std::string last_key;
-  int64_t num_entries=0;
+  int64_t num_entries = 0;
 #endif
   bool valid_;
 };
 
 class TwoLevelFileIterator : public Iterator {
  public:
-  TwoLevelFileIterator(Version::LevelFileNumIterator* index_iter, FileFunction file_function,
-                       void* arg, const ReadOptions& options);
+  TwoLevelFileIterator(Version::LevelFileNumIterator* index_iter,
+                       FileFunction file_function, void* arg,
+                       const ReadOptions& options);
 
   ~TwoLevelFileIterator() override;
 

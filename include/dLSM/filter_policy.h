@@ -19,14 +19,14 @@
 #include <string>
 
 #include "dLSM/export.h"
-#include "util/hash.h"
 #include "dLSM/slice.h"
+
+#include "util/hash.h"
 namespace dLSM {
 
 static uint32_t BloomHash(const Slice& key) {
   return Hash(key.data(), key.size(), 0xbc9f1d34);
 }
-
 
 class dLSM_EXPORT FilterPolicy {
  public:

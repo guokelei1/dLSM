@@ -83,8 +83,6 @@ class CondVar {
   Mutex* const mu_;
 };
 
-
-
 }  // namespace port
 }  // namespace dLSM
 

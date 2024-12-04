@@ -13,7 +13,6 @@
 
 #include <thread>
 
-
 // size_t printf formatting named in the manner of C99 standard formatting
 // strings such as PRIu64
 // in fact, we could use that one
@@ -25,45 +24,44 @@
 
 #undef PLATFORM_IS_LITTLE_ENDIAN
 #if defined(OS_MACOSX)
-  #include <machine/endian.h>
-  #if defined(__DARWIN_LITTLE_ENDIAN) && defined(__DARWIN_BYTE_ORDER)
-    #define PLATFORM_IS_LITTLE_ENDIAN \
-        (__DARWIN_BYTE_ORDER == __DARWIN_LITTLE_ENDIAN)
-  #endif
+#include <machine/endian.h>
+#if defined(__DARWIN_LITTLE_ENDIAN) && defined(__DARWIN_BYTE_ORDER)
+#define PLATFORM_IS_LITTLE_ENDIAN \
+  (__DARWIN_BYTE_ORDER == __DARWIN_LITTLE_ENDIAN)
+#endif
 #elif defined(OS_SOLARIS)
-  #include <sys/isa_defs.h>
-  #ifdef _LITTLE_ENDIAN
-    #define PLATFORM_IS_LITTLE_ENDIAN true
-  #else
-    #define PLATFORM_IS_LITTLE_ENDIAN false
-  #endif
-  #include <alloca.h>
+#include <sys/isa_defs.h>
+#ifdef _LITTLE_ENDIAN
+#define PLATFORM_IS_LITTLE_ENDIAN true
+#else
+#define PLATFORM_IS_LITTLE_ENDIAN false
+#endif
+#include <alloca.h>
 #elif defined(OS_AIX)
-  #include <sys/types.h>
-  #include <arpa/nameser_compat.h>
-  #define PLATFORM_IS_LITTLE_ENDIAN (BYTE_ORDER == LITTLE_ENDIAN)
-  #include <alloca.h>
+#include <arpa/nameser_compat.h>
+#include <sys/types.h>
+#define PLATFORM_IS_LITTLE_ENDIAN (BYTE_ORDER == LITTLE_ENDIAN)
+#include <alloca.h>
 #elif defined(OS_FREEBSD) || defined(OS_OPENBSD) || defined(OS_NETBSD) || \
     defined(OS_DRAGONFLYBSD) || defined(OS_ANDROID)
-  #include <sys/endian.h>
-  #include <sys/types.h>
-  #define PLATFORM_IS_LITTLE_ENDIAN (_BYTE_ORDER == _LITTLE_ENDIAN)
+#include <sys/endian.h>
+#include <sys/types.h>
+#define PLATFORM_IS_LITTLE_ENDIAN (_BYTE_ORDER == _LITTLE_ENDIAN)
 #else
-  #include <endian.h>
+#include <endian.h>
 #endif
+#include <limits>
 #include <pthread.h>
-
 #include <stdint.h>
 #include <string.h>
-#include <limits>
 #include <string>
 
 #ifndef PLATFORM_IS_LITTLE_ENDIAN
 #define PLATFORM_IS_LITTLE_ENDIAN (__BYTE_ORDER == __LITTLE_ENDIAN)
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_SOLARIS) || defined(OS_FREEBSD) ||\
-    defined(OS_NETBSD) || defined(OS_OPENBSD) || defined(OS_DRAGONFLYBSD) ||\
+#if defined(OS_MACOSX) || defined(OS_SOLARIS) || defined(OS_FREEBSD) ||      \
+    defined(OS_NETBSD) || defined(OS_OPENBSD) || defined(OS_DRAGONFLYBSD) || \
     defined(OS_ANDROID) || defined(CYGWIN) || defined(OS_AIX)
 // Use fread/fwrite/fflush on platforms without _unlocked variants
 #define fread_unlocked fread
@@ -71,8 +69,8 @@
 #define fflush_unlocked fflush
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_FREEBSD) ||\
-    defined(OS_OPENBSD) || defined(OS_DRAGONFLYBSD)
+#if defined(OS_MACOSX) || defined(OS_FREEBSD) || defined(OS_OPENBSD) || \
+    defined(OS_DRAGONFLYBSD)
 // Use fsync() on platforms without fdatasync()
 #define fdatasync fsync
 #endif
@@ -83,23 +81,23 @@
 #define fdatasync fsync
 #endif
 #ifdef NDEBUG
-#define DEBUG_arg(x,y)
+#define DEBUG_arg(x, y)
 #define DEBUG(x)
 #else
-#define DEBUG_arg(x,y) printf(x,y)
+#define DEBUG_arg(x, y) printf(x, y)
 #define DEBUG(x) printf(x)
 #endif
-//#define TIMEPRINT
+// #define TIMEPRINT
 #define WITHMEMORYVERSIONSET
-//#define WITHPERSISTENCE
-//#define PROCESSANALYSIS
-//#define BYTEADDRESSABLE
+// #define WITHPERSISTENCE
+// #define PROCESSANALYSIS
+// #define BYTEADDRESSABLE
 #define NEARDATACOMPACTION
-//#define GETANALYSIS
+// #define GETANALYSIS
 #define ROCKSDB_PTHREAD_ADAPTIVE_MUTEX
 #define R_SIZE 1024
 
-//#define BLOOMANALYSIS
+// #define BLOOMANALYSIS
 #include "port/thread_annotations.h"
 namespace dLSM {
 
@@ -142,6 +140,7 @@ class Mutex {
   // it does NOT verify that mutex is held by a calling thread
   void AssertHeld();
   void AssertNotHeld();
+
  private:
   friend class CondVar;
   pthread_mutex_t mu_;
@@ -163,10 +162,10 @@ class RWMutex {
   void WriteLock();
   void ReadUnlock();
   void WriteUnlock();
-  void AssertHeld() { }
+  void AssertHeld() {}
 
  private:
-  pthread_rwlock_t mu_; // the underlying platform mutex
+  pthread_rwlock_t mu_;  // the underlying platform mutex
 };
 
 class CondVar {
@@ -178,6 +177,7 @@ class CondVar {
   bool TimedWait(uint64_t abs_time_us);
   void Signal();
   void SignalAll();
+
  private:
   pthread_cond_t cv_;
   Mutex* mu_;
@@ -285,9 +285,9 @@ extern void InitOnce(OnceType* once, void (*initializer)());
 static_assert((CACHE_LINE_SIZE & (CACHE_LINE_SIZE - 1)) == 0,
               "Cache line size must be a power of 2 number of bytes");
 
-extern void *cacheline_aligned_alloc(size_t size);
+extern void* cacheline_aligned_alloc(size_t size);
 
-extern void cacheline_aligned_free(void *memblock);
+extern void cacheline_aligned_free(void* memblock);
 
 #define PREFETCH(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
 
@@ -301,5 +301,5 @@ using ThreadId = pid_t;
 
 extern void SetCpuPriority(ThreadId id, CpuPriority priority);
 
-} // namespace port
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace port
+}  // namespace dLSM
