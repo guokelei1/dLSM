@@ -833,9 +833,9 @@ bool RDMA_Manager::Local_Memory_Register(char** p2buffpointer,
     //  size, duration.count());
     local_mem_pool.push_back(*p2mrpointer);
     fprintf(stdout,
-            "New MR was registered with addr=%p, lkey=0x%x, rkey=0x%x, "
+            "New MR was registered with addr=%p, type_id = %d ,lkey=0x%x, rkey=0x%x, "
             "flags=0x%x, size=%lu, total registered size is %lu\n",
-            (*p2mrpointer)->addr, (*p2mrpointer)->lkey, (*p2mrpointer)->rkey,
+            (*p2mrpointer)->addr, static_cast<int>(pool_name),(*p2mrpointer)->lkey, (*p2mrpointer)->rkey,
             mr_flags, size, total_registered_size);
   } else {
     *p2mrpointer = pre_allocated_pool.back();

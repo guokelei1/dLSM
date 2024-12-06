@@ -787,6 +787,7 @@ Status DBImpl::RecoverLogFile(uint64_t log_number, bool last_log,
   return status;
 }
 
+// gkl ： flush
 Status DBImpl::WriteLevel0Table(FlushJob* job, VersionEdit* edit) {
   //  undefine_mutex.AssertHeld();
   const uint64_t start_micros = env_->NowMicros();
@@ -991,6 +992,8 @@ Status DBImpl::WriteLevel0Table(MemTable* job, VersionEdit* edit,
 //    RecordBackgroundError(s);
 //  }
 //}
+
+//gkl： 为什么叫做compact而不是flush呢？
 void DBImpl::CompactMemTable() {
   //  undefine_mutex.AssertHeld();
   // TOTHINK What will happen if we remove the mutex in the future?
@@ -1242,6 +1245,7 @@ void DBImpl::BackgroundCall() {
   MaybeScheduleFlushOrCompaction();
   //  undefine_mutex.Unlock();
 }
+// gkl : flush启动
 void DBImpl::BackgroundFlush(void* p) {
   // Tothink: why there is a Lock, which data structure is this mutex protecting
   //  undefine_mutex.Lock();

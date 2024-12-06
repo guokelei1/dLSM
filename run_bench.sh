@@ -13,7 +13,8 @@ filename="${directory}/${datetime}.txt"
 touch "${filename}"
 
 
-benchmarks="fillrandom,readrandom,readrandom,,readrandomwriterandom"
+#benchmarks="fillrandom,readrandom,readrandom,,readrandomwriterandom"
+benchmarks="fillrandom,readrandom,readrandomwriterandom"
 
 # 定义threads参数
 threads=16
@@ -22,7 +23,7 @@ threads=16
 value_size=400
 
 # 定义num参数
-kv_num=1000
+kv_num=100000000
 
 kv_num_per_thread=$((kv_num/threads))
 
