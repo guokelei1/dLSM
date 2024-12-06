@@ -57,7 +57,7 @@ dLSM::Memory_Node_Keeper::Memory_Node_Keeper(bool use_sub_compaction,
   //    ClipToRange(&opts->block_size, 1 << 10, 4 << 20);
 
   //Compactor_pool_.SetBackgroundThreads(opts->max_background_compactions);
-  Compactor_pool_.SetBackgroundThreads(4);
+  Compactor_pool_.SetBackgroundThreads(opts->max_background_compactions);
   Message_handler_pool_.SetBackgroundThreads(2);
   Persistency_bg_pool_.SetBackgroundThreads(1);
 
