@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
+#include <condition_variable>
 
 #include "port/port_posix.h"
 #include "util/thread_local.h"

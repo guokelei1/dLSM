@@ -382,7 +382,7 @@ class Stats {
     AppendWithSpace(&extra, message_);
 
     std::fprintf(stdout,
-                 "\n%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; "
+                 "\nresults:%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; "
                  "%ld ops/sec;%s%s\n",
                  name.ToString().c_str(), done_, elapsed,
                  seconds_ * 1e6 / done_, (long)(done_ / elapsed),
