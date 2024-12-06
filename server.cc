@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     dLSM::RDMA_Manager::node_id = 0;
   }
 
-  mn_keeper->SetBackgroundThreads(4,
+  mn_keeper->SetBackgroundThreads(12,
                                   dLSM::ThreadPoolType::CompactionThreadPool);
   mn_keeper->Server_to_Client_Communication();
   delete mn_keeper;
