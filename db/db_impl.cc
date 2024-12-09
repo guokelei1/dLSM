@@ -993,7 +993,7 @@ Status DBImpl::WriteLevel0Table(MemTable* job, VersionEdit* edit,
 //  }
 //}
 
-//gkl： 为什么叫做compact而不是flush呢？
+// gkl： 为什么叫做compact而不是flush呢？
 void DBImpl::CompactMemTable() {
   //  undefine_mutex.AssertHeld();
   // TOTHINK What will happen if we remove the mutex in the future?
@@ -1461,10 +1461,14 @@ void DBImpl::BackgroundCompaction(void* p) {
           status.ToString().c_str(), versions_->LevelSummary(&tmp));
       DEBUG("Trival compaction\n");
     } else if (options_.near_data_compaction) {
+      // printf("remote compaction\n");
+
       NearDataCompaction(c);
+
       //      MaybeScheduleFlushOrCompaction();
       //      return;
     } else {
+      //  printf("local compaction\n");
       CompactionState* compact = new CompactionState(c);
 
       auto start = std::chrono::high_resolution_clock::now();
@@ -2019,6 +2023,20 @@ void DBImpl::InstallSuperVersion() {
   }
 }
 void DBImpl::NearDataCompaction(Compaction* c) {
+  //获取debug锁
+  versions_->debug_mtx.lock();
+  if(versions_->current()==nullptr){
+printf("null current\n");
+  }else{
+  c->DebugOutput();
+  fflush(stdout);
+  versions_->Debugout();
+  fflush(stdout);
+
+  }
+    versions_->debug_mtx.unlock();
+
+
   std::shared_ptr<RDMA_Manager> rdma_mg = env_->rdma_mg;
   // register the memory block from the remote memory
   RDMA_Request* send_pointer;

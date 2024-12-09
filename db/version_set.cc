@@ -89,7 +89,7 @@ Version::~Version() {
   //     for (size_t i = 0; i < levels_[level].size(); i++) {
   //       std::shared_ptr<RemoteMemTableMetaData> f = levels_[level][i];
   ////      printf("The file %zu in level %d 's use_count is %ld\n", i,level,
-  ///f.use_count());
+  /// f.use_count());
   //    }
   //  }
   // #endif
@@ -489,6 +489,30 @@ bool Version::OverlapInLevel(int level, const Slice* smallest_user_key,
                              const Slice* largest_user_key) {
   return SomeFileOverlapsRange(vset_->icmp_, (level > 0), levels_[level],
                                smallest_user_key, largest_user_key);
+}
+
+void Version::DebugOutput() {
+  std::cout << "LSM Tree Information:" << std::endl;
+  print_version_content();
+  fflush(stdout);
+  for (int level = 0; level < config::kNumLevels; ++level) {
+    std::cout << "Level " << level << ":" << std::endl;
+    if (levels_[level].empty()) {
+      std::cout << "  Empty" << std::endl;
+      fflush(stdout);
+    } else {
+      for (const auto& file : levels_[level]) {
+        if (file.get() == nullptr) {
+          std::cout << " file Empty" << std::endl;
+          fflush(stdout);
+          continue;
+        } else {
+          std::cout << "  File Number: " << file->number
+                    << ", File Size: " << file->file_size << std::endl;
+        }
+      }
+    }
+  }
 }
 
 int Version::PickLevelForMemTableOutput(const Slice& smallest_user_key,
@@ -913,7 +937,9 @@ VersionSet::VersionSet(const std::string& dbname, const Options* options,
 // }
 
 VersionSet::~VersionSet() {
+  debug_mtx.lock();
   current_->Unref(0);
+  debug_mtx.unlock();
   assert(dummy_versions_.next_ == &dummy_versions_);  // List must be empty
   delete descriptor_log;
   delete descriptor_file;
@@ -930,6 +956,7 @@ VersionSet::~VersionSet() {
 }
 
 void VersionSet::AppendVersion(Version* v) {
+  debug_mtx.lock();
   // Make "v" current
   assert(v->refs_.load() == 0);
   assert(v != current_);
@@ -950,6 +977,7 @@ void VersionSet::AppendVersion(Version* v) {
   v->prev_->next_ = v;
   v->next_->prev_ = v;
   version_set_list.unlock();
+  debug_mtx.unlock();
 }
 #ifdef WITHPERSISTENCE
 void VersionSet::Persistency_pin(VersionEdit* edit) {
@@ -1009,7 +1037,7 @@ Status VersionSet::LogAndApply(VersionEdit* edit) {
   //    current_->subversion.get());
   ////    if (current_->subversion.get() != nullptr){
   //////      printf("version id for this subversion is %lu",
-  ///current_->subversion); /    }
+  /// current_->subversion); /    }
   // #endif
   //   }else{
   //     //TODO: how to let the function know whether it is memory node or
@@ -1434,6 +1462,8 @@ uint64_t VersionSet::ApproximateOffsetOf(Version* v, const InternalKey& ikey) {
   }
   return result;
 }
+
+void VersionSet::Debugout() { current_->DebugOutput(); }
 
 void VersionSet::AddLiveFiles(std::set<uint64_t>* live) {
   for (Version* v = dummy_versions_.next_; v != &dummy_versions_;
@@ -2187,6 +2217,19 @@ void Compaction::ReleaseInputs() {
     input_version_ = nullptr;
   }
 }
+
+void Compaction::DebugOutput() {
+  printf("Compaction level %d", level_);
+  // 输出所有compaction的文件信息
+  for (int i = 0; i < 2; i++) {
+    printf("Input %d level:  ", i);
+    for (auto file : inputs_[i]) {
+      printf("%lu ", file->number);
+    }
+    printf("\n");
+  }
+}
+
 void Compaction::GenSubcompactionBoundaries() {
   // TODO: make boundary a pair of small and largest key. Or we can add
   //  internal key to the boundary. so that we can directly search the (start,

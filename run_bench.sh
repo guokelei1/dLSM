@@ -13,8 +13,9 @@ filename="${directory}/${datetime}.txt"
 touch "${filename}"
 
 
-#benchmarks="fillrandom,readrandom,readrandom,,readrandomwriterandom"
-benchmarks="fillrandom,readrandom,readrandomwriterandom"
+benchmarks="fillrandom,readrandom,readrandom,,readrandomwriterandom"
+#benchmarks="fillrandom,readrandom,readrandomwriterandom"
+#benchmarks="fillrandom,readrandom"
 
 # 定义threads参数
 threads=16

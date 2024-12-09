@@ -161,6 +161,9 @@ class Version {
   bool OverlapInLevel(int level, const Slice* smallest_user_key,
                       const Slice* largest_user_key);
 
+  // gkl debug
+  void DebugOutput();
+
   // Return the level at which we should place a new memtable compaction
   // result that covers the range [smallest_user_key,largest_user_key].
   int PickLevelForMemTableOutput(const Slice& smallest_user_key,
@@ -230,8 +233,14 @@ class Version {
   double CompactionScore(int i);
   int CompactionLevel(int i);
   void print_version_content() {
+    printf("Version content:");
+    //判断levels_[i]存在一个vector
     for (int i = 0; i < config::kNumLevels; ++i) {
-      printf("Version level %d contain %zu files\n", i, levels_[i].size());
+      // 如果level_[i]的智能指针不为空
+      if (!levels_[i].empty()) {
+        // 打印level_[i]的文件数
+        printf("level %d nums: %zu\t", i, levels_[i].size());
+      }
     }
   }
   std::shared_ptr<RemoteMemTableMetaData> FindFileByNumber(int level,
@@ -333,6 +342,8 @@ class VersionSet {
 
   // Return the current version.
   Version* current() const { return current_; }
+  
+  void Debugout();
 
   // Return the current manifest file number
   uint64_t ManifestFileNumber() const { return manifest_file_number_; }
@@ -456,6 +467,9 @@ class VersionSet {
   Slice upper_bound;
   Slice lower_bound;
 
+  //内存锁
+  std::mutex debug_mtx;
+
  private:
   class Builder;
 
@@ -557,6 +571,9 @@ class Compaction {
   // Release the mem_vec version for the compaction, once the compaction
   // is successful.
   void ReleaseInputs();
+
+  void DebugOutput();
+
   void GenSubcompactionBoundaries();
 
   std::vector<std::shared_ptr<RemoteMemTableMetaData>>
@@ -567,6 +584,8 @@ class Compaction {
   Compaction(const Options* options);
 
  private:
+ // 一个内存锁
+
   friend class Version;
   friend class VersionSet;
 

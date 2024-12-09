@@ -380,13 +380,13 @@ class Stats {
       extra = rate;
     }
     AppendWithSpace(&extra, message_);
-
-    std::fprintf(stdout,
-                 "\nresults:%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; "
-                 "%ld ops/sec;%s%s\n",
-                 name.ToString().c_str(), done_, elapsed,
-                 seconds_ * 1e6 / done_, (long)(done_ / elapsed),
-                 (extra.empty() ? "" : " "), extra.c_str());
+    fflush(stdout);
+    std::fprintf(
+        stdout,
+        "\nresults:%-12s : done: %6d; elapsed: %11.3f sec; %11.3f micros/op; "
+        "%ld ops/sec;%s%s\n",
+        name.ToString().c_str(), done_, elapsed, seconds_ * 1e6 / done_,
+        (long)(done_ / elapsed), (extra.empty() ? "" : " "), extra.c_str());
 
     if (FLAGS_histogram) {
       std::fprintf(stdout, "Microseconds per op:\n%s\n",
