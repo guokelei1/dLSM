@@ -233,7 +233,7 @@ class Version {
   double CompactionScore(int i);
   int CompactionLevel(int i);
   void print_version_content() {
-    printf("Version content:");
+    printf("\nVersion content:");
     //判断levels_[i]存在一个vector
     for (int i = 0; i < config::kNumLevels; ++i) {
       // 如果level_[i]的智能指针不为空
@@ -242,6 +242,7 @@ class Version {
         printf("level %d nums: %zu\t", i, levels_[i].size());
       }
     }
+    printf("\n");
   }
   std::shared_ptr<RemoteMemTableMetaData> FindFileByNumber(int level,
                                                            uint64_t file_number,
@@ -470,6 +471,8 @@ class VersionSet {
   //内存锁
   std::mutex debug_mtx;
 
+  int  com_count=0;
+
  private:
   class Builder;
 
@@ -572,7 +575,7 @@ class Compaction {
   // is successful.
   void ReleaseInputs();
 
-  void DebugOutput();
+  void DebugOutput(int count);
 
   void GenSubcompactionBoundaries();
 

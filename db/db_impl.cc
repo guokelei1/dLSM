@@ -1462,8 +1462,29 @@ void DBImpl::BackgroundCompaction(void* p) {
       DEBUG("Trival compaction\n");
     } else if (options_.near_data_compaction) {
       // printf("remote compaction\n");
-
+      // 获取debug锁
+      
+      versions_->debug_mtx.lock();
+      int  count = versions_->com_count ++;
+      if (versions_->current() == nullptr) {
+        printf("null current\n");
+      } else {
+        c->DebugOutput(count);
+        fflush(stdout);
+        versions_->Debugout();
+        fflush(stdout);
+      }
+      versions_->debug_mtx.unlock();
+      auto level = c->level();
+      // 输出当前精确时间
+      auto start = std::chrono::high_resolution_clock::now();
       NearDataCompaction(c);
+      auto stop = std::chrono::high_resolution_clock::now();
+      auto duration =
+          std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+      std::cout << "\nNearDataCompaction " << count << "\t" << duration.count()
+                << std::endl;
+      fflush(stdout);
 
       //      MaybeScheduleFlushOrCompaction();
       //      return;
@@ -2023,20 +2044,6 @@ void DBImpl::InstallSuperVersion() {
   }
 }
 void DBImpl::NearDataCompaction(Compaction* c) {
-  //获取debug锁
-  versions_->debug_mtx.lock();
-  if(versions_->current()==nullptr){
-printf("null current\n");
-  }else{
-  c->DebugOutput();
-  fflush(stdout);
-  versions_->Debugout();
-  fflush(stdout);
-
-  }
-    versions_->debug_mtx.unlock();
-
-
   std::shared_ptr<RDMA_Manager> rdma_mg = env_->rdma_mg;
   // register the memory block from the remote memory
   RDMA_Request* send_pointer;

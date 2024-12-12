@@ -492,19 +492,17 @@ bool Version::OverlapInLevel(int level, const Slice* smallest_user_key,
 }
 
 void Version::DebugOutput() {
-  std::cout << "LSM Tree Information:" << std::endl;
+  std::cout << "\nLSM Tree Information:" << std::endl;
   print_version_content();
   fflush(stdout);
   for (int level = 0; level < config::kNumLevels; ++level) {
-    std::cout << "Level " << level << ":" << std::endl;
+    std::cout << "\nLevel " << level << ":" << std::endl;
     if (levels_[level].empty()) {
       std::cout << "  Empty" << std::endl;
-      fflush(stdout);
     } else {
       for (const auto& file : levels_[level]) {
         if (file.get() == nullptr) {
           std::cout << " file Empty" << std::endl;
-          fflush(stdout);
           continue;
         } else {
           std::cout << "  File Number: " << file->number
@@ -513,6 +511,7 @@ void Version::DebugOutput() {
       }
     }
   }
+  fflush(stdout);
 }
 
 int Version::PickLevelForMemTableOutput(const Slice& smallest_user_key,
@@ -2218,16 +2217,16 @@ void Compaction::ReleaseInputs() {
   }
 }
 
-void Compaction::DebugOutput() {
-  printf("Compaction level %d", level_);
+void Compaction::DebugOutput(int  count) {
+  printf("\nCompaction level %d  %d ", level_,count);
   // 输出所有compaction的文件信息
   for (int i = 0; i < 2; i++) {
     printf("Input %d level:  ", i);
     for (auto file : inputs_[i]) {
       printf("%lu ", file->number);
     }
-    printf("\n");
   }
+  printf("\n");
 }
 
 void Compaction::GenSubcompactionBoundaries() {
