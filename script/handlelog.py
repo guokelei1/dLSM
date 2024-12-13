@@ -13,8 +13,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
-
-
 @dataclass
 class FileMetaData:
     file_number: int
@@ -139,13 +137,21 @@ def compute_compact(compactions: List[Compaction]) -> Dict[int, Dict[str, float]
     level_counts = {}
     input_0_counts = {}
     input_1_counts = {}
+    level_compaction_times = {}
+    level_compaction_counts = {}
     time_els = 0
     ccnt = 0
     for compaction in compactions:
-        time_els += compaction.time
+        level = compaction.compact_level
         if compaction.count > 0:
             ccnt += 1
-        level = compaction.compact_level
+            time_els += compaction.time
+            if level not in level_compaction_times:
+                level_compaction_times[level] = 0
+            if level not in level_compaction_counts:
+                level_compaction_counts[level] = 0
+            level_compaction_times[level] += compaction.time
+            level_compaction_counts[level] += 1
         if level in level_counts:
             level_counts[level] += 1
             input_0_counts[level].append(len(compaction.files[0]))
@@ -162,7 +168,8 @@ def compute_compact(compactions: List[Compaction]) -> Dict[int, Dict[str, float]
         result[level] = {
             "count": count,
             "avg_input_0": avg_input_0,
-            "avg_input_1": avg_input_1
+            "avg_input_1": avg_input_1,
+            "avg_time": level_compaction_times[level]/level_compaction_counts[level]
         }
     print(f"compaction count: {ccnt}, average time: {time_els/ccnt}")
 
@@ -233,7 +240,7 @@ def plot_level_lifetime_distribution(dir_name,level_lifetimes: Dict[int, List[in
    
 if __name__ == "__main__":
     dirname = '/home/gkl/dLSM/result/'  # 替换为你的txt文件名
-    filename = '/home/gkl/dLSM/result/12-10_17_14.txt'  # 替换为你的txt文件名
+    filename = '/home/gkl/dLSM/result/cnode/12-10_17_14.txt'  # 替换为你的txt文件名
     # 目录名称为日志名称，即去掉后缀以及前缀目录
     dirname += filename.split('/')[-1].split('.')[0]
     #创建目录 dirname 如果目录不存在
@@ -244,11 +251,14 @@ if __name__ == "__main__":
     compaction_count,compactions = parse_compactions(filename)
     parse_neardata(filename,compactions)
     
-    result=compute_compact(compactions)
-    for level, stats in result.items():
-        print(f"Level {level}: {stats['count']} times, "
-              f"average 0 : {stats['avg_input_0']}, "
-              f"average 1 : {stats['avg_input_1']}")
+    result = compute_compact(compactions)
+    result_name = dirname + '/result.txt'
+    with open(result_name, 'a') as file:
+        for level, stats in result.items():
+            file.write(f"Level {level}: {stats['count']} times, "
+                    f"average 0 : {stats['avg_input_0']}, "
+                    f"average 1 : {stats['avg_input_1']}, "
+                    f"average time : {stats['avg_time']}\n")
     count,versions = parse_log(filename)
     
     assert count == compaction_count

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 指定目录，可根据实际需求修改
-directory="./result"
+directory="./result/cnode"
 
 # 获取当前日期和时间，格式为 "YYYY-MM-DD HH:MM"
 datetime=$(date +"%m-%d_%H_%M")
